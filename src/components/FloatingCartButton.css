@@ -1,0 +1,54 @@
+.floating-cart-button {
+    position: fixed; /* This makes it stick to the screen */
+    top: 50%; /* Position it in the vertical middle */
+    right: 0; /* Stick it to the right edge */
+    transform: translateY(-50%); /* Adjust to be perfectly centered */
+    z-index: 999; /* Ensure it's above other content */
+
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    overflow: hidden; /* Ensures the inner content respects the border-radius */
+    box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.floating-cart-button:hover {
+    transform: translateY(-50%) translateX(-5px); /* Slight pop-out effect on hover */
+}
+
+.cart-item-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    background-color: #2c3e50; /* Dark Blue/Charcoal */
+    color: white;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.cart-price-section {
+    background-color: #E91E63; /* Bright Pink */
+    color: white;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.jiggle-animation {
+    animation: jiggle 0.5s ease-in-out;
+}
+
+@keyframes jiggle {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    25% { transform: translateY(-50%) rotate(-3deg); }
+    50% { transform: translateY(-50%) rotate(3deg); }
+    75% { transform: translateY(-50%) rotate(-3deg); }
+    100% { transform: translateY(-50%) rotate(0deg); }
+}

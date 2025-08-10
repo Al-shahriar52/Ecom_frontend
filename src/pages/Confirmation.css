@@ -1,0 +1,64 @@
+.confirmation-page {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 40px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.confirmation-page.success {
+    background-color: #e9f7ef;
+    border: 1px solid #b7e4c7;
+}
+
+.confirmation-page.failed {
+    background-color: #fbecec;
+    border: 1px solid #f5c6cb;
+}
+
+.confirmation-page h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.order-details {
+    margin: 30px 0;
+    text-align: left;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+    background: #fff;
+}
+
+.ordered-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.ordered-item img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+
+.ordered-item span:first-of-type {
+    flex-grow: 1;
+}
+
+.ordered-total {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    font-size: 1.2rem;
+}
+
+.failed-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
