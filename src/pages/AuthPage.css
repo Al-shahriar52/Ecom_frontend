@@ -1,81 +1,3 @@
-/*.auth-container {*/
-/*    display: flex;*/
-/*    justify-content: center;*/
-/*    align-items: center;*/
-/*    min-height: 70vh;*/
-/*    padding: 40px 0;*/
-/*    background-color: var(--light-gray-bg);*/
-/*}*/
-
-/*.auth-card {*/
-/*    background: white;*/
-/*    padding: 40px;*/
-/*    border-radius: 15px;*/
-/*    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);*/
-/*    width: 100%;*/
-/*    max-width: 400px;*/
-/*}*/
-
-/*.auth-form h2 {*/
-/*    text-align: center;*/
-/*    font-weight: 600;*/
-/*    color: var(--secondary-color);*/
-/*    margin-top: 0;*/
-/*    margin-bottom: 30px;*/
-/*}*/
-
-/*.form-group {*/
-/*    margin-bottom: 20px;*/
-/*}*/
-
-/*.form-group label {*/
-/*    display: block;*/
-/*    font-weight: 500;*/
-/*    margin-bottom: 8px;*/
-/*    color: var(--text-light);*/
-/*}*/
-
-/*.form-group input {*/
-/*    width: 100%;*/
-/*    padding: 12px 15px;*/
-/*    border: 1px solid var(--border-color);*/
-/*    border-radius: 8px;*/
-/*    font-family: 'Poppins', sans-serif;*/
-/*    font-size: 15px;*/
-/*    box-sizing: border-box;*/
-/*    transition: border-color 0.3s;*/
-/*}*/
-
-/*.form-group input:focus {*/
-/*    outline: none;*/
-/*    border-color: var(--primary-color);*/
-/*}*/
-
-/*.auth-btn {*/
-/*    width: 100%;*/
-/*    padding: 15px;*/
-/*    margin-top: 10px;*/
-/*}*/
-
-/*.auth-toggle {*/
-/*    margin-top: 25px;*/
-/*    text-align: center;*/
-/*    font-size: 14px;*/
-/*}*/
-
-/*.auth-toggle span {*/
-/*    color: var(--primary-color);*/
-/*    font-weight: 600;*/
-/*    cursor: pointer;*/
-/*}*/
-
-/*.error-message {*/
-/*    color: var(--danger-color);*/
-/*    text-align: center;*/
-/*    font-size: 14px;*/
-/*    margin-bottom: 15px;*/
-/*}*/
-
 /* src/pages/AuthPage.css */
 
 .auth-container {
@@ -189,4 +111,25 @@
     font-size: 14px;
     margin-bottom: 15px;
     text-align: center;
+}
+
+/* Red border for invalid fields */
+.form-group input.invalid-field {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+/* Green border for valid fields */
+.form-group input.valid-field {
+    border-color: #2ecc71; /* A nice green color */
+    box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+}
+
+/* Style for the error message below each field */
+.field-error {
+    color: var(--danger-color);
+    font-size: 13px;
+    margin-top: 5px;
+    margin-bottom: 0;
+    text-align: left;
 }
