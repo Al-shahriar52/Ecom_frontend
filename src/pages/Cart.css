@@ -1,0 +1,130 @@
+.cart-page {
+    padding: 20px;
+}
+
+.cart-empty {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.5rem;
+}
+
+.cart-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.cart-items {
+    flex: 3;
+    min-width: 300px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.cart-item.selected {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+}
+
+.item-checkbox {
+    margin-right: 15px;
+    transform: scale(1.5);
+    cursor: pointer;
+}
+
+.cart-item-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item-details h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+}
+
+.cart-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cart-item-quantity button {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.cart-item-total {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin: 0 20px;
+    min-width: 80px;
+    text-align: right;
+}
+
+.remove-btn {
+    padding: 5px 10px;
+    border-radius: 50%;
+}
+
+.order-summary {
+    flex: 1;
+    min-width: 280px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    height: fit-content;
+    position: sticky;
+    top: 100px; /* Adjust based on your header height */
+}
+
+.order-summary h2 {
+    text-align: center;
+    margin-top: 0;
+}
+
+.price-breakup div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.price-breakup hr {
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 15px 0;
+}
+
+.price-breakup .total {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.checkout-btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.checkout-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
