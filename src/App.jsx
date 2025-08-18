@@ -17,6 +17,12 @@ import AuthPage from './pages/AuthPage';
 import FloatingCartButton from './components/FloatingCartButton';
 import ScrollToTop from './components/ScrollToTop';
 
+import DashboardLayout from './pages/dashboard/DashboardLayout';
+import DashboardHome from './pages/dashboard/DashboardHome';
+import Orders from './pages/dashboard/Orders';
+import Address from './pages/dashboard/Address';
+import AccountDetails from './pages/dashboard/AccountDetails';
+
 function App() {
   return (
       <Router>
@@ -44,6 +50,13 @@ function App() {
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/confirmation" element={<Confirmation />} />
                 <Route path="/login" element={<AuthPage />} />
+                  <Route path="/dashboard" element={<DashboardLayout />}>
+                      <Route index element={<DashboardHome />} />
+                      <Route path="orders" element={<Orders />} />
+                      <Route path="address" element={<Address />} />
+                      <Route path="account-details" element={<AccountDetails />} />
+                  </Route>
+
               </Routes>
             </main>
             <Footer />

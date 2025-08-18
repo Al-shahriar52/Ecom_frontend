@@ -1,5 +1,9 @@
+
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/AxiosInstance';
+import { toast } from 'react-hot-toast';
+import { jwtDecode } from 'jwt-decode';
 
 export const AuthContext = createContext();
 
@@ -7,7 +11,6 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
-    // On app start, check localStorage for a logged-in user
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -15,46 +18,77 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // Login function (simulation)
-    const login = (email, password) => {
-        // In a real app, you'd send a request to your backend API
-        // Here, we'll just simulate it.
-        console.log("Attempting to log in with", email, password);
+    const login = async (emailOrPhone, password) => {
+        try {
+            const response = await axiosInstance.post('/api/v1/auth/login', {
+                emailOrPhone,
+                password
+            });
+            if (response.data?.data?.accessToken) {
+                const { accessToken, refreshToken } = response.data.data;
 
-        // For simulation, we'll retrieve a registered user from localStorage
-        const registeredUser = JSON.parse(localStorage.getItem('registered_user'));
+                const decodedToken = jwtDecode(accessToken);
+                const userRole = decodedToken.roles && decodedToken.roles.length > 0
+                    ? decodedToken.roles[0].authority
+                    : 'USER';
 
-        if (registeredUser && registeredUser.email === email && registeredUser.password === password) {
-            const userData = { name: registeredUser.name, email: registeredUser.email };
-            localStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
-            navigate('/'); // Redirect to homepage after login
-            return { success: true };
-        } else {
-            return { success: false, message: "Invalid email or password" };
+                const userData = {
+                    name: response.data.data.name || emailOrPhone,
+                    emailOrPhone,
+                    role: userRole
+                };
+
+                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+
+                setUser(userData);
+                toast.success(response.data.message || "Login successful!");
+                navigate('/');
+                return { success: true };
+            }
+        } catch (error) {
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error('Login failed. Please try again.');
+            }
+            return { success: false };
         }
     };
 
-    // Registration function (simulation)
-    const register = (name, email, password) => {
-        // In a real app, this would be an API call to create a new user
-        // Here, we just store the new user's details for our login simulation
-        console.log("Registering user:", name, email);
-        localStorage.setItem('registered_user', JSON.stringify({ name, email, password }));
+    const register = async (name, emailOrPhone, password) => {
+        try {
+            const response = await axiosInstance.post('/api/v1/auth/register', {
+                name,
+                emailOrPhone,
+                password
+            });
+            toast.success(response.data.message);
 
-        // For a better user experience, automatically log them in after registration
-        const userData = { name, email };
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-        navigate('/'); // Redirect to homepage
-        return { success: true };
+            // After successful registration, immediately call the login function
+            await login(emailOrPhone, password);
+
+        } catch (error) {
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error('Registration failed. Please try again.');
+            }
+        }
     };
 
-    // Logout function
-    const logout = () => {
-        localStorage.removeItem('user');
-        setUser(null);
-        navigate('/login'); // Redirect to login page after logout
+    const logout = async () => {
+        try {
+            await axiosInstance.post('/api/v1/user/logout', {});
+            toast.success("Successfully logged out.");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        } finally {
+            localStorage.clear();
+            setUser(null);
+            navigate('/login');
+        }
     };
 
     const value = {

@@ -1,0 +1,62 @@
+.dashboard-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    padding: 20px 0;
+}
+
+.dashboard-sidebar {
+    flex-basis: 250px; /* Set a fixed width for the sidebar */
+    flex-shrink: 0;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    width: 100%;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: background-color 0.2s, color 0.2s;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sidebar-link:hover {
+    background-color: #f0f0f0;
+}
+
+.sidebar-link.active {
+    background-color: #E91E63; /* Use your brand's pink color */
+    color: white;
+}
+.sidebar-link.active span {
+    filter: brightness(0) invert(1);
+}
+
+.sidebar-link.logout-btn {
+    color: var(--danger-color);
+}
+.sidebar-link.logout-btn:hover {
+    background-color: #fbecec;
+}
+
+.dashboard-content {
+    flex-grow: 1; /* Take up the remaining space */
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    min-height: 50vh;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
