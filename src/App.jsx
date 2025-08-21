@@ -22,6 +22,7 @@ import DashboardHome from './pages/dashboard/DashboardHome';
 import Orders from './pages/dashboard/Orders';
 import Address from './pages/dashboard/Address';
 import AccountDetails from './pages/dashboard/AccountDetails';
+import OrderDetail from './pages/dashboard/OrderDetail';
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
                   <Route path="/dashboard" element={<DashboardLayout />}>
                       <Route index element={<DashboardHome />} />
                       <Route path="orders" element={<Orders />} />
+                      <Route path="orders/:orderId" element={<OrderDetail />} />
                       <Route path="address" element={<Address />} />
                       <Route path="account-details" element={<AccountDetails />} />
                   </Route>
