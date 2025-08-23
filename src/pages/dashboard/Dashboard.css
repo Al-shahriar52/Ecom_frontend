@@ -59,6 +59,7 @@
     border-radius: 8px;
     min-height: 50vh;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    min-width: 0;
 }
 
 .orders-list {

@@ -66,7 +66,7 @@ const Header = () => {
                             >
                                 MY ACCOUNT
                             </button>
-                            {isDropdownOpen && (
+                            {/*{isDropdownOpen && (
                                 <div className="dropdown-menu">
                                     {user.role === 'ADMIN' ? (
                                         <>
@@ -78,6 +78,22 @@ const Header = () => {
                                             <Link to="/dashboard" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Dashboard</Link>
                                         </>
                                     )}
+                                    <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="dropdown-item logout">
+                                        Logout
+                                    </button>
+                                </div>
+                            )}*/}
+                            {isDropdownOpen && (
+                                <div className="dropdown-menu">
+                                    {/* --- SIMPLIFIED LOGIC --- */}
+                                    <Link
+                                        to={user.role === 'ADMIN' ? '/admin' : '/dashboard'}
+                                        className="dropdown-item"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+
                                     <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="dropdown-item logout">
                                         Logout
                                     </button>
