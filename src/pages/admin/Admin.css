@@ -16,13 +16,26 @@
 /* === PRODUCT MANAGEMENT (TABLE PAGE) STYLES === */
 .admin-page-content .page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* Stacks the title and filter rows */
+    align-items: flex-start; /* Aligns both rows to the left */
+    gap: 20px; /* Space between the title row and filter row */
     padding-bottom: 20px;
     margin-bottom: 20px;
     border-bottom: 1px solid #dfe0eb;
-    flex-wrap: wrap;
+}
+
+.admin-page-content .header-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; /* Makes the container take the full width */
+}
+
+.admin-page-content .header-actions {
+    display: flex;
+    align-items: center;
     gap: 15px;
+    flex-wrap: wrap; /* Allows filters to wrap on smaller screens */
 }
 .admin-page-content .sortable-header {
     cursor: pointer;
@@ -30,7 +43,7 @@
 }
 .admin-page-content .page-header h2 { margin: 0; }
 .admin-page-content .header-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap;}
-.admin-page-content .search-input { padding: 10px 15px; border: 1px solid #dfe0eb; border-radius: 8px; min-width: 200px; }
+.admin-page-content .search-input { padding: 10px 15px; border: 1px solid #dfe0eb; border-radius: 8px; min-width: 150px; }
 .admin-page-content .filter-select { padding: 10px 15px; border: 1px solid #dfe0eb; border-radius: 8px; background-color: white; }
 .admin-page-content .btn-add-product { background-color: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
 .admin-page-content .product-list-wrapper { width: 100%; overflow-x: auto; }

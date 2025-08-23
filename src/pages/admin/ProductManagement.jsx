@@ -19,11 +19,35 @@ const ProductManagement = () => {
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
     const productsPerPage = 5;
 
-    // Sorting Logic
-    const sortedProducts = useMemo(() => {
-        let sortableProducts = [...mockProducts];
-        if (sortConfig !== null) {
-            sortableProducts.sort((a, b) => {
+    // 1. Add state for each filter
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [categoryFilter, setCategoryFilter] = useState('All');
+
+    // 2. Combined filtering and sorting logic
+    const filteredAndSortedProducts = useMemo(() => {
+        let filteredProducts = [...mockProducts];
+
+        // Apply search filter
+        if (searchTerm) {
+            filteredProducts = filteredProducts.filter(product =>
+                product.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Apply status filter
+        if (statusFilter !== 'All') {
+            filteredProducts = filteredProducts.filter(product => product.status === statusFilter);
+        }
+
+        // Apply category filter
+        if (categoryFilter !== 'All') {
+            filteredProducts = filteredProducts.filter(product => product.category === categoryFilter);
+        }
+
+        // Apply sorting to the filtered list
+        if (sortConfig.key) {
+            filteredProducts.sort((a, b) => {
                 if (a[sortConfig.key] < b[sortConfig.key]) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
                 }
@@ -33,12 +57,13 @@ const ProductManagement = () => {
                 return 0;
             });
         }
-        return sortableProducts;
-    }, [mockProducts, sortConfig]);
 
-    // Pagination Logic (uses the sorted products)
-    const currentProducts = sortedProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
-    const totalPages = Math.ceil(mockProducts.length / productsPerPage);
+        return filteredProducts;
+    }, [mockProducts, searchTerm, statusFilter, categoryFilter, sortConfig]);
+
+    // 3. Update pagination to use the filtered and sorted list
+    const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+    const currentProducts = filteredAndSortedProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
 
     const requestSort = (key) => {
         let direction = 'ascending';
@@ -63,7 +88,7 @@ const ProductManagement = () => {
     return (
         <div className="admin-page-content">
             <div className="content-card">
-                <header className="page-header">
+                {/*<header className="page-header">
                     <h2>Product Management</h2>
                     <Link to="/admin/products/add" className="btn-add-product">
                         Add Product
@@ -76,7 +101,7 @@ const ProductManagement = () => {
                             <option>Out of stock</option>
                             <option>limited</option>
                         </select>
-                        {/* New "All Categories" Dropdown */}
+                         New "All Categories" Dropdown
                         <select className="filter-select">
                             <option>All Categories</option>
                             <option>Skin Care</option>
@@ -84,7 +109,7 @@ const ProductManagement = () => {
                             <option>Makeup</option>
                         </select>
 
-                        {/* New "Sort by" Dropdown */}
+                         New "Sort by" Dropdown
                         <select className="filter-select">
                             <option>Sort by</option>
                             <option>Category</option>
@@ -92,6 +117,55 @@ const ProductManagement = () => {
                             <option>Price</option>
                             <option>Status</option>
                             <option>Reviews</option>
+                        </select>
+                    </div>
+                </header>*/}
+
+                <header className="page-header">
+                    <div className="header-title-container">
+                        <h2>Product Management</h2>
+                        <Link to="/admin/products/add" className="btn-add-product">
+                            Add Product
+                        </Link>
+                    </div>
+                    <div className="header-actions">
+                        {/* 4. Connect filters to state */}
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <select
+                            className="filter-select"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="All">All Status</option>
+                            <option value="In Stock">In Stock</option>
+                            <option value="Limited">Limited</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                        <select
+                            className="filter-select"
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                            <option value="All">All Categories</option>
+                            <option value="Skin Care">Skin Care</option>
+                            <option value="Men Care">Men Care</option>
+                            <option value="Makeup">Makeup</option>
+                        </select>
+                        <select
+                            className="filter-select"
+                            onChange={(e) => requestSort(e.target.value)}
+                            value={sortConfig.key}
+                        >
+                            <option value="name">Sort by Name</option>
+                            <option value="category">Sort by Category</option>
+                            <option value="stock">Sort by Stock</option>
+                            <option value="price">Sort by Price</option>
                         </select>
                     </div>
                 </header>
