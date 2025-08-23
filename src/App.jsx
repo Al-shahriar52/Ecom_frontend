@@ -35,6 +35,7 @@ import UserManagement from './pages/admin/UserManagement';
 import AdminOrders from './pages/admin/AdminOrders';
 import Accounting from './pages/admin/Accounting';
 import CouponManagement from './pages/admin/CouponManagement';
+import AddProduct from './pages/admin/AddProduct';
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
                                     <Route path="coupons" element={<CouponManagement />} />
                                     <Route path="orders" element={<AdminOrders />} />
                                     <Route path="accounting" element={<Accounting />} />
+                                    <Route path="products/add" element={<AddProduct />} />
                                 </Route>
                             </Route>
 

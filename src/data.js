@@ -1,10 +1,11 @@
-// src/data.js
 export const products = [
     {
         id: 1,
         title: "Radiant Glow Serum",
-        description: "A powerful serum packed with Vitamin C and Hyaluronic Acid to brighten and hydrate your skin.",
+        description: "A powerful serum packed with Vitamin C to brighten and hydrate your skin.",
         price: 45.00,
+        originalPrice: 60.00, // Added original price
+        tag: "SALE", // Added tag
         rating: 4.8,
         image: "https://i.imgur.com/vptiD3s.jpeg",
         createdAt: "2025-07-26T10:00:00Z",
@@ -12,8 +13,10 @@ export const products = [
     {
         id: 2,
         title: "Matte Finish Foundation",
-        description: "Long-lasting, full-coverage foundation with a flawless matte finish. Available in 20 shades.",
+        description: "Long-lasting, full-coverage foundation with a flawless matte finish.",
         price: 38.50,
+        originalPrice: 45.00, // Added original price
+        tag: "EXCLUSIVE", // Added tag
         rating: 4.5,
         image: "https://i.imgur.com/nJhlL72.jpeg",
         createdAt: "2025-07-25T11:30:00Z",
@@ -21,8 +24,9 @@ export const products = [
     {
         id: 3,
         title: "Volumizing Mascara",
-        description: "Get dramatic volume and length with this smudge-proof, long-wearing mascara.",
+        description: "Get dramatic volume and length with this smudge-proof mascara.",
         price: 24.00,
+        tag: "FREE SHIPPING", // Added tag
         rating: 4.7,
         image: "https://i.imgur.com/gO0aYEr.jpeg",
         createdAt: "2025-07-27T09:00:00Z",
@@ -30,7 +34,7 @@ export const products = [
     {
         id: 4,
         title: "Hydrating Lip Balm SPF 30",
-        description: "Nourish and protect your lips with this ultra-hydrating balm with sun protection.",
+        description: "Nourish and protect your lips with this ultra-hydrating balm.",
         price: 12.00,
         rating: 4.9,
         image: "https://i.imgur.com/5JpZEWN.jpeg",

@@ -1,0 +1,19 @@
+.star-rating {
+    position: relative;
+    display: inline-block;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.stars-empty {
+    color: #ddd; /* Color of the empty stars */
+}
+
+.stars-filled {
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    color: #f59e0b; /* Color of the filled stars (Amber/Gold) */
+}
