@@ -88,39 +88,6 @@ const ProductManagement = () => {
     return (
         <div className="admin-page-content">
             <div className="content-card">
-                {/*<header className="page-header">
-                    <h2>Product Management</h2>
-                    <Link to="/admin/products/add" className="btn-add-product">
-                        Add Product
-                    </Link>
-                    <div className="header-actions">
-                        <input type="text" placeholder="Search..." className="search-input" />
-                        <select className="filter-select">
-                            <option>All Status</option>
-                            <option>In stock</option>
-                            <option>Out of stock</option>
-                            <option>limited</option>
-                        </select>
-                         New "All Categories" Dropdown
-                        <select className="filter-select">
-                            <option>All Categories</option>
-                            <option>Skin Care</option>
-                            <option>Men Care</option>
-                            <option>Makeup</option>
-                        </select>
-
-                         New "Sort by" Dropdown
-                        <select className="filter-select">
-                            <option>Sort by</option>
-                            <option>Category</option>
-                            <option>Stock</option>
-                            <option>Price</option>
-                            <option>Status</option>
-                            <option>Reviews</option>
-                        </select>
-                    </div>
-                </header>*/}
-
                 <header className="page-header">
                     <div className="header-title-container">
                         <h2>Product Management</h2>
