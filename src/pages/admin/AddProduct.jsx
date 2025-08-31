@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import './Admin.css';
 import axiosInstance from '../../api/AxiosInstance';
+import UploadIcon from '../../components/UploadIcon';
 
 const AddProduct = () => {
     const navigate = useNavigate();
@@ -23,6 +24,7 @@ const AddProduct = () => {
         sku: '',
         size: '',
         color: '',
+        rating: '',
     });
     const [productImages, setProductImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
@@ -108,7 +110,7 @@ const AddProduct = () => {
             discountedPrice: parseFloat(productData.discountedPrice),
             quantity: parseInt(productData.quantity),
             sku: productData.sku,
-            rating: 0,
+            rating: parseFloat(productData.rating) || 0,
             numReviews: 0,
         };
 
@@ -146,8 +148,55 @@ const AddProduct = () => {
                     <div className="add-product-layout">
                         <div className="layout-main">
                             <div className="form-card"><h3>General Information</h3><div className="form-group"><label>Product Name</label><input type="text" name="name" value={productData.name} onChange={handleChange} placeholder="Type product name..." required /></div><div className="form-group"><label>Description</label><textarea name="description" value={productData.description} onChange={handleChange} placeholder="Type description..." required /></div></div>
-                            <div className="form-card"><h3>Media</h3><div className="form-group"><label>Photo</label><div className="image-upload-container"><input type="file" id="file-upload" ref={fileInputRef} multiple onChange={handleImageChange} accept="image/*" style={{ display: 'none' }} /><div className="image-dropzone"><div className="upload-icon">{/* SVG */}</div><p>Drag and drop image here, or click add image</p><button type="button" className="btn-add-image" onClick={handleAddImageClick}>Add Image</button></div></div><div className="image-previews">{imagePreviews.map((preview, index) => (<div key={index} className="image-preview-item"><img src={preview} alt="Preview" /><button type="button" className="remove-image-btn" onClick={() => handleRemoveImage(index)}>&times;</button></div>))}</div></div></div>
-                            <div className="form-card"><h3>Pricing & Inventory</h3><div className="form-grid-2"><div className="form-group"><label>Original Price</label><input type="number" name="originalPrice" value={productData.originalPrice} onChange={handleChange} placeholder="৳ 0.00" /></div><div className="form-group"><label>Discounted Price</label><input type="number" name="discountedPrice" value={productData.discountedPrice} onChange={handleChange} placeholder="৳ 0.00" required /></div><div className="form-group"><label>Quantity</label><input type="number" name="quantity" value={productData.quantity} onChange={handleChange} placeholder="0" required /></div><div className="form-group"><label>SKU</label><input type="text" name="sku" value={productData.sku} onChange={handleChange} placeholder="e.g., SKU-001" required /></div></div></div>
+                            <div className="form-card">
+                                <h3>Media</h3>
+                                <div className="form-group">
+                                    <label>Photo</label>
+                                    <div className="image-upload-container">
+                                        <input type="file" id="file-upload" ref={fileInputRef} multiple onChange={handleImageChange} accept="image/*" style={{ display: 'none' }} />
+                                        <div className="image-dropzone"><div className="upload-icon">
+                                            <div className="upload-icon">
+                                                <UploadIcon />
+                                            </div>
+                                        </div>
+                                            <p>Drag and drop image here, or click add image</p>
+                                            <button type="button" className="btn-add-image" onClick={handleAddImageClick}>Add Image</button>
+                                        </div>
+                                    </div>
+                                    <div className="image-previews">{imagePreviews.map((preview, index) => (<div key={index} className="image-preview-item"><img src={preview} alt="Preview" /><button type="button" className="remove-image-btn" onClick={() => handleRemoveImage(index)}>&times;</button></div>))}</div></div></div>
+                            <div className="form-card"><h3>Pricing & Inventory</h3>
+                                <div className="form-grid-2">
+                                    <div className="form-group">
+                                        <label>Original Price</label>
+                                        <input type="number" name="originalPrice" value={productData.originalPrice} onChange={handleChange} placeholder="৳ 0.00" />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Discounted Price</label>
+                                        <input type="number" name="discountedPrice" value={productData.discountedPrice} onChange={handleChange} placeholder="৳ 0.00" required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity" value={productData.quantity} onChange={handleChange} placeholder="0" required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>SKU</label>
+                                        <input type="text" name="sku" value={productData.sku} onChange={handleChange} placeholder="e.g., SKU-001" required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Rating (out of 5)</label>
+                                        <input
+                                            type="number"
+                                            name="rating"
+                                            value={productData.rating}
+                                            onChange={handleChange}
+                                            placeholder="e.g., 4.5"
+                                            step="0.1"
+                                            min="0"
+                                            max="5"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                             <div className="form-card"><h3>Variations</h3><div className="form-grid-2"><div className="form-group"><label>Size</label><input type="text" name="size" value={productData.size} onChange={handleChange} placeholder="e.g., 100ml" /></div><div className="form-group"><label>Color</label><input type="text" name="color" value={productData.color} onChange={handleChange} placeholder="e.g., Red" /></div></div></div>
                         </div>
                         <div className="layout-sidebar">

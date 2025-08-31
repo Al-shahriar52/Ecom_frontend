@@ -1,88 +1,107 @@
 
-import React, { useState, useMemo } from 'react';
-import './Admin.css';
+import React, {useState, useEffect, useMemo} from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import './Admin.css';
 import StarRating from '../../components/StarRating';
+import axiosInstance from '../../api/AxiosInstance';
 
-const mockProducts = [
-    { id: 1, image: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1754715759/logo_xkwamd.png', name: 'Himalaya Brightening Vitamin C Bluberry Face Wash-100ml', category: 'Skin Care', stock: 12, price: 99.00, status: 'In Stock', reviews: 4.5 },
-    { id: 2, image: 'https://i.imgur.com/gO0aYEr.jpeg', name: 'Himalaya Natural Glow Saffron Face Wash', category: 'Skin Care', stock: 3, price: 112.00, status: 'Limited', reviews: 4 },
-    { id: 3, image: 'https://i.imgur.com/k2psCHT.jpeg', name: 'Himalaya Vitamin C Orange Face Wash-100ml', category: 'Skin Care', stock: 0, price: 99.00, status: 'Out of Stock', reviews: 5 },
-    { id: 4, image: 'https://i.imgur.com/vTj3d2d.jpeg', name: 'Garnier Men Acno Fight Pimple Clearing Face Wash', category: 'Men Care', stock: 25, price: 150.00, status: 'In Stock', reviews: 3.2 },
-    { id: 5, image: 'https://i.imgur.com/vTj3d2d.jpeg', name: 'Garnier Men Acno Fight Pimple Clearing Face Wash', category: 'Men Care', stock: 25, price: 150.00, status: 'In Stock', reviews: 4.5 },
-    { id: 6, image: 'https://i.imgur.com/vTj3d2d.jpeg', name: 'Garnier Men Acno Fight Pimple Clearing Face Wash', category: 'Men Care', stock: 25, price: 150.00, status: 'In Stock', reviews: 2 },
-    // Add more products to see pagination in action
-];
+// Mock data is no longer needed as we are fetching from the API.
 
 const ProductManagement = () => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
-    const productsPerPage = 5;
+    // State for data fetched from the API
+    const [products, setProducts] = useState([]);
+    const [pagination, setPagination] = useState({ pageNo: 0, pageSize: 10, totalPages: 1 });
 
-    // 1. Add state for each filter
+    const [categories, setCategories] = useState([]);
+    // State for API query parameters
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [categoryFilter, setCategoryFilter] = useState('All');
+    const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
-    // 2. Combined filtering and sorting logic
-    const filteredAndSortedProducts = useMemo(() => {
-        let filteredProducts = [...mockProducts];
+    //  useEffect to fetch categories when the component first loads
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axiosInstance.get('/api/v1/product/categories');
+                setCategories(response.data.data || []);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                toast.error("Could not load category filter options.");
+            }
+        };
+        fetchCategories();
+    }, []); // Empty array ensures this runs only once on mount
 
-        // Apply search filter
-        if (searchTerm) {
-            filteredProducts = filteredProducts.filter(product =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
+    // This useEffect hook is the core of the integration.
+    // It re-fetches data from the API whenever a filter, sort, or page changes.
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                // Construct query parameters from the current state
+                const params = {
+                    pageNo: pagination.pageNo,
+                    pageSize: pagination.pageSize,
+                    sortBy: sortConfig.key,
+                    sortDir: sortConfig.direction,
+                    query: searchTerm,
+                    category: categoryFilter === 'All' ? '' : categoryFilter,
+                };
 
-        // Apply status filter
-        if (statusFilter !== 'All') {
-            filteredProducts = filteredProducts.filter(product => product.status === statusFilter);
-        }
+                const response = await axiosInstance.get('/api/v1/product/search', { params });
+                const { content, pageNo, pageSize, totalPages } = response.data.data;
 
-        // Apply category filter
-        if (categoryFilter !== 'All') {
-            filteredProducts = filteredProducts.filter(product => product.category === categoryFilter);
-        }
+                setProducts(content || []);
+                setPagination({ pageNo, pageSize, totalPages });
 
-        // Apply sorting to the filtered list
-        if (sortConfig.key) {
-            filteredProducts.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                toast.error("Could not fetch product list.");
+            }
+        };
 
-        return filteredProducts;
-    }, [mockProducts, searchTerm, statusFilter, categoryFilter, sortConfig]);
+        fetchProducts();
+    }, [pagination.pageNo, sortConfig, searchTerm, categoryFilter]); // Dependencies array
 
-    // 3. Update pagination to use the filtered and sorted list
-    const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
-    const currentProducts = filteredAndSortedProducts.slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage);
-
+    // Updates the sort configuration, which triggers the useEffect to re-fetch
     const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
         }
         setSortConfig({ key, direction });
     };
 
-    const getSortArrow = (key) => {
-        if (sortConfig.key !== key) return '↑↓';
-        return sortConfig.direction === 'ascending' ? '↑' : '↓';
+    // Helper function to determine status based on quantity from the API response
+    const getProductStatus = (quantity) => {
+        if (quantity <= 0) return { text: 'Out of Stock', className: 'status-out-of-stock' };
+        if (quantity < 5) return { text: 'Limited', className: 'status-limited' };
+        return { text: 'In Stock', className: 'status-in-stock' };
     };
 
-    const getStatusClass = (status) => {
-        if (status === 'In Stock') return 'status-in-stock';
-        if (status === 'Limited') return 'status-limited';
-        if (status === 'Out of Stock') return 'status-out-of-stock';
-        return '';
+    const displayProducts = useMemo(() => {
+        if (statusFilter === 'All') {
+            return products;
+        }
+        return products.filter(product => {
+            const statusText = getProductStatus(product.quantity).text;
+            return statusText === statusFilter;
+        });
+    }, [products, statusFilter]);
+
+    const getSortArrow = (key) => {
+        if (sortConfig.key !== key) return '↑↓';
+        return sortConfig.direction === 'asc' ? '↑' : '↓';
+    };
+
+    const handleSortChange = (e) => {
+        const [key, direction] = e.target.value.split('-');
+        setSortConfig({ key, direction });
+    };
+
+    const handlePageChange = (newPageNo) => {
+        setPagination(prev => ({ ...prev, pageNo: newPageNo }));
     };
 
     return (
@@ -91,12 +110,9 @@ const ProductManagement = () => {
                 <header className="page-header">
                     <div className="header-title-container">
                         <h2>Product Management</h2>
-                        <Link to="/admin/products/add" className="btn-add-product">
-                            Add Product
-                        </Link>
+                        <Link to="/admin/products/add" className="btn-add-product">Add Product</Link>
                     </div>
                     <div className="header-actions">
-                        {/* 4. Connect filters to state */}
                         <input
                             type="text"
                             placeholder="Search..."
@@ -114,25 +130,25 @@ const ProductManagement = () => {
                             <option value="Limited">Limited</option>
                             <option value="Out of Stock">Out of Stock</option>
                         </select>
-                        <select
-                            className="filter-select"
-                            value={categoryFilter}
-                            onChange={(e) => setCategoryFilter(e.target.value)}
-                        >
+                        <select className="filter-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                             <option value="All">All Categories</option>
-                            <option value="Skin Care">Skin Care</option>
-                            <option value="Men Care">Men Care</option>
-                            <option value="Makeup">Makeup</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.name}>
+                                    {cat.name}
+                                </option>
+                            ))}
                         </select>
                         <select
                             className="filter-select"
-                            onChange={(e) => requestSort(e.target.value)}
-                            value={sortConfig.key}
+                            onChange={handleSortChange}
+                            value={`${sortConfig.key}-${sortConfig.direction}`}
                         >
-                            <option value="name">Sort by Name</option>
-                            <option value="category">Sort by Category</option>
-                            <option value="stock">Sort by Stock</option>
-                            <option value="price">Sort by Price</option>
+                            <option value="name-asc">Sort by Name (A-Z)</option>
+                            <option value="name-desc">Sort by Name (Z-A)</option>
+                            <option value="quantity-asc">Sort by Stock (Low to High)</option>
+                            <option value="quantity-desc">Sort by Stock (High to Low)</option>
+                            <option value="discountedPrice-asc">Sort by Price (Low to High)</option>
+                            <option value="discountedPrice-desc">Sort by Price (High to Low)</option>
                         </select>
                     </div>
                 </header>
@@ -147,66 +163,53 @@ const ProductManagement = () => {
                             <col className="col-price" />
                             <col className="col-status" />
                             <col className="col-reviews" />
-                            <col className="col-action" /> {/* 2. Correctly defined */}
+                            <col className="col-action" />
                         </colgroup>
                         <thead>
                         <tr>
                             <th>Image</th>
-                            <th onClick={() => requestSort('name')} className="sortable-header">
-                                Product Name <span className="sort-arrow">{getSortArrow('name')}</span>
-                            </th>
-                            <th onClick={() => requestSort('category')} className="sortable-header">
-                                Category <span className="sort-arrow">{getSortArrow('category')}</span>
-                            </th>
-                            <th onClick={() => requestSort('stock')} className="sortable-header">
-                                Stock <span className="sort-arrow">{getSortArrow('stock')}</span>
-                            </th>
-                            <th onClick={() => requestSort('price')} className="sortable-header">
-                                Price <span className="sort-arrow">{getSortArrow('price')}</span>
-                            </th>
-                            <th onClick={() => requestSort('status')} className="sortable-header">
-                                Status <span className="sort-arrow">{getSortArrow('status')}</span>
-                            </th>
-                            <th onClick={() => requestSort('reviews')} className="sortable-header">
-                                Reviews <span className="sort-arrow">{getSortArrow('reviews')}</span>
-                            </th>
+                            <th onClick={() => requestSort('name')} className="sortable-header">Product Name <span className="sort-arrow">{getSortArrow('name')}</span></th>
+                            <th onClick={() => requestSort('category')} className="sortable-header">Category <span className="sort-arrow">{getSortArrow('category')}</span></th>
+                            <th onClick={() => requestSort('quantity')} className="sortable-header">Stock <span className="sort-arrow">{getSortArrow('quantity')}</span></th>
+                            <th onClick={() => requestSort('discountedPrice')} className="sortable-header">Price <span className="sort-arrow">{getSortArrow('discountedPrice')}</span></th>
+                            <th>Status</th>
+                            <th onClick={() => requestSort('rating')} className="sortable-header">Reviews <span className="sort-arrow">{getSortArrow('rating')}</span></th>
                             <th>Action</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {currentProducts.map(product => (
-                            <tr key={product.id}>
-                                <td><img src={product.image} alt={product.name} className="product-image" /></td>
-                                <td className="td-product-name">{product.name}</td>
-                                <td>{product.category}</td>
-                                <td>{product.stock}</td>
-                                <td>৳{product.price.toFixed(2)}</td>
-                                <td><span className={`status-badge ${getStatusClass(product.status)}`}>{product.status}</span></td>
-                                <td>
-                                    <StarRating rating={product.reviews} />
-                                </td>
-                                <td>
-                                    <div className="action-icons">
-                                        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z" /></svg>
-                                        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                        {displayProducts.map(product => {
+                            const status = getProductStatus(product.quantity);
+                            return (
+                                <tr key={product.productId}>
+                                    {/* Table data cells */}
+                                    <td><img src={product.imageUrl || "https://via.placeholder.com/40"} alt={product.name} className="product-image" /></td>
+                                    <td className="td-product-name">{product.name}</td>
+                                    <td>{product.categoryName}</td>
+                                    <td>{product.quantity}</td>
+                                    <td>৳{product.discountedPrice.toFixed(2)}</td>
+                                    <td>
+                                        <span className={`status-badge ${status.className}`}>{status.text}</span>
+                                    </td>
+                                    <td><StarRating rating={product.rating} /></td>
+                                    <td>{/* Action Icons */}</td>
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </table>
                 </div>
 
                 <div className="pagination">
-                    <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+                    <button onClick={() => handlePageChange(pagination.pageNo - 1)} disabled={pagination.pageNo === 0}>
                         Previous
                     </button>
-                    {[...Array(totalPages).keys()].map(number => (
-                        <span key={number + 1} className={currentPage === number + 1 ? 'active' : ''} onClick={() => setCurrentPage(number + 1)}>
+                    {[...Array(pagination.totalPages).keys()].map(number => (
+                        <span key={number} className={pagination.pageNo === number ? 'active' : ''} onClick={() => handlePageChange(number)}>
                             {number + 1}
                         </span>
                     ))}
-                    <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+                    <button onClick={() => handlePageChange(pagination.pageNo + 1)} disabled={pagination.pageNo >= pagination.totalPages - 1}>
                         Next
                     </button>
                 </div>
