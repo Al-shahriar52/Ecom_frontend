@@ -6,8 +6,6 @@ import './Admin.css';
 import StarRating from '../../components/StarRating';
 import axiosInstance from '../../api/AxiosInstance';
 
-// Mock data is no longer needed as we are fetching from the API.
-
 const ProductManagement = () => {
     // State for data fetched from the API
     const [products, setProducts] = useState([]);
@@ -158,6 +156,7 @@ const ProductManagement = () => {
                         <colgroup>
                             <col className="col-image" />
                             <col className="col-name" />
+                            <col className="col-sku" />
                             <col className="col-category" />
                             <col className="col-stock" />
                             <col className="col-price" />
@@ -169,6 +168,7 @@ const ProductManagement = () => {
                         <tr>
                             <th>Image</th>
                             <th onClick={() => requestSort('name')} className="sortable-header">Product Name <span className="sort-arrow">{getSortArrow('name')}</span></th>
+                            <th onClick={() => requestSort('sku')} className="sortable-header">SKU <span className="sort-arrow">{getSortArrow('sku')}</span></th>
                             <th onClick={() => requestSort('category')} className="sortable-header">Category <span className="sort-arrow">{getSortArrow('category')}</span></th>
                             <th onClick={() => requestSort('quantity')} className="sortable-header">Stock <span className="sort-arrow">{getSortArrow('quantity')}</span></th>
                             <th onClick={() => requestSort('discountedPrice')} className="sortable-header">Price <span className="sort-arrow">{getSortArrow('discountedPrice')}</span></th>
@@ -185,6 +185,7 @@ const ProductManagement = () => {
                                     {/* Table data cells */}
                                     <td><img src={product.imageUrl || "https://via.placeholder.com/40"} alt={product.name} className="product-image" /></td>
                                     <td className="td-product-name">{product.name}</td>
+                                    <td>{product.sku}</td>
                                     <td>{product.categoryName}</td>
                                     <td>{product.quantity}</td>
                                     <td>৳{product.discountedPrice.toFixed(2)}</td>
@@ -192,7 +193,12 @@ const ProductManagement = () => {
                                         <span className={`status-badge ${status.className}`}>{status.text}</span>
                                     </td>
                                     <td><StarRating rating={product.rating} /></td>
-                                    <td>{/* Action Icons */}</td>
+                                    <td>
+                                        <div className="action-icons">
+                                            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z" /></svg>
+                                            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
+                                        </div>
+                                    </td>
                                 </tr>
                             );
                         })}
