@@ -1,110 +1,153 @@
-
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
+import axiosInstance from '../api/AxiosInstance'; // Ensure this is configured correctly
+import { toast } from 'react-hot-toast';
 import './Header.css';
 
-const categories = [
-    {
-        name: 'Makeup',
-        path: '/category/makeup',
-        color: '#AD1457', // Changed color for visual variety
-        subcategories: [
-            {
-                title: 'FACE',
-                links: [
-                    { name: 'Face Primer', path: '/subcategory/face-primer' },
-                    { name: 'Concealer', path: '/subcategory/concealer' },
-                    { name: 'Foundation', path: '/subcategory/foundation' },
-                    { name: 'Compact & Pressed Powder', path: '/subcategory/compact-powder' },
-                    { name: 'Contour', path: '/subcategory/contour' },
-                    { name: 'Loose Powder', path: '/subcategory/loose-powder' },
-                    { name: 'Blush', path: '/subcategory/blush' },
-                ],
-            },
-            {
-                title: 'EYES',
-                links: [
-                    { name: 'Kajal', path: '/subcategory/kajal' },
-                    { name: 'Eyeliner', path: '/subcategory/eyeliner' },
-                    { name: 'Mascara', path: '/subcategory/mascara' },
-                    { name: 'Eye Shadow', path: '/subcategory/eye-shadow' },
-                    { name: 'Eye Brow Enhancers', path: '/subcategory/eye-brow' },
-                    { name: 'False Eyelashes', path: '/subcategory/false-eyelashes' },
-                ],
-            },
-            {
-                title: 'LIPS',
-                links: [
-                    { name: 'Lipstick', path: '/subcategory/lipstick' },
-                    { name: 'Liquid Lipsticks', path: '/subcategory/liquid-lipsticks' },
-                    { name: 'Lip Crayon', path: '/subcategory/lip-crayon' },
-                    { name: 'Lip Gloss', path: '/subcategory/lip-gloss' },
-                    { name: 'Lip Liner', path: '/subcategory/lip-liner' },
-                ],
-            },
-            {
-                title: 'TOOLS & BRUSHES',
-                links: [
-                    { name: 'Face Brush', path: '/subcategory/face-brush' },
-                    { name: 'Eye Brush', path: '/subcategory/eye-brush' },
-                    { name: 'Lip Brush', path: '/subcategory/lip-brush' },
-                    { name: 'Brush Sets', path: '/subcategory/brush-sets' },
-                ],
-            },
-            {
-                title: 'TOP BRANDS',
-                isBrands: true, // Special flag for styling
-                links: [
-                    { name: 'L\'Oreal', path: '/brand/loreal' },
-                    { name: 'MAC', path: '/brand/mac' },
-                    { name: 'The Body Shop', path: '/brand/the-body-shop' },
-                ],
-            },
-        ],
-    },
-    { name: 'Skin', path: '/category/skin', color: '#6A1B9A' }, // This one has no subcategories
-    { name: 'Personal care', path: '/category/personal-care', color: '#4A148C' },
-    { name: 'Mom & Baby', path: '/category/mom-baby', color: '#1565C0' },
-    { name: 'Fragrance', path: '/category/fragrance', color: '#00695C' },
-    { name: 'CLEARANCE SALE', path: '/category/sale', color: '#D81B60' },
-    { name: 'MEN', path: '/category/men', color: '#2E7D32' },
-];
+// This object only holds UI-specific data (colors) that doesn't come from your API.
+const categoryUIColors = {
+    'Makeup': '#AD1457',
+    'Skin': '#6A1B9A',
+    'Hair': '#00695C',
+    'Personal care': '#4A148C',
+    'Mom & Baby': '#1565C0',
+    'Fragrance': '#00695C',
+    'UNDERGARMENTS': '#1E88E5',
+    'Combo': '#2E7D32',
+    'Jewellery': '#8E24AA',
+    'CLEARANCE SALE': '#D81B60',
+    'Men': '#2E7D32',
+};
 
+/**
+ * Parses a flat list of subcategories from the API into a multi-column structure.
+ * It identifies column titles by checking if the name is in ALL CAPS.
+ * @param {Array} subCategoryData - The flat array from the subcategory API.
+ * @returns {Array} An array of column objects for the mega menu.
+ */
+const parseSubcategories = (subCategoryData, categoryName) => {
+    const columns = [];
+    let currentColumn = null;
+
+    // This first part of the logic handles data that already has titles (like for "Hair")
+    subCategoryData.forEach(item => {
+        const isTitle = item.name === item.name.toUpperCase() && item.name.length > 1;
+
+        if (isTitle) {
+            currentColumn = {
+                title: item.name,
+                links: [],
+            };
+            columns.push(currentColumn);
+        } else if (currentColumn) {
+            currentColumn.links.push({
+                id: item.id,
+                name: item.name,
+                path: `/subcategory/${item.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
+            });
+        }
+    });
+
+    // --- THIS IS THE UPDATED FALLBACK LOGIC ---
+    // If no columns were created, we create them ourselves by splitting the list.
+    if (columns.length === 0 && subCategoryData.length > 0) {
+        const chunkSize = 8; // Max items per column
+        for (let i = 0; i < subCategoryData.length; i += chunkSize) {
+            const chunk = subCategoryData.slice(i, i + chunkSize);
+            columns.push({
+                // The first column gets a title; subsequent columns are untitled continuations.
+                title: i === 0 ? `Explore ${categoryName}` : '',
+                links: chunk.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    path: `/subcategory/${item.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
+                }))
+            });
+        }
+    }
+
+    return columns;
+};
 
 const Header = () => {
     const { cart } = useContext(CartContext);
     const { user, logout } = useContext(AuthContext);
     const totalItemsInCart = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [activeCategoryName, setActiveCategoryName] = useState(null);
 
-    const [activeCategory, setActiveCategory] = useState(null);
+    // 1. Fetch main categories when the component first loads
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axiosInstance.get('/api/v1/product/categories');
+                const apiCategories = response.data.data || [];
 
-    const handleMouseEnter = (categoryName) => {
-        setActiveCategory(categoryName);
+                const formattedCategories = apiCategories.map(cat => ({
+                    id: cat.id,
+                    name: cat.name,
+                    path: `/category/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`,
+                    color: categoryUIColors[cat.name] || '#78909C', // Assign color or a default
+                    subcategories: null, // Subcategories are initially null
+                    areSubcategoriesFetched: false, // A flag to prevent re-fetching
+                }));
+                setCategories(formattedCategories);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                toast.error("Could not load categories.");
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+        fetchCategories();
+    }, []); // Empty array ensures this runs only once on mount
+
+    // 2. Fetch subcategories on-demand when hovering
+    const handleMouseEnter = async (categoryId) => {
+        const category = categories.find(cat => cat.id === categoryId);
+        if (!category) return;
+
+        setActiveCategoryName(category.name);
+
+        // Fetch only if we haven't already
+        if (!category.areSubcategoriesFetched) {
+            try {
+                const response = await axiosInstance.get(`/api/v1/product/subCategory/${categoryId}`);
+                const subCategoryData = response.data.data || [];
+                const parsedData = parseSubcategories(subCategoryData, category.name);
+
+                // Update the state with the newly fetched subcategory data
+                setCategories(prevCategories =>
+                    prevCategories.map(cat =>
+                        cat.id === categoryId
+                            ? { ...cat, subcategories: parsedData, areSubcategoriesFetched: true }
+                            : cat
+                    )
+                );
+            } catch (error) {
+                console.error(`Error fetching subcategories for ${category.name}:`, error);
+                // Mark as fetched even on error to prevent repeated failed API calls
+                setCategories(prevCategories =>
+                    prevCategories.map(cat =>
+                        cat.id === categoryId
+                            ? { ...cat, areSubcategoriesFetched: true }
+                            : cat
+                    )
+                );
+            }
+        }
     };
 
     const handleMouseLeave = () => {
-        setActiveCategory(null);
+        setActiveCategoryName(null);
     };
 
-    // Active category object for rendering the menu
-    const currentMenu = categories.find(cat => cat.name === activeCategory);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [dropdownRef]);
+    const activeCategoryData = categories.find(cat => cat.name === activeCategoryName);
 
     return (
         <header className="header-wrapper">
@@ -113,40 +156,34 @@ const Header = () => {
                     <Link to="/" className="logo">BrightnessBeauty</Link>
                     <Link to="/brands" className="brands-link">BRANDS</Link>
                 </div>
-
                 <div className="header-center">
                     <div className="search-bar-wrapper">
-                        <span className="search-icon">
+                         <span className="search-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                         </span>
                         <input type="text" placeholder="Search for Products, Brands..." />
                     </div>
                 </div>
-
                 <div className="header-right">
                     <Link to="/wishlist" className="header-action-btn btn-wishlist">WISHLIST</Link>
-
                     {user ? (
-                        <div className="user-menu-container" ref={dropdownRef}>
+                        <div className="user-menu-container">
                             <button
                                 className="header-action-btn btn-account"
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                             >
                                 MY ACCOUNT
                             </button>
-
-                            {isDropdownOpen && (
+                            {isUserDropdownOpen && (
                                 <div className="dropdown-menu">
-                                    {/* --- SIMPLIFIED LOGIC --- */}
                                     <Link
                                         to={user.role === 'ADMIN' ? '/admin' : '/dashboard'}
                                         className="dropdown-item"
-                                        onClick={() => setIsDropdownOpen(false)}
+                                        onClick={() => setIsUserDropdownOpen(false)}
                                     >
                                         Dashboard
                                     </Link>
-
-                                    <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="dropdown-item logout">
+                                    <button onClick={() => { logout(); setIsUserDropdownOpen(false); }} className="dropdown-item logout">
                                         Logout
                                     </button>
                                 </div>
@@ -155,7 +192,6 @@ const Header = () => {
                     ) : (
                         <Link to="/login" className="header-action-btn btn-login">LOGIN</Link>
                     )}
-
                     <Link to="/cart" className="header-action-btn btn-bag">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M3 6H21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                         <span>BAG</span>
@@ -164,54 +200,46 @@ const Header = () => {
                 </div>
             </div>
 
-            {/*<nav className="category-nav">
-                {categories.map((category) => (
-                    <Link
-                        key={category.name}
-                        to={category.path}
-                        className="category-link"
-                        style={{ backgroundColor: category.color }}
-                    >
-                        {category.name}
-                    </Link>
-                ))}
-            </nav>*/}
-
             <nav className="category-nav" onMouseLeave={handleMouseLeave}>
-                {categories.map((category) => (
-                    <div
-                        key={category.name}
-                        className="category-item-wrapper"
-                        onMouseEnter={() => handleMouseEnter(category.name)}
-                    >
-                        <Link
-                            to={category.path}
-                            className="category-link"
-                            style={{ backgroundColor: category.color }}
+                {loadingCategories ? (
+                    <p className="loading-text">Loading Categories...</p>
+                ) : (
+                    categories.map((category) => (
+                        <div
+                            key={category.id}
+                            className="category-item-wrapper"
+                            onMouseEnter={() => handleMouseEnter(category.id)}
                         >
-                            {category.name}
-                        </Link>
-                    </div>
-                ))}
+                            <Link
+                                to={category.path}
+                                className="category-link"
+                                style={{ backgroundColor: category.color }}
+                            >
+                                {category.name}
+                            </Link>
+                        </div>
+                    ))
+                )}
 
-                {/* --- RENDER THE MEGA MENU --- */}
-                {currentMenu && currentMenu.subcategories && (
+                {activeCategoryData && activeCategoryData.subcategories && (
                     <div className="mega-menu">
                         <div className="mega-menu-content">
-                            {currentMenu.subcategories.map((column) => (
-                                <div key={column.title} className="mega-menu-column">
-                                    <h4 className={column.isBrands ? 'column-title-brands' : 'column-title'}>
-                                        {column.title}
-                                    </h4>
-                                    <ul>
-                                        {column.links.map((link) => (
-                                            <li key={link.name}>
-                                                <Link to={link.path}>{link.name}</Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ))}
+                            {activeCategoryData.subcategories.length > 0 ? (
+                                activeCategoryData.subcategories.map((column) => (
+                                    <div key={column.title} className="mega-menu-column">
+                                        <h4 className="column-title">{column.title}</h4>
+                                        <ul>
+                                            {column.links.map((link) => (
+                                                <li key={link.id}>
+                                                    <Link to={link.path}>{link.name}</Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No subcategories found.</p>
+                            )}
                         </div>
                     </div>
                 )}
