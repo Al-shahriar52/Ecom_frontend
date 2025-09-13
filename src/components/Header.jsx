@@ -66,23 +66,7 @@ const Header = () => {
                             >
                                 MY ACCOUNT
                             </button>
-                            {/*{isDropdownOpen && (
-                                <div className="dropdown-menu">
-                                    {user.role === 'ADMIN' ? (
-                                        <>
-                                            <Link to="/admin/dashboard" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Admin Panel</Link>
-                                            <Link to="/admin/products" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Manage Products</Link>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Link to="/dashboard" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>Dashboard</Link>
-                                        </>
-                                    )}
-                                    <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="dropdown-item logout">
-                                        Logout
-                                    </button>
-                                </div>
-                            )}*/}
+
                             {isDropdownOpen && (
                                 <div className="dropdown-menu">
                                     {/* --- SIMPLIFIED LOGIC --- */}

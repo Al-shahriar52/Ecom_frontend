@@ -30,11 +30,24 @@ const Home = () => {
         fetchNewestArrivals();
     }, []);
 
+    const title = "✨ Our Newest Arrivals ✨";
     return (
         <div className="home-page">
             <HeroSlider />
             <div className="container">
-                <h1 className="home-title">✨ Our Newest Arrivals ✨</h1>
+                <div className="home-title-container">
+                    <h1 className="home-title" aria-label={title}>
+                        {title.split('').map((char, index) => (
+                            <span
+                                key={index}
+                                // We add a base delay so letters appear after the background starts revealing
+                                style={{ animationDelay: `${0.3 + index * 0.05}s` }}
+                            >
+                                {char}
+                            </span>
+                        ))}
+                    </h1>
+                </div>
                 {loading ? (
                     <p>Loading products...</p>
                 ) : (

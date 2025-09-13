@@ -1,8 +1,66 @@
-.home-title {
+.home-title-container {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
+}
+
+.home-title {
+    position: relative; /* Essential for positioning the pseudo-element */
+    display: inline-block; /* Fits the background to the text size */
+    color: #fff; /* Text color is now white to contrast with the background */
+    padding: 1rem 2rem; /* Adds space between text and background edges */
     font-size: 2.5rem;
-    color: var(--secondary-color);
+    z-index: 1; /* Puts the text on top of the pseudo-element */
+    cursor: default;
+}
+
+/* This is now the revealing background, not an underline */
+.home-title::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #AD1457, #6A1B9A, #1565C0);
+    border-radius: 8px; /* Optional: adds rounded corners to the background */
+    z-index: -1; /* Puts the background BEHIND the text */
+
+    /* Animation properties */
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: revealBackground 0.8s forwards cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* This targets each letter (span) inside the h1 */
+.home-title span {
+    display: inline-block;
+    opacity: 0;
+    animation: revealLetter 0.5s forwards;
+}
+
+
+/* --- Keyframe Animations (Updated names for clarity) --- */
+
+/* Animation for the letters to appear */
+@keyframes revealLetter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation for the background reveal */
+@keyframes revealBackground {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
 }
 
 .product-grid {

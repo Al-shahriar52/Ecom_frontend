@@ -119,26 +119,28 @@
 
 .category-nav {
     display: flex;
-    justify-content: flex-start;
-    gap: 12px;
+    justify-content: center; /* Centers the group of links */
+    align-items: center;     /* Aligns items vertically */
+    width: 100%;             /* Ensures the container uses the full width */
+    box-sizing: border-box;  /* Includes padding in the width calculation */
+    gap: 10px;               /* Sets the initial gap between items */
     border-top: 1px solid #f0f0f0;
-    padding: 15px 5%;
-    overflow-x: auto;
-    scrollbar-width: none;
+    padding: 15px 2%;        /* Use percentage for padding to make it responsive */
 }
-.category-nav::-webkit-scrollbar {
-    display: none;
-}
+
 .category-link {
-    flex-shrink: 0;
+    /* flex-shrink: 1 is the default, which we want. We just ensure flex-shrink: 0 is removed. */
+    white-space: nowrap; /* Crucial: Prevents text like "Personal care" from breaking into two lines */
     padding: 8px 18px;
     border-radius: 50px;
     color: white;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
+    text-align: center;
 }
+
 .category-link:hover {
     transform: translateY(-2px);
 }
@@ -184,4 +186,27 @@
 }
 .dropdown-item.logout:hover {
     background-color: #fbecec;
+}
+
+/* For smaller desktops and large tablets */
+@media (max-width: 1200px) {
+    .category-nav {
+        gap: 8px; /* Reduce the gap */
+    }
+    .category-link {
+        padding: 8px 12px; /* Reduce padding */
+        font-size: 13px;   /* Reduce font size */
+    }
+}
+
+/* For tablets */
+@media (max-width: 992px) {
+    .category-nav {
+        gap: 5px; /* Squeeze the gap even more */
+        padding: 15px 1%;
+    }
+    .category-link {
+        font-size: 12px;
+        padding: 7px 8px;
+    }
 }
