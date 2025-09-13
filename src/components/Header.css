@@ -16,7 +16,7 @@
     align-items: center;
     height: 80px;
     padding: 0 5%;
-    max-width: 1400px; /* Optional: Constrain max width for very large screens */
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -47,6 +47,16 @@
     display: flex;
     justify-content: center;
     padding: 0 2rem;
+}
+
+.search-bar-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    background-color: #f5f5f5;
+    border-radius: 50px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
 }
 
 .search-bar-wrapper:focus-within {
@@ -171,7 +181,7 @@
 }
 
 .dropdown-item.logout {
-    color: #D32F2F; /* A standard red color */
+    color: #D32F2F;
 }
 
 .dropdown-item.logout:hover {
@@ -179,41 +189,59 @@
 }
 
 /* ======================================== */
-/* CATEGORY NAVIGATION BAR              */
+/* CATEGORY NAVIGATION BAR (ICON LAYOUT)  */
 /* ======================================== */
 
 .category-nav {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
     width: 100%;
     box-sizing: border-box;
-    gap: 10px;
+    gap: 1px;
     border-top: 1px solid #f0f0f0;
-    padding: 15px 2%;
-    position: relative; /* Crucial for positioning the mega menu */
+    padding: 5px 2%;
+    position: relative;
 }
 
 .category-item-wrapper {
-    /* This wrapper helps manage the hover area correctly */
+    /* This wrapper helps manage the hover area */
 }
 
 .category-link {
-    white-space: nowrap;
-    padding: 8px 18px;
-    border-radius: 50px;
-    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    width: 100px;
     text-align: center;
-    display: block;
 }
 
 .category-link:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
+    background-color: #f5f5f5;
+}
+
+.category-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.category-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    white-space: normal;
+    line-height: 1.2;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .loading-text {
@@ -223,7 +251,7 @@
 }
 
 /* ======================================== */
-/* MEGA MENU DROPDOWN                   */
+/* MEGA MENU DROPDOWN (COMPACT)         */
 /* ======================================== */
 
 .mega-menu {
@@ -250,11 +278,11 @@
 .mega-menu-content {
     max-width: 1200px;
     margin: 0 auto;
-    /* Reduced vertical padding and gap between columns */
     padding: 1.5rem 15px;
     display: flex;
     justify-content: flex-start;
     gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .mega-menu-column {
@@ -263,7 +291,6 @@
 }
 
 .mega-menu-column .column-title {
-    /* Reduced font size and spacing */
     font-size: 0.85rem;
     font-weight: 700;
     color: #333;
@@ -285,14 +312,12 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    /* Reduced gap between links */
     gap: 0.5rem;
 }
 
 .mega-menu-column li a {
     text-decoration: none;
     color: #555;
-    /* Reduced font size */
     font-size: 0.9rem;
     transition: color 0.2s ease, padding-left 0.2s ease;
 }
@@ -300,34 +325,6 @@
 .mega-menu-column li a:hover {
     color: #000;
     padding-left: 5px;
-}
-
-.mega-menu-column .column-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #333;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #f0f0f0;
-    /* Add the line below */
-    min-height: 22px; /* Ensures consistent alignment */
-}
-
-/* Add this new rule for the empty titles */
-.mega-menu-column .column-title:empty {
-    border: none;
-    margin-bottom: 0;
-}
-
-.search-bar-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    background-color: #f5f5f5;
-    border-radius: 50px;
-    border: 2px solid transparent;
-    transition: border-color 0.3s ease;
 }
 
 /* ======================================== */
@@ -338,17 +335,9 @@
     .header-center {
         padding: 0 1rem;
     }
-    .category-nav {
-        gap: 8px;
-    }
-    .category-link {
-        padding: 8px 12px;
-        font-size: 13px;
-    }
 }
 
 @media (max-width: 992px) {
-    /* Stack header items on tablet */
     .header-main {
         flex-wrap: wrap;
         height: auto;
@@ -362,25 +351,18 @@
     }
     .header-center {
         width: 100%;
-        order: 3; /* Move search bar to the bottom */
+        order: 3;
         padding: 15px 0 0 0;
         max-width: none;
     }
     .category-nav {
-        gap: 5px;
-        padding: 15px 1%;
-        /* Enable scrolling on smaller screens if categories don't fit */
         justify-content: flex-start;
+        flex-wrap: nowrap;
         overflow-x: auto;
-        scrollbar-width: none; /* Hide scrollbar for Firefox */
+        scrollbar-width: none;
     }
     .category-nav::-webkit-scrollbar {
-        display: none; /* Hide scrollbar for Webkit browsers */
-    }
-    .category-link {
-        font-size: 12px;
-        padding: 7px 10px;
-        flex-shrink: 0; /* Prevent shrinking when scrolling */
+        display: none;
     }
 }
 
@@ -393,7 +375,7 @@
         font-size: 12px;
     }
     .header-action-btn span {
-        display: none; /* Hide text on buttons on very small screens */
+        display: none;
     }
     .header-action-btn svg {
         margin: 0;
@@ -405,6 +387,6 @@
     }
     .btn-bag {
         position: relative;
-        padding: 8px; /* Make it a circle */
+        padding: 8px;
     }
 }

@@ -2,36 +2,22 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
-import axiosInstance from '../api/AxiosInstance'; // Ensure this is configured correctly
+import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
 import './Header.css';
 
-// This object only holds UI-specific data (colors) that doesn't come from your API.
-const categoryUIColors = {
-    'Makeup': '#AD1457',
-    'Skin': '#6A1B9A',
-    'Hair': '#00695C',
-    'Personal care': '#4A148C',
-    'Mom & Baby': '#1565C0',
-    'Fragrance': '#00695C',
-    'UNDERGARMENTS': '#1E88E5',
-    'Combo': '#2E7D32',
-    'Jewellery': '#8E24AA',
-    'CLEARANCE SALE': '#D81B60',
-    'Men': '#2E7D32',
-};
-
 /**
  * Parses a flat list of subcategories from the API into a multi-column structure.
- * It identifies column titles by checking if the name is in ALL CAPS.
+ * 1. It identifies column titles by checking if a name is in ALL CAPS.
+ * 2. If no titles are found, it splits the list into columns of max 8 items.
  * @param {Array} subCategoryData - The flat array from the subcategory API.
+ * @param {string} categoryName - The name of the parent category for fallback titles.
  * @returns {Array} An array of column objects for the mega menu.
  */
 const parseSubcategories = (subCategoryData, categoryName) => {
     const columns = [];
     let currentColumn = null;
 
-    // This first part of the logic handles data that already has titles (like for "Hair")
     subCategoryData.forEach(item => {
         const isTitle = item.name === item.name.toUpperCase() && item.name.length > 1;
 
@@ -50,14 +36,12 @@ const parseSubcategories = (subCategoryData, categoryName) => {
         }
     });
 
-    // --- THIS IS THE UPDATED FALLBACK LOGIC ---
-    // If no columns were created, we create them ourselves by splitting the list.
+    // Fallback logic: If no columns were created, create them by chunking the list.
     if (columns.length === 0 && subCategoryData.length > 0) {
         const chunkSize = 8; // Max items per column
         for (let i = 0; i < subCategoryData.length; i += chunkSize) {
             const chunk = subCategoryData.slice(i, i + chunkSize);
             columns.push({
-                // The first column gets a title; subsequent columns are untitled continuations.
                 title: i === 0 ? `Explore ${categoryName}` : '',
                 links: chunk.map(item => ({
                     id: item.id,
@@ -67,7 +51,6 @@ const parseSubcategories = (subCategoryData, categoryName) => {
             });
         }
     }
-
     return columns;
 };
 
@@ -81,7 +64,7 @@ const Header = () => {
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [activeCategoryName, setActiveCategoryName] = useState(null);
 
-    // 1. Fetch main categories when the component first loads
+    // Fetch main categories on component load
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -91,10 +74,10 @@ const Header = () => {
                 const formattedCategories = apiCategories.map(cat => ({
                     id: cat.id,
                     name: cat.name,
+                    iconUrl: cat.iconUrl,
                     path: `/category/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`,
-                    color: categoryUIColors[cat.name] || '#78909C', // Assign color or a default
-                    subcategories: null, // Subcategories are initially null
-                    areSubcategoriesFetched: false, // A flag to prevent re-fetching
+                    subcategories: null,
+                    areSubcategoriesFetched: false,
                 }));
                 setCategories(formattedCategories);
             } catch (error) {
@@ -105,23 +88,21 @@ const Header = () => {
             }
         };
         fetchCategories();
-    }, []); // Empty array ensures this runs only once on mount
+    }, []);
 
-    // 2. Fetch subcategories on-demand when hovering
+    // Fetch subcategories on-demand when hovering over a category
     const handleMouseEnter = async (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         if (!category) return;
 
         setActiveCategoryName(category.name);
 
-        // Fetch only if we haven't already
         if (!category.areSubcategoriesFetched) {
             try {
                 const response = await axiosInstance.get(`/api/v1/product/subCategory/${categoryId}`);
                 const subCategoryData = response.data.data || [];
                 const parsedData = parseSubcategories(subCategoryData, category.name);
 
-                // Update the state with the newly fetched subcategory data
                 setCategories(prevCategories =>
                     prevCategories.map(cat =>
                         cat.id === categoryId
@@ -131,7 +112,6 @@ const Header = () => {
                 );
             } catch (error) {
                 console.error(`Error fetching subcategories for ${category.name}:`, error);
-                // Mark as fetched even on error to prevent repeated failed API calls
                 setCategories(prevCategories =>
                     prevCategories.map(cat =>
                         cat.id === categoryId
@@ -158,7 +138,7 @@ const Header = () => {
                 </div>
                 <div className="header-center">
                     <div className="search-bar-wrapper">
-                         <span className="search-icon">
+                        <span className="search-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                         </span>
                         <input type="text" placeholder="Search for Products, Brands..." />
@@ -168,19 +148,12 @@ const Header = () => {
                     <Link to="/wishlist" className="header-action-btn btn-wishlist">WISHLIST</Link>
                     {user ? (
                         <div className="user-menu-container">
-                            <button
-                                className="header-action-btn btn-account"
-                                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                            >
+                            <button className="header-action-btn btn-account" onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>
                                 MY ACCOUNT
                             </button>
                             {isUserDropdownOpen && (
                                 <div className="dropdown-menu">
-                                    <Link
-                                        to={user.role === 'ADMIN' ? '/admin' : '/dashboard'}
-                                        className="dropdown-item"
-                                        onClick={() => setIsUserDropdownOpen(false)}
-                                    >
+                                    <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="dropdown-item" onClick={() => setIsUserDropdownOpen(false)}>
                                         Dashboard
                                     </Link>
                                     <button onClick={() => { logout(); setIsUserDropdownOpen(false); }} className="dropdown-item logout">
@@ -205,17 +178,10 @@ const Header = () => {
                     <p className="loading-text">Loading Categories...</p>
                 ) : (
                     categories.map((category) => (
-                        <div
-                            key={category.id}
-                            className="category-item-wrapper"
-                            onMouseEnter={() => handleMouseEnter(category.id)}
-                        >
-                            <Link
-                                to={category.path}
-                                className="category-link"
-                                style={{ backgroundColor: category.color }}
-                            >
-                                {category.name}
+                        <div key={category.id} className="category-item-wrapper" onMouseEnter={() => handleMouseEnter(category.id)}>
+                            <Link to={category.path} className="category-link">
+                                <img src={category.iconUrl} alt={category.name} className="category-icon" />
+                                <span className="category-name">{category.name}</span>
                             </Link>
                         </div>
                     ))
@@ -230,7 +196,7 @@ const Header = () => {
                                         <h4 className="column-title">{column.title}</h4>
                                         <ul>
                                             {column.links.map((link) => (
-                                                <li key={link.id}>
+                                                <li key={link.id || link.name}>
                                                     <Link to={link.path}>{link.name}</Link>
                                                 </li>
                                             ))}
