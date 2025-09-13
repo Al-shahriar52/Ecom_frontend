@@ -337,56 +337,75 @@
     }
 }
 
+/* --- Styles for Tablet Screens --- */
 @media (max-width: 992px) {
     .header-main {
-        flex-wrap: wrap;
+        flex-wrap: wrap; /* Allows items to wrap to the next line */
         height: auto;
         padding: 15px 5%;
     }
+
     .header-left, .header-right {
         width: 50%;
     }
+
     .header-right {
         justify-content: flex-end;
     }
+
     .header-center {
         width: 100%;
         order: 3;
         padding: 15px 0 0 0;
         max-width: none;
     }
+
     .category-nav {
         justify-content: flex-start;
         flex-wrap: nowrap;
         overflow-x: auto;
         scrollbar-width: none;
     }
+
     .category-nav::-webkit-scrollbar {
         display: none;
     }
 }
 
-@media (max-width: 480px) {
+/* --- NEW Styles for Mobile Screens to Prevent Overlap --- */
+@media (max-width: 600px) {
+    .header-left, .header-right {
+        width: auto; /* Remove the rigid 50% width */
+    }
+
+    .header-left {
+        flex-grow: 1; /* Allow the logo area to take available space */
+    }
+
     .logo {
-        font-size: 28px;
+        font-size: 24px; /* Make the logo smaller */
     }
-    .header-action-btn {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
+
+    /* Hide text on buttons, showing only icons */
     .header-action-btn span {
         display: none;
     }
-    .header-action-btn svg {
-        margin: 0;
+
+    .header-action-btn {
+        padding: 8px; /* Reduce padding for smaller buttons */
+        font-size: 12px;
     }
+
+    .btn-bag {
+        position: relative;
+    }
+
     .cart-item-count {
         position: absolute;
         top: 0;
         right: 0;
-    }
-    .btn-bag {
-        position: relative;
-        padding: 8px;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
     }
 }
