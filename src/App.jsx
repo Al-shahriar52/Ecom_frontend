@@ -47,7 +47,7 @@ function App() {
                     <Toaster position="top-center" reverseOrder={false} />
                     <Header />
                     <FloatingCartButton />
-                    <main className="container">
+                    <main>
                         <Routes>
                             {/* --- Public Routes --- */}
                             <Route path="/" element={<Home />} />
