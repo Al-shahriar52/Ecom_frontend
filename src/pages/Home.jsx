@@ -30,22 +30,37 @@ const Home = () => {
         fetchNewestArrivals();
     }, []);
 
-    const title = "✨ Our Newest Arrivals ✨";
+    const title = "Our Newest Arrivals";
     return (
         <div className="home-page">
             <HeroSlider />
             <div className="container">
                 <div className="home-title-container">
                     <h1 className="home-title" aria-label={title}>
-                        {title.split('').map((char, index) => (
-                            <span
-                                key={index}
-                                // We add a base delay so letters appear after the background starts revealing
-                                style={{ animationDelay: `${0.3 + index * 0.05}s` }}
-                            >
-                                {char}
-                            </span>
-                        ))}
+                        <div className="side-arrow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 5V19" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M19 12L12 19L5 12" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
+
+                        <span className="animated-title-text">
+                            {title.split('').map((char, index) => (
+                                <span
+                                    key={index}
+                                    style={{ animationDelay: `${0.5 + index * 0.05}s` }}
+                                >
+                                    {char === ' ' ? '\u00A0' : char}
+                                </span>
+                            ))}
+                        </span>
+
+                        <div className="side-arrow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 5V19" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M19 12L12 19L5 12" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </div>
                     </h1>
                 </div>
                 {loading ? (
