@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
@@ -8,11 +8,6 @@ import './Header.css';
 
 /**
  * Parses a flat list of subcategories from the API into a multi-column structure.
- * 1. It identifies column titles by checking if a name is in ALL CAPS.
- * 2. If no titles are found, it splits the list into columns of max 8 items.
- * @param {Array} subCategoryData - The flat array from the subcategory API.
- * @param {string} categoryName - The name of the parent category for fallback titles.
- * @returns {Array} An array of column objects for the mega menu.
  */
 const parseSubcategories = (subCategoryData, categoryName) => {
     const columns = [];
@@ -22,10 +17,7 @@ const parseSubcategories = (subCategoryData, categoryName) => {
         const isTitle = item.name === item.name.toUpperCase() && item.name.length > 1;
 
         if (isTitle) {
-            currentColumn = {
-                title: item.name,
-                links: [],
-            };
+            currentColumn = { title: item.name, links: [] };
             columns.push(currentColumn);
         } else if (currentColumn) {
             currentColumn.links.push({
@@ -36,9 +28,8 @@ const parseSubcategories = (subCategoryData, categoryName) => {
         }
     });
 
-    // Fallback logic: If no columns were created, create them by chunking the list.
     if (columns.length === 0 && subCategoryData.length > 0) {
-        const chunkSize = 8; // Max items per column
+        const chunkSize = 8;
         for (let i = 0; i < subCategoryData.length; i += chunkSize) {
             const chunk = subCategoryData.slice(i, i + chunkSize);
             columns.push({
@@ -65,7 +56,23 @@ const Header = () => {
     const [activeCategoryName, setActiveCategoryName] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Fetch main categories on component load
+    // --- ADDED --- Ref for the dropdown menu
+    const dropdownRef = useRef(null);
+
+    // --- ADDED --- useEffect to handle clicks outside the dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsUserDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownRef]);
+
+
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -91,19 +98,15 @@ const Header = () => {
         fetchCategories();
     }, []);
 
-    // Fetch subcategories on-demand when hovering over a category
     const handleMouseEnter = async (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         if (!category) return;
-
         setActiveCategoryName(category.name);
-
         if (!category.areSubcategoriesFetched) {
             try {
                 const response = await axiosInstance.get(`/api/v1/product/subCategory/${categoryId}`);
                 const subCategoryData = response.data.data || [];
                 const parsedData = parseSubcategories(subCategoryData, category.name);
-
                 setCategories(prevCategories =>
                     prevCategories.map(cat =>
                         cat.id === categoryId
@@ -132,7 +135,6 @@ const Header = () => {
 
     return (
         <header className="header-wrapper">
-            {/* --- NEW --- Overlay and Side Navigation Panel for Mobile */}
             {isMobileMenuOpen && <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
             <div className={`mobile-sidenav ${isMobileMenuOpen ? 'open' : ''}`}>
                 <div className="sidenav-header">
@@ -159,53 +161,54 @@ const Header = () => {
 
             <div className="header-main">
                 <div className="header-left">
-                    {/* --- NEW --- Hamburger button, visible only on mobile */}
                     <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(true)}>
                         &#9776;
                     </button>
                     <Link to="/" className="logo">BrightnessBeauty</Link>
-                    {/* Added 'desktop-only' class to hide on mobile */}
                     <Link to="/brands" className="brands-link desktop-only">BRANDS</Link>
                 </div>
 
-                {/* Added 'desktop-only' class to hide on mobile */}
                 <div className="header-center desktop-only">
                     <div className="search-bar-wrapper">
-                        <span className="search-icon">{/* ... svg ... */}</span>
+                        <span className="search-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
+                        </span>
                         <input type="text" placeholder="Search for Products, Brands..." />
                     </div>
                 </div>
 
                 <div className="header-right">
-                    {/* Added 'desktop-only' class to hide on mobile */}
                     <Link to="/wishlist" className="header-action-btn btn-wishlist desktop-only">WISHLIST</Link>
-
-                    {/* Added 'desktop-only' class to hide on mobile */}
                     <div className="desktop-only">
                         {user ? (
-                            <div className="user-menu-container">
+                            // --- ADDED --- ref is attached here
+                            <div className="user-menu-container" ref={dropdownRef}>
                                 <button className="header-action-btn btn-account" onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>
                                     MY ACCOUNT
                                 </button>
                                 {isUserDropdownOpen && (
-                                    <div className="dropdown-menu">{/* ... dropdown content ... */}</div>
+                                    <div className="dropdown-menu">
+                                        <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="dropdown-item" onClick={() => setIsUserDropdownOpen(false)}>
+                                            Dashboard
+                                        </Link>
+                                        <button onClick={() => { logout(); setIsUserDropdownOpen(false); }} className="dropdown-item logout">
+                                            Logout
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         ) : (
                             <Link to="/login" className="header-action-btn btn-login">LOGIN</Link>
                         )}
                     </div>
-
-                    {/* Cart button remains visible on all screen sizes */}
                     <Link to="/cart" className="header-action-btn btn-bag">
-                        <svg width="20" height="20" viewBox="0 0 24 24">{/* ... svg ... */}</svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M3 6H21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                         <span className="cart-text">BAG</span>
                         <span className="cart-item-count">{totalItemsInCart}</span>
                     </Link>
                 </div>
             </div>
 
-            {/* Added 'desktop-only' class to hide the entire category nav on mobile */}
             <nav className="category-nav desktop-only" onMouseLeave={handleMouseLeave}>
                 {loadingCategories ? (
                     <p className="loading-text">Loading Categories...</p>
