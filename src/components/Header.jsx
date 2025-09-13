@@ -6,17 +6,72 @@ import { AuthContext } from '../context/AuthContext';
 import './Header.css';
 
 const categories = [
-    { name: 'Makeup', path: '/category/makeup', color: '#6A1B9A' },
-    { name: 'Skin', path: '/category/skin', color: '#4A148C' },
-    { name: 'Personal care', path: '/category/personal-care', color: '#AD1457' },
+    {
+        name: 'Makeup',
+        path: '/category/makeup',
+        color: '#AD1457', // Changed color for visual variety
+        subcategories: [
+            {
+                title: 'FACE',
+                links: [
+                    { name: 'Face Primer', path: '/subcategory/face-primer' },
+                    { name: 'Concealer', path: '/subcategory/concealer' },
+                    { name: 'Foundation', path: '/subcategory/foundation' },
+                    { name: 'Compact & Pressed Powder', path: '/subcategory/compact-powder' },
+                    { name: 'Contour', path: '/subcategory/contour' },
+                    { name: 'Loose Powder', path: '/subcategory/loose-powder' },
+                    { name: 'Blush', path: '/subcategory/blush' },
+                ],
+            },
+            {
+                title: 'EYES',
+                links: [
+                    { name: 'Kajal', path: '/subcategory/kajal' },
+                    { name: 'Eyeliner', path: '/subcategory/eyeliner' },
+                    { name: 'Mascara', path: '/subcategory/mascara' },
+                    { name: 'Eye Shadow', path: '/subcategory/eye-shadow' },
+                    { name: 'Eye Brow Enhancers', path: '/subcategory/eye-brow' },
+                    { name: 'False Eyelashes', path: '/subcategory/false-eyelashes' },
+                ],
+            },
+            {
+                title: 'LIPS',
+                links: [
+                    { name: 'Lipstick', path: '/subcategory/lipstick' },
+                    { name: 'Liquid Lipsticks', path: '/subcategory/liquid-lipsticks' },
+                    { name: 'Lip Crayon', path: '/subcategory/lip-crayon' },
+                    { name: 'Lip Gloss', path: '/subcategory/lip-gloss' },
+                    { name: 'Lip Liner', path: '/subcategory/lip-liner' },
+                ],
+            },
+            {
+                title: 'TOOLS & BRUSHES',
+                links: [
+                    { name: 'Face Brush', path: '/subcategory/face-brush' },
+                    { name: 'Eye Brush', path: '/subcategory/eye-brush' },
+                    { name: 'Lip Brush', path: '/subcategory/lip-brush' },
+                    { name: 'Brush Sets', path: '/subcategory/brush-sets' },
+                ],
+            },
+            {
+                title: 'TOP BRANDS',
+                isBrands: true, // Special flag for styling
+                links: [
+                    { name: 'L\'Oreal', path: '/brand/loreal' },
+                    { name: 'MAC', path: '/brand/mac' },
+                    { name: 'The Body Shop', path: '/brand/the-body-shop' },
+                ],
+            },
+        ],
+    },
+    { name: 'Skin', path: '/category/skin', color: '#6A1B9A' }, // This one has no subcategories
+    { name: 'Personal care', path: '/category/personal-care', color: '#4A148C' },
     { name: 'Mom & Baby', path: '/category/mom-baby', color: '#1565C0' },
     { name: 'Fragrance', path: '/category/fragrance', color: '#00695C' },
-    { name: 'UNDERGARMENTS', path: '/category/undergarments', color: '#1E88E5' },
-    { name: 'LIPSTICK WEEK', path: '/category/lipstick-week', color: '#D81B60' },
-    { name: 'JEWELLERY', path: '/category/jewellery', color: '#8E24AA' },
-    { name: 'CLEARANCE SALE', path: '/category/sale', color: '#00897B' },
+    { name: 'CLEARANCE SALE', path: '/category/sale', color: '#D81B60' },
     { name: 'MEN', path: '/category/men', color: '#2E7D32' },
 ];
+
 
 const Header = () => {
     const { cart } = useContext(CartContext);
@@ -25,6 +80,19 @@ const Header = () => {
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+
+    const [activeCategory, setActiveCategory] = useState(null);
+
+    const handleMouseEnter = (categoryName) => {
+        setActiveCategory(categoryName);
+    };
+
+    const handleMouseLeave = () => {
+        setActiveCategory(null);
+    };
+
+    // Active category object for rendering the menu
+    const currentMenu = categories.find(cat => cat.name === activeCategory);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -96,7 +164,7 @@ const Header = () => {
                 </div>
             </div>
 
-            <nav className="category-nav">
+            {/*<nav className="category-nav">
                 {categories.map((category) => (
                     <Link
                         key={category.name}
@@ -107,6 +175,46 @@ const Header = () => {
                         {category.name}
                     </Link>
                 ))}
+            </nav>*/}
+
+            <nav className="category-nav" onMouseLeave={handleMouseLeave}>
+                {categories.map((category) => (
+                    <div
+                        key={category.name}
+                        className="category-item-wrapper"
+                        onMouseEnter={() => handleMouseEnter(category.name)}
+                    >
+                        <Link
+                            to={category.path}
+                            className="category-link"
+                            style={{ backgroundColor: category.color }}
+                        >
+                            {category.name}
+                        </Link>
+                    </div>
+                ))}
+
+                {/* --- RENDER THE MEGA MENU --- */}
+                {currentMenu && currentMenu.subcategories && (
+                    <div className="mega-menu">
+                        <div className="mega-menu-content">
+                            {currentMenu.subcategories.map((column) => (
+                                <div key={column.title} className="mega-menu-column">
+                                    <h4 className={column.isBrands ? 'column-title-brands' : 'column-title'}>
+                                        {column.title}
+                                    </h4>
+                                    <ul>
+                                        {column.links.map((link) => (
+                                            <li key={link.name}>
+                                                <Link to={link.path}>{link.name}</Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </nav>
         </header>
     );
