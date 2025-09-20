@@ -320,3 +320,215 @@ body.mobile-menu-open .mobile-menu-overlay {
     .cart-text { display: none; }
     .btn-bag { padding: 12px; }
 }
+
+/* ======================================== */
+/* --- NEW --- BRANDS MEGA MENU STYLES  */
+/* ======================================== */
+.brands-link-wrapper {
+
+}
+
+.brands-mega-menu {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 1200px;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1001; /* <--- CORRECTED VALUE */
+    border-top: 1px solid #f0f0f0;
+    border-radius: 0 0 8px 8px;
+}
+
+.brands-mega-menu-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 15px;
+    display: flex;
+    gap: 2rem;
+    height: 75vh;
+    max-height: 650px;
+}
+
+.brands-menu-left {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid #f0f0f0;
+    padding-right: 1.5rem;
+}
+.brand-section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 0.5rem;
+    margin: 1.5rem 0 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Style for the first title to remove extra top margin */
+.brand-section:first-child .brand-section-title {
+    margin-top: 0;
+}
+
+.brand-letter-title {
+    font-size: 1rem;
+    color: #E91E63;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.brand-product-count {
+    background-color: #f0f0f0;
+    color: #555;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.brand-section li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    text-decoration: none;
+    color: #555;
+}
+.brand-section li a:hover {
+    color: #000;
+}
+
+/* This was .brand-group ul, now it applies to all */
+.brand-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.brand-list-header a {
+    text-decoration: none;
+    font-weight: 600;
+    color: #333;
+}
+.brand-list-header a:hover {
+    color: #E91E63;
+}
+
+.brand-list-scrollable {
+    overflow-y: auto;
+    padding-top: 1rem;
+}
+
+.brand-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.brand-letter-title {
+    font-size: 1rem;
+    color: #E91E63;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.brand-group li a {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    text-decoration: none;
+    color: #555;
+}
+.brand-group li a:hover {
+    color: #000;
+}
+.brand-group li a span {
+    color: #999;
+}
+
+/* Right Side (Logo Grid) */
+.brands-menu-right {
+    flex: 3;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.alphabet-index {
+    display: flex;
+    flex-direction: column;
+    padding-right: 1.5rem;
+    border-right: 1px solid #f0f0f0;
+    justify-content: space-between;
+}
+.alphabet-index a {
+    text-decoration: none;
+    color: #777;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.alphabet-index a:hover {
+    color: #000;
+}
+
+.top-brands-grid {
+    width: 100%;
+}
+.top-brands-grid h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+.logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+}
+.brand-logo-item {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    transition: box-shadow 0.2s ease;
+}
+.brand-logo-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.brand-logo-item img {
+    width: 100%;
+    height: 60px;
+    object-fit: contain;
+}
+.brand-logo-item p {
+    margin: 10px 0 0 0;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ======================================== */
+/* --- NEW --- Responsive Height Fix      */
+/* ======================================== */
+
+/* For screens that are not very tall */
+@media (max-height: 750px) {
+    .brands-mega-menu-content {
+        padding: 1rem 15px;
+    }
+
+    .alphabet-index {
+        padding-right: 1rem;
+    }
+
+    .alphabet-index a {
+        font-size: 0.85rem;
+    }
+}
+
+/* For very short screens */
+@media (max-height: 650px) {
+    .alphabet-index a {
+        font-size: 0.80rem;
+    }
+}

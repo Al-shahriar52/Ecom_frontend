@@ -1,4 +1,5 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+
+import React, { useState, useContext, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
@@ -12,10 +13,8 @@ import './Header.css';
 const parseSubcategories = (subCategoryData, categoryName) => {
     const columns = [];
     let currentColumn = null;
-
     subCategoryData.forEach(item => {
         const isTitle = item.name === item.name.toUpperCase() && item.name.length > 1;
-
         if (isTitle) {
             currentColumn = { title: item.name, links: [] };
             columns.push(currentColumn);
@@ -27,7 +26,6 @@ const parseSubcategories = (subCategoryData, categoryName) => {
             });
         }
     });
-
     if (columns.length === 0 && subCategoryData.length > 0) {
         const chunkSize = 8;
         for (let i = 0; i < subCategoryData.length; i += chunkSize) {
@@ -55,11 +53,13 @@ const Header = () => {
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [activeCategoryName, setActiveCategoryName] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isBrandMenuOpen, setIsBrandMenuOpen] = useState(false);
+    const [brandMenuData, setBrandMenuData] = useState(null);
+    const [isLoadingBrands, setIsLoadingBrands] = useState(false);
+    const brandMenuTimeoutRef = useRef(null);
 
-    // --- ADDED --- Ref for the dropdown menu
     const dropdownRef = useRef(null);
 
-    // --- ADDED --- useEffect to handle clicks outside the dropdown
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -72,13 +72,11 @@ const Header = () => {
         };
     }, [dropdownRef]);
 
-
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const response = await axiosInstance.get('/api/v1/product/categories');
                 const apiCategories = response.data.data || [];
-
                 const formattedCategories = apiCategories.map(cat => ({
                     id: cat.id,
                     name: cat.name,
@@ -98,7 +96,33 @@ const Header = () => {
         fetchCategories();
     }, []);
 
-    const handleMouseEnter = async (categoryId) => {
+    const handleBrandMouseEnter = async () => {
+        // Clear any pending timer to close the menu
+        clearTimeout(brandMenuTimeoutRef.current);
+
+        setIsBrandMenuOpen(true);
+        if (!brandMenuData && !isLoadingBrands) {
+            setIsLoadingBrands(true);
+            try {
+                const response = await axiosInstance.get('/api/v1/product/brandMenu');
+                setBrandMenuData(response.data.data);
+            } catch (error) {
+                console.error("Error fetching brand menu:", error);
+                toast.error("Could not load brands.");
+            } finally {
+                setIsLoadingBrands(false);
+            }
+        }
+    };
+
+    const handleBrandMouseLeave = () => {
+        // Set a timer to close the menu after a short delay
+        brandMenuTimeoutRef.current = setTimeout(() => {
+            setIsBrandMenuOpen(false);
+        }, 150); // 150ms delay
+    };
+
+    const handleCategoryMouseEnter = async (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         if (!category) return;
         setActiveCategoryName(category.name);
@@ -127,10 +151,26 @@ const Header = () => {
         }
     };
 
-    const handleMouseLeave = () => {
+    const handleCategoryMouseLeave = () => {
         setActiveCategoryName(null);
     };
 
+    const groupedBrands = useMemo(() => {
+        if (!brandMenuData?.allBrands) return {};
+        return brandMenuData.allBrands.reduce((acc, brand) => {
+            let firstChar = brand.name.charAt(0).toUpperCase();
+            if (!/[A-Z]/.test(firstChar)) {
+                firstChar = '#';
+            }
+            if (!acc[firstChar]) {
+                acc[firstChar] = [];
+            }
+            acc[firstChar].push(brand);
+            return acc;
+        }, {});
+    }, [brandMenuData]);
+
+    const alphabet = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
     const activeCategoryData = categories.find(cat => cat.name === activeCategoryName);
 
     return (
@@ -161,18 +201,22 @@ const Header = () => {
 
             <div className="header-main">
                 <div className="header-left">
-                    <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(true)}>
-                        &#9776;
-                    </button>
+                    <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(true)}>&#9776;</button>
                     <Link to="/" className="logo">BrightnessBeauty</Link>
-                    <Link to="/brands" className="brands-link desktop-only">BRANDS</Link>
+
+                    {/* --- FIXED --- This wrapper now contains the menu to solve the hover issue */}
+                    <div
+                        className="brands-link-wrapper desktop-only"
+                        onMouseEnter={handleBrandMouseEnter}
+                        onMouseLeave={handleBrandMouseLeave}
+                    >
+                        <Link to="/brands" className="brands-link">BRANDS</Link>
+                    </div>
                 </div>
 
                 <div className="header-center desktop-only">
                     <div className="search-bar-wrapper">
-                        <span className="search-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
-                        </span>
+                        <span className="search-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg></span>
                         <input type="text" placeholder="Search for Products, Brands..." />
                     </div>
                 </div>
@@ -181,19 +225,12 @@ const Header = () => {
                     <Link to="/wishlist" className="header-action-btn btn-wishlist desktop-only">WISHLIST</Link>
                     <div className="desktop-only">
                         {user ? (
-                            // --- ADDED --- ref is attached here
                             <div className="user-menu-container" ref={dropdownRef}>
-                                <button className="header-action-btn btn-account" onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>
-                                    MY ACCOUNT
-                                </button>
+                                <button className="header-action-btn btn-account" onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>MY ACCOUNT</button>
                                 {isUserDropdownOpen && (
                                     <div className="dropdown-menu">
-                                        <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="dropdown-item" onClick={() => setIsUserDropdownOpen(false)}>
-                                            Dashboard
-                                        </Link>
-                                        <button onClick={() => { logout(); setIsUserDropdownOpen(false); }} className="dropdown-item logout">
-                                            Logout
-                                        </button>
+                                        <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="dropdown-item" onClick={() => setIsUserDropdownOpen(false)}>Dashboard</Link>
+                                        <button onClick={() => { logout(); setIsUserDropdownOpen(false); }} className="dropdown-item logout">Logout</button>
                                     </div>
                                 )}
                             </div>
@@ -209,12 +246,12 @@ const Header = () => {
                 </div>
             </div>
 
-            <nav className="category-nav desktop-only" onMouseLeave={handleMouseLeave}>
+            <nav className="category-nav desktop-only" onMouseLeave={handleCategoryMouseLeave}>
                 {loadingCategories ? (
                     <p className="loading-text">Loading Categories...</p>
                 ) : (
                     categories.map((category) => (
-                        <div key={category.id} className="category-item-wrapper" onMouseEnter={() => handleMouseEnter(category.id)}>
+                        <div key={category.id} className="category-item-wrapper" onMouseEnter={() => handleCategoryMouseEnter(category.id)}>
                             <Link to={category.path} className="category-link">
                                 <img src={category.iconUrl} alt={category.name} className="category-icon" />
                                 <span className="category-name">{category.name}</span>
@@ -246,6 +283,78 @@ const Header = () => {
                     </div>
                 )}
             </nav>
+            {isBrandMenuOpen && (
+                <div className="brands-mega-menu"
+                     onMouseEnter={handleBrandMouseEnter} // <-- ADD THIS LINE
+                     onMouseLeave={handleBrandMouseLeave}
+                >
+                    {isLoadingBrands ? (
+                        <p className="loading-text">Loading Brands...</p>
+                    ) : brandMenuData && (
+                        <div className="brands-mega-menu-content">
+                            <div className="brands-menu-left">
+
+                                {/* --- NEW STRUCTURE FOR THE LEFT COLUMN --- */}
+                                <div className="brand-list-scrollable">
+
+                                    {/* Top Brands Section */}
+                                    <div className="brand-section">
+                                        <h4 className="brand-section-title">TOP BRANDS</h4>
+                                        <ul>
+                                            {brandMenuData.topBrands.map(brand => (
+                                                <li key={brand.id}>
+                                                    <Link to={`/brand/${brand.slug}`}>
+                                                        {brand.name}
+                                                        <span className="brand-product-count">{brand.productCount}</span>
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    {/* All Brands Section */}
+                                    <div className="brand-section">
+                                        <h4 className="brand-section-title">ALL BRANDS</h4>
+                                        {Object.keys(groupedBrands).sort().map(letter => (
+                                            <div key={letter} className="brand-group" id={`brand-group-${letter}`}>
+                                                <h5 className="brand-letter-title">{letter}</h5>
+                                                <ul>
+                                                    {groupedBrands[letter].map(brand => (
+                                                        <li key={brand.id}>
+                                                            <Link to={`/brand/${brand.slug}`}>
+                                                                {brand.name}
+                                                                <span className="brand-product-count">{brand.productCount}</span>
+                                                            </Link>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="brands-menu-right">
+                                <div className="alphabet-index">
+                                    {alphabet.map(char => (
+                                        <a href={`#brand-group-${char}`} key={char}>{char}</a>
+                                    ))}
+                                </div>
+                                <div className="top-brands-grid">
+                                    <h4>TOP BRANDS</h4>
+                                    <div className="logo-grid">
+                                        {brandMenuData.topBrands.map(brand => (
+                                            <Link to={`/brand/${brand.slug}`} key={brand.id} className="brand-logo-item">
+                                                <img src={brand.logoUrl} alt={brand.name} />
+                                                <p>{brand.name}</p>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </header>
     );
 };
