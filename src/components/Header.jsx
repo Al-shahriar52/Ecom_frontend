@@ -1,6 +1,6 @@
 
 import React, { useState, useContext, useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import axiosInstance from '../api/AxiosInstance';
@@ -57,6 +57,14 @@ const Header = () => {
     const [brandMenuData, setBrandMenuData] = useState(null);
     const [isLoadingBrands, setIsLoadingBrands] = useState(false);
     const brandMenuTimeoutRef = useRef(null);
+    const navigate = useNavigate();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+    const searchRef = useRef(null);
+    const [searchPageNo, setSearchPageNo] = useState(0);
+    const [hasMoreSearchResults, setHasMoreSearchResults] = useState(false);
 
     const dropdownRef = useRef(null);
 
@@ -122,6 +130,9 @@ const Header = () => {
         }, 150); // 150ms delay
     };
 
+    const alphabet = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
+    const activeCategoryData = categories.find(cat => cat.name === activeCategoryName);
+
     const handleCategoryMouseEnter = async (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
         if (!category) return;
@@ -170,8 +181,94 @@ const Header = () => {
         }, {});
     }, [brandMenuData]);
 
-    const alphabet = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
-    const activeCategoryData = categories.find(cat => cat.name === activeCategoryName);
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setSearchResults([]);
+            setIsSearchDropdownOpen(false);
+            return;
+        }
+
+        // Reset pagination for a new search term
+        setSearchResults([]);
+        setSearchPageNo(0);
+        setHasMoreSearchResults(true);
+
+        setIsSearchLoading(true);
+        setIsSearchDropdownOpen(true);
+
+        const debounceTimer = setTimeout(() => {
+            const fetchSearchResults = async () => {
+                try {
+                    const params = { query: searchQuery, pageSize: 10, pageNo: 0 }; // Start at page 0
+                    const response = await axiosInstance.get('/api/v1/product/search', { params });
+                    const data = response.data.data;
+                    setSearchResults(data.content || []);
+                    setHasMoreSearchResults(!data.last); // Check if this is the last page
+                } catch (error) {
+                    console.error("Error fetching search results:", error);
+                    toast.error("Could not fetch search results.");
+                } finally {
+                    setIsSearchLoading(false);
+                }
+            };
+            fetchSearchResults();
+        }, 300);
+
+        return () => clearTimeout(debounceTimer);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Check if the click is outside the search bar wrapper
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setIsSearchDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [searchRef]); // The dependency is the searchRef
+
+
+    const fetchMoreSearchResults = async () => {
+        if (isSearchLoading || !hasMoreSearchResults) return;
+
+        setIsSearchLoading(true);
+        const nextPage = searchPageNo + 1;
+
+        try {
+            const params = { query: searchQuery, pageSize: 10, pageNo: nextPage };
+            const response = await axiosInstance.get('/api/v1/product/search', { params });
+            const data = response.data.data;
+            // Append new results to the existing list
+            setSearchResults(prevResults => [...prevResults, ...(data.content || [])]);
+            setSearchPageNo(nextPage);
+            setHasMoreSearchResults(!data.last);
+        } catch (error) {
+            console.error("Error fetching more search results:", error);
+            toast.error("Could not load more results.");
+        } finally {
+            setIsSearchLoading(false);
+        }
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            setIsSearchDropdownOpen(false);
+            navigate(`/search?query=${searchQuery.trim()}`);
+            setSearchQuery('');
+        }
+    };
+
+    const handleScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        // Check if the user has scrolled to the bottom (with a small buffer)
+        if (scrollHeight - scrollTop <= clientHeight + 5) {
+            fetchMoreSearchResults();
+        }
+    };
 
     return (
         <header className="header-wrapper">
@@ -204,7 +301,6 @@ const Header = () => {
                     <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(true)}>&#9776;</button>
                     <Link to="/" className="logo">BrightnessBeauty</Link>
 
-                    {/* --- FIXED --- This wrapper now contains the menu to solve the hover issue */}
                     <div
                         className="brands-link-wrapper desktop-only"
                         onMouseEnter={handleBrandMouseEnter}
@@ -215,10 +311,41 @@ const Header = () => {
                 </div>
 
                 <div className="header-center desktop-only">
-                    <div className="search-bar-wrapper">
+                    <form className="search-bar-wrapper" ref={searchRef} onSubmit={handleSearchSubmit}>
                         <span className="search-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path><path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg></span>
-                        <input type="text" placeholder="Search for Products, Brands..." />
-                    </div>
+                        <input
+                            type="text"
+                            placeholder="Search for Products, Brands..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => searchQuery.trim() && setIsSearchDropdownOpen(true)}
+                        />
+
+                        {isSearchDropdownOpen && (searchResults.length > 0 || isSearchLoading) && (
+                            <div className="search-results-dropdown" onScroll={handleScroll}>
+                                <h4 className="search-results-title">PRODUCTS</h4>
+                                <ul className="search-results-list">
+                                    {searchResults.map(product => (
+                                        <li key={product.productId}>
+                                            <Link
+                                                to={`/product/${product.productId}`}
+                                                className="search-result-item"
+                                                onClick={() => setIsSearchDropdownOpen(false)}
+                                            >
+                                                <img src={product.imageUrl} alt={product.name} className="search-result-image" />
+                                                <div className="search-result-details">
+                                                    <span className="search-result-name">{product.name}</span>
+                                                    <span className="search-result-brand">{product.brandName}</span>
+                                                </div>
+                                                <span className="search-result-price">৳{product.discountedPrice}</span>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                    {isSearchLoading && <li className="loading-text">Loading more...</li>}
+                                </ul>
+                            </div>
+                        )}
+                    </form>
                 </div>
 
                 <div className="header-right">
@@ -285,7 +412,7 @@ const Header = () => {
             </nav>
             {isBrandMenuOpen && (
                 <div className="brands-mega-menu"
-                     onMouseEnter={handleBrandMouseEnter} // <-- ADD THIS LINE
+                     onMouseEnter={handleBrandMouseEnter}
                      onMouseLeave={handleBrandMouseLeave}
                 >
                     {isLoadingBrands ? (
@@ -294,7 +421,6 @@ const Header = () => {
                         <div className="brands-mega-menu-content">
                             <div className="brands-menu-left">
 
-                                {/* --- NEW STRUCTURE FOR THE LEFT COLUMN --- */}
                                 <div className="brand-list-scrollable">
 
                                     {/* Top Brands Section */}
