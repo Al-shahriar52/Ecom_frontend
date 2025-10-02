@@ -24,6 +24,8 @@ const BrandPage = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [selectedSubCategoryId, setSelectedSubCategoryId] = useState(null);
     const [selectedTagId, setSelectedTagId] = useState(null);
+    const [sortOption, setSortOption] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [expandedCategories, setExpandedCategories] = useState(new Set());
     const [brandSearchQuery, setBrandSearchQuery] = useState('');
     const [showAllBrands, setShowAllBrands] = useState(false);
@@ -35,7 +37,6 @@ const BrandPage = () => {
             const response = await axiosInstance.get(`/api/v1/product/filters`, { params });
             const data = response.data.data;
             setFilterData(data);
-
             if (data.minPrice != null && data.maxPrice != null) {
                 const initialRange = [data.minPrice, data.maxPrice];
                 setPriceRange(initialRange);
@@ -44,10 +45,9 @@ const BrandPage = () => {
         } catch (error) { console.error("Error fetching filter data:", error); }
     }, [selectedBrandId]);
 
-    // --- THIS IS THE FIX ---
-    // The fetchProducts function is simplified and no longer depends on filterData to prevent loops.
+    // --- THIS FUNCTION IS UPDATED ---
     const fetchProducts = useCallback(async (currentPage) => {
-        if (!debouncedPriceRange) return; // Don't fetch until price range is initialized
+        if (!debouncedPriceRange) return;
         if (loading && currentPage > 0) return;
         setLoading(true);
         try {
@@ -61,7 +61,16 @@ const BrandPage = () => {
                 subCategoryId: selectedSubCategoryId,
                 tagId: selectedTagId,
             };
+
+            // Updated logic to send sortBy and sortDir
+            if (sortOption) {
+                const [property, direction] = sortOption.split(',');
+                params.sortBy = property;
+                params.sortDir = direction;
+            }
+
             Object.keys(params).forEach(key => (params[key] == null) && delete params[key]);
+
             const response = await axiosInstance.get('/api/v1/product/search', { params });
             const data = response.data.data;
             if (currentPage === 0) setProducts(data.content || []);
@@ -70,17 +79,15 @@ const BrandPage = () => {
             setPageNo(currentPage);
         } catch (error) { toast.error("Could not load products."); }
         finally { setLoading(false); }
-    }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId]);
+    }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, sortOption]);
 
-    // Effect to fetch filters when the main context (brand) changes
     useEffect(() => {
         fetchFilterData();
     }, [selectedBrandId, fetchFilterData]);
 
-    // Effect to fetch products when any filter changes
     useEffect(() => {
         fetchProducts(0);
-    }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, fetchProducts]);
+    }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, sortOption, fetchProducts]);
 
     const handlePriceChange = (newRange) => {
         setPriceRange(newRange);
@@ -131,6 +138,7 @@ const BrandPage = () => {
         removeFilter('category');
         removeFilter('subcategory');
         removeFilter('tag');
+        setSortOption('');
     };
 
     useEffect(() => {
@@ -143,7 +151,12 @@ const BrandPage = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [loading, hasMore, pageNo, fetchProducts]);
 
+    const displayedProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const areFiltersActive = selectedBrandId || selectedCategoryId || selectedSubCategoryId || selectedTagId || (filterData && priceRange && (priceRange[0] !== filterData.minPrice || priceRange[1] !== filterData.maxPrice));
+
     const filteredBrands = filterData?.availableBrands?.filter(brand =>
         brand.brandName.toLowerCase().includes(brandSearchQuery.toLowerCase())
     ) || [];
@@ -227,6 +240,18 @@ const BrandPage = () => {
                 ) : <p>Loading filters...</p> }
             </aside>
             <main className="main-content">
+                <div className="main-search-bar-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                        type="text"
+                        placeholder="Search within these results..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
                 <div className="page-header">
                     <div className="active-filters">
                         {selectedBrandId && (
@@ -261,13 +286,26 @@ const BrandPage = () => {
                         )}
                         {areFiltersActive && <button className="clear-all-btn" onClick={clearAllFilters}>Clear all</button>}
                     </div>
-                    <select className="sort-dropdown"><option value="default">Default sorting</option></select>
+                    <select
+                        className="sort-dropdown"
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                    >
+                        <option value="">Default Sorting</option>
+                        <option value="name,asc">Sort by Name (A-Z)</option>
+                        <option value="name,desc">Sort by Name (Z-A)</option>
+                        <option value="quantity,asc">Sort by Stock (Low to High)</option>
+                        <option value="quantity,desc">Sort by Stock (High to Low)</option>
+                        <option value="discountedPrice,asc">Sort by Price (Low to High)</option>
+                        <option value="discountedPrice,desc">Sort by Price (High to Low)</option>
+                    </select>
                 </div>
                 <div className="product-grid-brand">
-                    {products.map(product => <ProductCard key={product.productId} product={product} />)}
+                    {displayedProducts.map(product => <ProductCard key={product.productId} product={product} />)}
                 </div>
                 {loading && <p className="loading-indicator">Loading...</p>}
-                {!hasMore && products.length > 0 && <p className="end-of-results">You've reached the end of the list.</p>}
+                {!loading && products.length > 0 && displayedProducts.length === 0 && <p className="end-of-results">No products match your search.</p>}
+                {!loading && !hasMore && displayedProducts.length > 0 && <p className="end-of-results">You've reached the end of the list.</p>}
             </main>
         </div>
     );

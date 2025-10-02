@@ -24,6 +24,37 @@
 }
 
 /* ======================================== */
+/* --- Main Search Bar Styles --- */
+/* ======================================== */
+.main-search-bar-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0 15px;
+    margin-bottom: 1.5rem;
+    background-color: #fff;
+}
+
+.main-search-bar-wrapper svg {
+    color: #999;
+    margin-right: 10px;
+}
+
+.main-search-bar-wrapper input {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 12px 0;
+    font-size: 1rem;
+    background-color: transparent;
+}
+
+.main-search-bar-wrapper input::placeholder {
+    color: #aaa;
+}
+
+/* ======================================== */
 /* --- Sidebar & Filter Blocks --- */
 /* ======================================== */
 .filter-block {
@@ -189,16 +220,16 @@
     border-radius: 12px;
 }
 
-.category-item.active .filter-count-badge {
-    font-weight: 700;
-}
-
 .category-item.active {
     color: #E91E63;
     background-color: transparent;
 }
 
 .category-item.active > span:first-child {
+    font-weight: 700;
+}
+
+.category-item.active .filter-count-badge {
     font-weight: 700;
 }
 
