@@ -429,7 +429,7 @@ const Header = () => {
                                         <ul>
                                             {brandMenuData.topBrands.map(brand => (
                                                 <li key={brand.id}>
-                                                    <Link to={`/brand/${brand.slug}`}>
+                                                    <Link to={`/brand/${brand.slug}`} state={{ brandName: brand.name, brandId: brand.id }}>
                                                         {brand.name}
                                                         <span className="brand-product-count">{brand.productCount}</span>
                                                     </Link>
@@ -447,7 +447,7 @@ const Header = () => {
                                                 <ul>
                                                     {groupedBrands[letter].map(brand => (
                                                         <li key={brand.id}>
-                                                            <Link to={`/brand/${brand.slug}`}>
+                                                            <Link to={`/brand/${brand.slug}`} state={{ brandName: brand.name, brandId: brand.id }}>
                                                                 {brand.name}
                                                                 <span className="brand-product-count">{brand.productCount}</span>
                                                             </Link>
@@ -469,7 +469,7 @@ const Header = () => {
                                     <h4>TOP BRANDS</h4>
                                     <div className="logo-grid">
                                         {brandMenuData.topBrands.map(brand => (
-                                            <Link to={`/brand/${brand.slug}`} key={brand.id} className="brand-logo-item">
+                                            <Link to={`/brand/${brand.slug}`} key={brand.id} className="brand-logo-item" state={{ brandName: brand.name, brandId: brand.id }}>
                                                 <img src={brand.logoUrl} alt={brand.name} />
                                                 <p>{brand.name}</p>
                                             </Link>

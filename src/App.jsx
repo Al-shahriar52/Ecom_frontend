@@ -7,6 +7,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import BrandPage from './pages/BrandPage';
+import AllProductsPage from './pages/AllProductsPage';
 
 // --- Context Providers ---
 import { AuthProvider } from './context/AuthContext';
@@ -53,6 +55,8 @@ function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/cart" element={<Cart />} />
                             <Route path="/login" element={<AuthPage />} />
+                            <Route path="/brand/:slug" element={<BrandPage />} />
+                            <Route path="/products" element={<AllProductsPage />} />
 
                             {/* --- User Dashboard Routes --- */}
                             <Route path="/dashboard" element={<DashboardLayout />}>
