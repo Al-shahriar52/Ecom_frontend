@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
 import ProductCard from '../components/ProductCard';
 import { toast } from 'react-hot-toast';
@@ -8,51 +8,46 @@ import 'rc-slider/assets/index.css';
 import './BrandPage.css';
 
 const BrandPage = () => {
-    const navigate = useNavigate();
     const { slug } = useParams();
     const location = useLocation();
     const initialBrand = location.state || {};
 
-    // State for products and pagination
     const [products, setProducts] = useState([]);
     const [pageNo, setPageNo] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
-
-    // State for all available filter options
     const [filterData, setFilterData] = useState(null);
-
-    // State for all selected filters
     const [selectedBrandId, setSelectedBrandId] = useState(initialBrand.brandId);
     const [selectedBrandName, setSelectedBrandName] = useState(initialBrand.brandName);
-    const [priceRange, setPriceRange] = useState([0, 9999]);
-    const [debouncedPriceRange, setDebouncedPriceRange] = useState([0, 9999]);
+    const [priceRange, setPriceRange] = useState(null);
+    const [debouncedPriceRange, setDebouncedPriceRange] = useState(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [selectedSubCategoryId, setSelectedSubCategoryId] = useState(null);
     const [selectedTagId, setSelectedTagId] = useState(null);
-
-    // UI State
     const [expandedCategories, setExpandedCategories] = useState(new Set());
+    const [brandSearchQuery, setBrandSearchQuery] = useState('');
+    const [showAllBrands, setShowAllBrands] = useState(false);
     const debounceTimeout = useRef(null);
 
-    // Fetch GLOBAL filter data (always includes all brands)
-    useEffect(() => {
-        const getInitialFilters = async () => {
-            try {
-                const response = await axiosInstance.get(`/api/v1/product/filters`);
-                const data = response.data.data;
-                setFilterData(data);
-                if (data.minPrice != null && data.maxPrice != null) {
-                    setPriceRange([data.minPrice, data.maxPrice]);
-                    setDebouncedPriceRange([data.minPrice, data.maxPrice]);
-                }
-            } catch (error) { console.error("Error fetching initial filter data:", error); }
-        };
-        getInitialFilters();
-    }, []);
+    const fetchFilterData = useCallback(async () => {
+        try {
+            const params = { brandId: selectedBrandId };
+            const response = await axiosInstance.get(`/api/v1/product/filters`, { params });
+            const data = response.data.data;
+            setFilterData(data);
 
-    // Main function to fetch products based on all active filters
+            if (data.minPrice != null && data.maxPrice != null) {
+                const initialRange = [data.minPrice, data.maxPrice];
+                setPriceRange(initialRange);
+                setDebouncedPriceRange(initialRange);
+            }
+        } catch (error) { console.error("Error fetching filter data:", error); }
+    }, [selectedBrandId]);
+
+    // --- THIS IS THE FIX ---
+    // The fetchProducts function is simplified and no longer depends on filterData to prevent loops.
     const fetchProducts = useCallback(async (currentPage) => {
+        if (!debouncedPriceRange) return; // Don't fetch until price range is initialized
         if (loading && currentPage > 0) return;
         setLoading(true);
         try {
@@ -77,25 +72,28 @@ const BrandPage = () => {
         finally { setLoading(false); }
     }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId]);
 
-    // Refetch products whenever any filter changes
+    // Effect to fetch filters when the main context (brand) changes
+    useEffect(() => {
+        fetchFilterData();
+    }, [selectedBrandId, fetchFilterData]);
+
+    // Effect to fetch products when any filter changes
     useEffect(() => {
         fetchProducts(0);
     }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, fetchProducts]);
 
-    // Handler for price slider
     const handlePriceChange = (newRange) => {
         setPriceRange(newRange);
         clearTimeout(debounceTimeout.current);
-        debounceTimeout.current = setTimeout(() => {
-            setDebouncedPriceRange(newRange);
-        }, 500);
+        debounceTimeout.current = setTimeout(() => { setDebouncedPriceRange(newRange); }, 500);
     };
-
-    // Handlers for all filter selections
     const handleBrandClick = (brand) => {
         const newId = selectedBrandId === brand.brandId ? null : brand.brandId;
         setSelectedBrandId(newId);
         setSelectedBrandName(newId ? brand.brandName : null);
+        setSelectedCategoryId(null);
+        setSelectedSubCategoryId(null);
+        setSelectedTagId(null);
     };
     const handleCategoryClick = (id) => {
         const newId = selectedCategoryId === id ? null : id;
@@ -116,8 +114,6 @@ const BrandPage = () => {
         else newSet.add(categoryId);
         setExpandedCategories(newSet);
     };
-
-    // Handler to remove a specific filter pill
     const removeFilter = (filterType) => {
         if (filterType === 'brand') { setSelectedBrandId(null); setSelectedBrandName(null); }
         if (filterType === 'price' && filterData) {
@@ -129,8 +125,6 @@ const BrandPage = () => {
         if (filterType === 'subcategory') setSelectedSubCategoryId(null);
         if (filterType === 'tag') setSelectedTagId(null);
     };
-
-    // Clear all filters by resetting state
     const clearAllFilters = () => {
         removeFilter('brand');
         removeFilter('price');
@@ -139,7 +133,6 @@ const BrandPage = () => {
         removeFilter('tag');
     };
 
-    // Infinite scroll handler
     useEffect(() => {
         const handleScroll = () => {
             if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 200 && hasMore && !loading) {
@@ -150,12 +143,16 @@ const BrandPage = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [loading, hasMore, pageNo, fetchProducts]);
 
-    const areFiltersActive = selectedBrandId || selectedCategoryId || selectedSubCategoryId || selectedTagId || (filterData && (priceRange[0] !== filterData.minPrice || priceRange[1] !== filterData.maxPrice));
+    const areFiltersActive = selectedBrandId || selectedCategoryId || selectedSubCategoryId || selectedTagId || (filterData && priceRange && (priceRange[0] !== filterData.minPrice || priceRange[1] !== filterData.maxPrice));
+    const filteredBrands = filterData?.availableBrands?.filter(brand =>
+        brand.brandName.toLowerCase().includes(brandSearchQuery.toLowerCase())
+    ) || [];
+    const brandsToShow = showAllBrands ? filteredBrands : filteredBrands.slice(0, 15);
 
     return (
         <div className="brand-page-container">
             <aside className="sidebar">
-                {filterData ? (
+                {filterData && priceRange ? (
                     <>
                         <div className="filter-block">
                             <h4>Filter by Price</h4>
@@ -164,21 +161,6 @@ const BrandPage = () => {
                                 <div className="price-slider-labels"><span>৳{priceRange[0]}</span><span>৳{priceRange[1]}</span></div>
                             </div>
                         </div>
-
-                        {filterData.availableBrands?.length > 0 && (
-                            <div className="filter-block">
-                                <h4>Filter by Brand</h4>
-                                <ul className="category-filter-list">
-                                    {filterData.availableBrands.map(brand => (
-                                        <li key={brand.brandId} className={`category-item ${selectedBrandId === brand.brandId ? 'active' : ''}`} onClick={() => handleBrandClick(brand)}>
-                                            <span>{brand.brandName}</span>
-                                            <span>{brand.productCount}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
                         <div className="filter-block">
                             <h4>Product Categories</h4>
                             <ul className="category-filter-list">
@@ -186,14 +168,14 @@ const BrandPage = () => {
                                     <React.Fragment key={cat.categoryId}>
                                         <li className={`category-item parent ${selectedCategoryId === cat.categoryId ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.categoryId)}>
                                             <span>{cat.categoryName}</span>
-                                            <span>{cat.productCount}</span>
+                                            <span className="filter-count-badge">{cat.productCount}</span>
                                         </li>
                                         { (selectedCategoryId === cat.categoryId || expandedCategories.has(cat.categoryId)) && cat.subCategories?.length > 0 && (
                                             <ul className="subcategory-list">
                                                 {cat.subCategories.map(sub => (
                                                     <li key={sub.subCategoryId} className={`category-item sub ${selectedSubCategoryId === sub.subCategoryId ? 'active' : ''}`} onClick={() => handleSubCategoryClick(sub.subCategoryId)}>
                                                         <span>{sub.subCategoryName}</span>
-                                                        <span>{sub.productCount}</span>
+                                                        <span className="filter-count-badge">{sub.productCount}</span>
                                                     </li>
                                                 ))}
                                             </ul>
@@ -209,10 +191,36 @@ const BrandPage = () => {
                                     {filterData.availableTags?.map(tag => (
                                         <li key={tag.tagId} className={`category-item ${selectedTagId === tag.tagId ? 'active' : ''}`} onClick={() => handleTagClick(tag.tagId)}>
                                             <span>{tag.tagName}</span>
-                                            <span>{tag.productCount}</span>
+                                            <span className="filter-count-badge">{tag.productCount}</span>
                                         </li>
                                     ))}
                                 </ul>
+                            </div>
+                        )}
+                        {filterData.availableBrands?.length > 0 && (
+                            <div className="filter-block">
+                                <h4>Filter by Brand</h4>
+                                <div className="filter-search-wrapper">
+                                    <input
+                                        type="text"
+                                        placeholder="Search brand..."
+                                        value={brandSearchQuery}
+                                        onChange={(e) => setBrandSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                <ul className="category-filter-list">
+                                    {brandsToShow.map(brand => (
+                                        <li key={brand.brandId} className={`category-item ${selectedBrandId === brand.brandId ? 'active' : ''}`} onClick={() => handleBrandClick(brand)}>
+                                            <span>{brand.brandName}</span>
+                                            <span className="filter-count-badge">{brand.productCount}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                {filteredBrands.length > 15 && !showAllBrands && (
+                                    <button className="show-more-btn" onClick={() => setShowAllBrands(true)}>
+                                        Show More
+                                    </button>
+                                )}
                             </div>
                         )}
                     </>
@@ -227,7 +235,7 @@ const BrandPage = () => {
                                 <button onClick={() => removeFilter('brand')}>&times;</button>
                             </div>
                         )}
-                        {filterData && (priceRange[0] > filterData.minPrice || priceRange[1] < filterData.maxPrice) && (
+                        {filterData && priceRange && (priceRange[0] > filterData.minPrice || priceRange[1] < filterData.maxPrice) && (
                             <div className="filter-pill">
                                 <span>Price: ৳{priceRange[0]} - ৳{priceRange[1]}</span>
                                 <button onClick={() => removeFilter('price')}>&times;</button>
