@@ -7,6 +7,7 @@
     position: sticky;
     top: 0;
     z-index: 1000;
+    overflow: visible; /* Prevents clipping of dropdown menus */
 }
 .header-main {
     display: flex;
@@ -238,10 +239,10 @@
 .mega-menu-column li a:hover { color: #000; padding-left: 5px; }
 
 /* ======================================== */
-/* --- NEW --- MOBILE MENU STYLES       */
+/* --- MOBILE MENU & ACCORDION STYLES --- */
 /* ======================================== */
 .hamburger-btn {
-    display: none; /* Hidden on desktop */
+    display: none;
     background: none;
     border: none;
     font-size: 28px;
@@ -257,9 +258,6 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1002;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s;
 }
 .mobile-sidenav {
     position: fixed;
@@ -275,11 +273,6 @@
     flex-direction: column;
 }
 .mobile-sidenav.open { transform: translateX(0); }
-.mobile-sidenav.open ~ .mobile-menu-overlay,
-body.mobile-menu-open .mobile-menu-overlay {
-    opacity: 1;
-    visibility: visible;
-}
 .sidenav-header {
     display: flex;
     justify-content: space-between;
@@ -290,7 +283,21 @@ body.mobile-menu-open .mobile-menu-overlay {
 .sidenav-header h3 { margin: 0; font-size: 1.2rem; }
 .close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; color: #888; }
 .sidenav-links { padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; }
-.sidenav-links a {
+.sidenav-links hr { border: none; border-top: 1px solid #eee; margin: 1rem 0; }
+.sidenav-item {
+    border-bottom: 1px solid #f0f0f0;
+}
+.sidenav-item:last-of-type {
+    border-bottom: none;
+}
+.sidenav-main-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.sidenav-main-link a {
+    flex-grow: 1;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -299,75 +306,47 @@ body.mobile-menu-open .mobile-menu-overlay {
     color: #333;
     font-weight: 500;
 }
-.sidenav-links a:hover { color: #E91E63; }
+.sidenav-main-link a:hover { color: #E91E63; }
 .sidenav-links img { width: 24px; height: 24px; }
-.sidenav-links hr { border: none; border-top: 1px solid #eee; margin: 1rem 0; }
-
-/* ======================================== */
-/* --- UPDATED --- RESPONSIVE QUERIES   */
-/* ======================================== */
-@media (max-width: 992px) {
-    /* Hide desktop-specific navigation */
-    .desktop-only, .category-nav, .brands-link {
-        display: none !important;
-    }
-
-    /* Show the hamburger menu button */
-    .hamburger-btn {
-        display: block;
-    }
-
-    /* Adjust the main header container for a two-row layout */
-    .header-main {
-        flex-wrap: wrap;      /* Allows items to wrap onto the next line */
-        height: auto;         /* Auto-adjust height for wrapped content */
-        padding: 10px 15px;   /* Adjust padding for mobile view */
-    }
-
-    /* --- Row 1: Logo and Right-side Icons --- */
-    .header-left {
-        order: 1;             /* Appears first */
-        flex-grow: 1;         /* Takes up available space */
-        gap: 10px;
-    }
-    .header-right {
-        order: 2;             /* Appears second, on the same line */
-    }
-
-    /* --- Row 2: Search Bar --- */
-    .header-center {
-        display: flex;        /* Make the search bar visible again */
-        order: 3;             /* Appears third, wrapping to the next line */
-        width: 100%;          /* Takes up the full width */
-        padding: 10px 0 0 0;  /* Add some space above the search bar */
-    }
-    .search-bar-wrapper {
-        max-width: none;      /* Allow the search bar to fill the full width */
-    }
-
-    /* Minor cosmetic adjustments for mobile */
-    .logo {
-        font-size: 24px;
-    }
-    .cart-text {
-        display: none;
-    }
-    .btn-bag {
-        padding: 10px;
-    }
-    .header-action-btn {
-        padding: 8px;
-        gap: 5px;
-    }
+.expand-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #aaa;
+    cursor: pointer;
+    padding: 10px;
+    line-height: 1;
 }
-
-/* ======================================== */
-/* --- NEW --- BRANDS MEGA MENU STYLES  */
-/* ======================================== */
-.brands-link-wrapper {
-
+.sidenav-subcategory-list {
+    list-style: none;
+    padding: 0 0 15px 40px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #f9f9f9;
 }
+.sidenav-subcategory-list a {
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+}
+.sidenav-subcategory-list a:hover { color: #E91E63; }
+.sidenav-item-single {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+}
+.sidenav-item-single:hover { color: #E91E63; }
 
+/* ======================================== */
+/* --- BRANDS MEGA MENU STYLES  --- */
+/* ======================================== */
+.brands-link-wrapper {}
 .brands-mega-menu {
     position: absolute;
     top: 80px;
@@ -377,11 +356,10 @@ body.mobile-menu-open .mobile-menu-overlay {
     max-width: 1200px;
     background-color: #fff;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    z-index: 1001; /* <--- CORRECTED VALUE */
+    z-index: 1001;
     border-top: 1px solid #f0f0f0;
     border-radius: 0 0 8px 8px;
 }
-
 .brands-mega-menu-content {
     max-width: 1200px;
     margin: 0 auto;
@@ -392,6 +370,32 @@ body.mobile-menu-open .mobile-menu-overlay {
     max-height: 650px;
 }
 
+/* ======================================== */
+/* --- BRANDS MEGA MENU STYLES  */
+/* ======================================== */
+.brands-link-wrapper {}
+.brands-mega-menu {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 1200px;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    border-top: 1px solid #f0f0f0;
+    border-radius: 0 0 8px 8px;
+}
+.brands-mega-menu-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 15px;
+    display: flex;
+    gap: 2rem;
+    height: 75vh;
+    max-height: 650px;
+}
 .brands-menu-left {
     flex: 2;
     display: flex;
@@ -408,18 +412,9 @@ body.mobile-menu-open .mobile-menu-overlay {
     margin: 1.5rem 0 0.5rem 0;
     border-bottom: 1px solid #f0f0f0;
 }
-
-/* Style for the first title to remove extra top margin */
 .brand-section:first-child .brand-section-title {
     margin-top: 0;
 }
-
-.brand-letter-title {
-    font-size: 1rem;
-    color: #E91E63;
-    margin: 1rem 0 0.5rem 0;
-}
-
 .brand-product-count {
     background-color: #f0f0f0;
     color: #555;
@@ -427,7 +422,6 @@ body.mobile-menu-open .mobile-menu-overlay {
     padding: 2px 8px;
     border-radius: 10px;
 }
-
 .brand-section li a {
     display: flex;
     justify-content: space-between;
@@ -436,63 +430,17 @@ body.mobile-menu-open .mobile-menu-overlay {
     text-decoration: none;
     color: #555;
 }
-.brand-section li a:hover {
-    color: #000;
-}
-
-/* This was .brand-group ul, now it applies to all */
-.brand-section ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.brand-list-header a {
-    text-decoration: none;
-    font-weight: 600;
-    color: #333;
-}
-.brand-list-header a:hover {
-    color: #E91E63;
-}
-
-.brand-list-scrollable {
-    overflow-y: auto;
-    padding-top: 1rem;
-}
-
-.brand-group ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.brand-letter-title {
-    font-size: 1rem;
-    color: #E91E63;
-    margin: 1rem 0 0.5rem 0;
-}
-
-.brand-group li a {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    text-decoration: none;
-    color: #555;
-}
-.brand-group li a:hover {
-    color: #000;
-}
-.brand-group li a span {
-    color: #999;
-}
-
-/* Right Side (Logo Grid) */
-.brands-menu-right {
-    flex: 3;
-    display: flex;
-    gap: 1.5rem;
-}
-
+.brand-section li a:hover { color: #000; }
+.brand-section ul { list-style: none; padding: 0; margin: 0; }
+.brand-list-header a { text-decoration: none; font-weight: 600; color: #333; }
+.brand-list-header a:hover { color: #E91E63; }
+.brand-list-scrollable { overflow-y: auto; padding-top: 1rem; }
+.brand-group ul { list-style: none; padding: 0; margin: 0; }
+.brand-letter-title { font-size: 1rem; color: #E91E63; margin: 1rem 0 0.5rem 0; }
+.brand-group li a { display: flex; justify-content: space-between; padding: 8px 0; text-decoration: none; color: #555; }
+.brand-group li a:hover { color: #000; }
+.brand-group li a span { color: #999; }
+.brands-menu-right { flex: 3; display: flex; gap: 1.5rem; }
 .alphabet-index {
     display: flex;
     flex-direction: column;
@@ -500,28 +448,11 @@ body.mobile-menu-open .mobile-menu-overlay {
     border-right: 1px solid #f0f0f0;
     justify-content: space-between;
 }
-.alphabet-index a {
-    text-decoration: none;
-    color: #777;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-.alphabet-index a:hover {
-    color: #000;
-}
-
-.top-brands-grid {
-    width: 100%;
-}
-.top-brands-grid h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-}
-.logo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 1rem;
-}
+.alphabet-index a { text-decoration: none; color: #777; font-size: 0.8rem; font-weight: 500; }
+.alphabet-index a:hover { color: #000; }
+.top-brands-grid { width: 100%; }
+.top-brands-grid h4 { margin: 0 0 1rem 0; font-size: 1rem; }
+.logo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; }
 .brand-logo-item {
     border: 1px solid #f0f0f0;
     border-radius: 8px;
@@ -531,75 +462,32 @@ body.mobile-menu-open .mobile-menu-overlay {
     color: #333;
     transition: box-shadow 0.2s ease;
 }
-.brand-logo-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.brand-logo-item img {
-    width: 100%;
-    height: 60px;
-    object-fit: contain;
-}
-.brand-logo-item p {
-    margin: 10px 0 0 0;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+.brand-logo-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.brand-logo-item img { width: 100%; height: 60px; object-fit: contain; }
+.brand-logo-item p { margin: 10px 0 0 0; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-height: 750px) { .brands-mega-menu-content { padding: 1rem 15px; } .alphabet-index { padding-right: 1rem; } .alphabet-index a { font-size: 0.85rem; } }
+@media (max-height: 650px) { .alphabet-index a { font-size: 0.80rem; } }
 
 /* ======================================== */
-/* --- NEW --- Responsive Height Fix      */
+/* --- SEARCH RESULTS STYLES    --- */
 /* ======================================== */
-
-/* For screens that are not very tall */
-@media (max-height: 750px) {
-    .brands-mega-menu-content {
-        padding: 1rem 15px;
-    }
-
-    .alphabet-index {
-        padding-right: 1rem;
-    }
-
-    .alphabet-index a {
-        font-size: 0.85rem;
-    }
-}
-
-/* For very short screens */
-@media (max-height: 650px) {
-    .alphabet-index a {
-        font-size: 0.80rem;
-    }
-}
-
-/* ======================================== */
-/* --- NEW --- SEARCH RESULTS STYLES    */
-/* ======================================== */
-.search-bar-wrapper {
-    position: relative; /* This is crucial for positioning the dropdown */
-}
-
 .search-results-dropdown {
     position: absolute;
-    top: 100%; /* Position it right at the bottom of the search bar */
-    left: 50%; /* Position the dropdown's left edge at the center of the search bar */
-    transform: translateX(-50%); /* Shift the dropdown left by half its own width to center it */
-
-    width: 130%; /* Makes the dropdown 30% wider than the search bar */
-    min-width: 550px; /* Optional: ensures it doesn't get too small */
-
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 130%;
+    min-width: 550px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     border: 1px solid #eee;
-    margin-top: 8px; /* Adds a small space below the search bar */
+    margin-top: 8px;
     z-index: 1010;
     max-height: 450px;
     overflow-y: auto;
     padding: 0.5rem;
 }
-
 .search-results-title {
     font-size: 0.8rem;
     font-weight: 600;
@@ -608,68 +496,54 @@ body.mobile-menu-open .mobile-menu-overlay {
     padding: 0.5rem 1rem;
     margin: 0;
 }
-
-.search-results-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.search-result-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px 1rem;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
-}
-
-.search-result-item:hover {
-    background-color: #f5f5f5;
-}
-
-.search-result-image {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-    flex-shrink: 0;
-    border-radius: 4px;
-}
-
-.search-result-details {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden; /* Prevents long text from breaking layout */
-}
-
+.search-results-list { list-style: none; padding: 0; margin: 0; }
+.search-result-item { display: flex; align-items: center; gap: 15px; padding: 12px 1rem; text-decoration: none; border-radius: 6px; transition: background-color 0.2s ease; }
+.search-result-item:hover { background-color: #f5f5f5; }
+.search-result-image { width: 50px; height: 50px; object-fit: contain; flex-shrink: 0; border-radius: 4px; }
+.search-result-details { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
 .search-result-name {
     font-size: 0.95rem;
     font-weight: 500;
     color: #333;
-    line-height: 1.3; /* Added for better spacing between lines */
-
-    /* --- UPDATED --- */
-    white-space: normal; /* Allow text to wrap onto multiple lines */
-    overflow: hidden; /* Hide anything that goes beyond two lines */
-    text-overflow: ellipsis; /* Add "..." if the name is still too long */
-
-    /* This is a common technique to limit text to 2 lines */
+    line-height: 1.3;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
+.search-result-brand { font-size: 0.8rem; color: #777; }
+.search-result-price { font-size: 0.9rem; font-weight: 600; color: #E91E63; margin-left: auto; padding-left: 10px; }
 
-.search-result-brand {
-    font-size: 0.8rem;
-    color: #777;
-}
 
-.search-result-price {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #E91E63;
-    margin-left: auto; /* Pushes price to the far right */
-    padding-left: 10px;
+/* ======================================== */
+/* --- FINAL RESPONSIVE QUERIES --- */
+/* ======================================== */
+@media (max-width: 992px) {
+    .desktop-only, .category-nav, .brands-link { display: none !important; }
+    .hamburger-btn { display: block; }
+    .header-main { flex-wrap: wrap; height: auto; padding: 10px 15px; }
+    .header-left { order: 1; flex-grow: 1; gap: 10px; }
+    .header-right { order: 2; }
+    .header-center {
+        display: flex;
+        order: 3;
+        width: 100%;
+        padding: 10px 0 0 0;
+        position: relative; /* Establish stacking context */
+    }
+    .search-bar-wrapper { max-width: none; }
+    .logo { font-size: 24px; }
+    .cart-text { display: none; }
+    .btn-bag { padding: 10px; }
+    .header-action-btn { padding: 8px; gap: 5px; }
+
+    .search-results-dropdown {
+        width: 100%;
+        min-width: 0;
+        left: 0;
+        transform: none;
+        margin-top: 10px;
+    }
 }
