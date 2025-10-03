@@ -161,3 +161,39 @@
     background-color: #34495e; /* Slightly lighter shade for hover */
     transform: translateY(-2px);
 }
+
+/* ======================================== */
+/* --- Product Card Responsive Styles --- */
+/* ======================================== */
+
+@media (max-width: 480px) {
+    /* This targets screens smaller than 480px, like most mobile phones */
+
+    .product-card .discount-badge {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 6px;
+    }
+
+    .product-card .product-info {
+        padding: 10px; /* Reduce padding inside the info section */
+    }
+
+    .product-card .product-name {
+        font-size: 13px;
+        height: 19px; /* Adjust height for the smaller font */
+    }
+
+    .product-card .current-price {
+        font-size: 16px;
+    }
+
+    .product-card .original-price {
+        font-size: 12px;
+    }
+
+    .product-card .add-to-cart-btn {
+        padding: 10px;
+        font-size: 12px;
+    }
+}

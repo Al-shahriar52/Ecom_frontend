@@ -307,18 +307,58 @@ body.mobile-menu-open .mobile-menu-overlay {
 /* --- UPDATED --- RESPONSIVE QUERIES   */
 /* ======================================== */
 @media (max-width: 992px) {
-    .desktop-only { display: none !important; }
-    .hamburger-btn { display: block; }
-    .header-main {
-        flex-wrap: nowrap;
-        justify-content: space-between;
+    /* Hide desktop-specific navigation */
+    .desktop-only, .category-nav, .brands-link {
+        display: none !important;
     }
-    .header-left { width: auto; flex-grow: 1; gap: 10px;}
-    .header-right { width: auto; }
-    .header-center { display: none; }
-    .logo { font-size: 28px; }
-    .cart-text { display: none; }
-    .btn-bag { padding: 12px; }
+
+    /* Show the hamburger menu button */
+    .hamburger-btn {
+        display: block;
+    }
+
+    /* Adjust the main header container for a two-row layout */
+    .header-main {
+        flex-wrap: wrap;      /* Allows items to wrap onto the next line */
+        height: auto;         /* Auto-adjust height for wrapped content */
+        padding: 10px 15px;   /* Adjust padding for mobile view */
+    }
+
+    /* --- Row 1: Logo and Right-side Icons --- */
+    .header-left {
+        order: 1;             /* Appears first */
+        flex-grow: 1;         /* Takes up available space */
+        gap: 10px;
+    }
+    .header-right {
+        order: 2;             /* Appears second, on the same line */
+    }
+
+    /* --- Row 2: Search Bar --- */
+    .header-center {
+        display: flex;        /* Make the search bar visible again */
+        order: 3;             /* Appears third, wrapping to the next line */
+        width: 100%;          /* Takes up the full width */
+        padding: 10px 0 0 0;  /* Add some space above the search bar */
+    }
+    .search-bar-wrapper {
+        max-width: none;      /* Allow the search bar to fill the full width */
+    }
+
+    /* Minor cosmetic adjustments for mobile */
+    .logo {
+        font-size: 24px;
+    }
+    .cart-text {
+        display: none;
+    }
+    .btn-bag {
+        padding: 10px;
+    }
+    .header-action-btn {
+        padding: 8px;
+        gap: 5px;
+    }
 }
 
 /* ======================================== */
