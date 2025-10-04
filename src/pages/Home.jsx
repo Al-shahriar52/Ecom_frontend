@@ -18,8 +18,8 @@ const Home = () => {
                     sortBy: 'createdAt',
                     sortDir: 'desc',
                 };
-                const response = await axiosInstance.get('/api/v1/product/search', { params });
-                setNewestProducts(response.data.data.content || []);
+                const response = await axiosInstance.get('/api/v1/product/newestArrivals');
+                setNewestProducts(response.data.data || []);
             } catch (error) {
                 console.error("Error fetching newest arrivals:", error);
                 toast.error("Could not load newest arrivals.");
