@@ -1,17 +1,6 @@
 .home-title-container {
     text-align: center;
-    margin-bottom: 40px;
-}
-
-.home-title {
-    position: relative; /* Essential for positioning the pseudo-element */
-    display: inline-block; /* Fits the background to the text size */
-    color: #fff; /* Text color is now white to contrast with the background */
-    padding: 1rem 2rem; /* Adds space between text and background edges */
-    font-size: 2.5rem;
-    z-index: 1; /* Puts the text on top of the pseudo-element */
-    cursor: default;
-    white-space: pre-wrap;
+    margin-bottom: -5px;
 }
 
 /* This is now the revealing background, not an underline */
@@ -103,19 +92,14 @@
     }
 }
 
-.home-title-container {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
 .home-title {
     position: relative;
     display: inline-flex; /* CHANGED: This is the key change for the layout */
     align-items: center;  /* Vertically align arrows and text */
-    gap: 1.5rem;          /* Adds space between arrows and text */
+    gap: 0.5rem;          /* Adds space between arrows and text */
     color: #fff;
-    padding: 1rem 2rem;
-    font-size: 2.5rem;
+    padding: 1rem 1rem;
+    font-size: 2rem;
     z-index: 1;
     cursor: default;
     white-space: pre-wrap;

@@ -1,7 +1,7 @@
 .hero-slider {
     width: 100%;
     height: 300px; /* Keep this fixed height for the whole slider area */
-    margin-bottom: -15px;
+    margin-bottom: -5px;
     cursor: pointer;
     overflow: hidden; /* Important: Ensures nothing from outside the slider shows */
 }
