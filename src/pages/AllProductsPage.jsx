@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard';
 import { toast } from 'react-hot-toast';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import './BrandPage.css'; // We reuse the same CSS file
+import './ShopPage.css'; // We reuse the same CSS file
 
 const AllProductsPage = () => {
     const navigate = useNavigate();

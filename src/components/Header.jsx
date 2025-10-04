@@ -1,41 +1,62 @@
+
 import React, { useState, useContext, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import axiosInstance from '../api/AxiosInstance';
-import { toast } from 'react-hot-toast';
 import './Header.css';
 
 const parseSubcategories = (subCategoryData, categoryName) => {
+    if (!subCategoryData || subCategoryData.length === 0) {
+        return [];
+    }
+
     const columns = [];
-    let currentColumn = null;
+    let currentLinks = []; // A temporary bucket to hold links
+
+    // A helper function to create a link object
+    const createLink = (item) => ({
+        id: item.id,
+        name: item.name,
+        path: `/subcategory/${item.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
+    });
+
     subCategoryData.forEach(item => {
-        const isTitle = item.name === item.name.toUpperCase() && item.name.length > 1;
+        // A title is in ALL CAPS and usually contains a space
+        const isTitle = item.name === item.name.toUpperCase() && item.name.length > 1 && item.name.includes(' ');
+
         if (isTitle) {
-            currentColumn = { title: item.name, links: [] };
-            columns.push(currentColumn);
-        } else if (currentColumn) {
-            currentColumn.links.push({
-                id: item.id,
-                name: item.name,
-                path: `/subcategory/${item.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
-            });
+            // If we find a title, first check if we have collected any links before it.
+            // If so, create a column for them.
+            if (currentLinks.length > 0) {
+                columns.push({
+                    title: columns.length === 0 ? `Explore ${categoryName}` : '',
+                    links: currentLinks
+                });
+                currentLinks = []; // Reset the bucket
+            }
+            // Now, create the new column for the title we just found.
+            columns.push({ title: item.name, links: [] });
+        } else {
+            // If the current item is a regular link, we need to add it to the correct place.
+            if (columns.length > 0) {
+                // Add it to the last created column
+                columns[columns.length - 1].links.push(createLink(item));
+            } else {
+                // If no columns have been created yet, add it to the temporary bucket.
+                currentLinks.push(createLink(item));
+            }
         }
     });
-    if (columns.length === 0 && subCategoryData.length > 0) {
-        const chunkSize = 8;
-        for (let i = 0; i < subCategoryData.length; i += chunkSize) {
-            const chunk = subCategoryData.slice(i, i + chunkSize);
-            columns.push({
-                title: i === 0 ? `Explore ${categoryName}` : '',
-                links: chunk.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    path: `/subcategory/${item.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
-                }))
-            });
-        }
+
+    // After the loop, if there are any links left in the bucket, create a final column for them.
+    if (currentLinks.length > 0) {
+        columns.push({
+            title: columns.length === 0 ? `Explore ${categoryName}` : '',
+            links: currentLinks
+        });
     }
+
     return columns;
 };
 
@@ -229,10 +250,36 @@ const Header = () => {
                         return (
                             <div key={category.id} className="sidenav-item">
                                 <div className="sidenav-main-link">
-                                    <Link to={category.path} onClick={() => setIsMobileMenuOpen(false)}><img src={category.iconUrl} alt={category.name} /><span>{category.name}</span></Link>
+                                    <Link
+                                        to={category.path}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        state={{ categoryId: category.id, categoryName: category.name }}
+                                    >
+                                        <img src={category.iconUrl} alt={category.name} />
+                                        <span>{category.name}</span>
+                                    </Link>
                                     <button className="expand-btn" onClick={() => toggleMobileSubcategories(category.id)}>{isExpanded ? '−' : '+'}</button>
                                 </div>
-                                {isExpanded && category.subcategories && <ul className="sidenav-subcategory-list">{category.subcategories.flatMap(col => col.links).map(link => <li key={link.id}><Link to={link.path} onClick={() => setIsMobileMenuOpen(false)}>{link.name}</Link></li>)}</ul>}
+                                {isExpanded && category.subcategories &&
+                                    <ul className="sidenav-subcategory-list">
+                                        {category.subcategories.flatMap(col => col.links).map(link =>
+                                            <li key={link.id}>
+                                                <Link
+                                                    to={link.path}
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    state={{
+                                                        categoryId: category.id,
+                                                        categoryName: category.name,
+                                                        subcategoryId: link.id,
+                                                        subcategoryName: link.name
+                                                    }}
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                }
                             </div>
                         );
                     })}
@@ -307,8 +354,42 @@ const Header = () => {
             </div>
 
             <nav className="category-nav desktop-only" onMouseLeave={handleCategoryMouseLeave}>
-                {loadingCategories ? <p className="loading-text">Loading Categories...</p> : categories.map(c => <div key={c.id} className="category-item-wrapper" onMouseEnter={() => handleCategoryMouseEnter(c.id)}><Link to={c.path} className="category-link"><img src={c.iconUrl} alt={c.name} className="category-icon" /><span className="category-name">{c.name}</span></Link></div>)}
-                {activeCategoryData?.subcategories && <div className="mega-menu"><div className="mega-menu-content">{activeCategoryData.subcategories.length > 0 ? activeCategoryData.subcategories.map((col, i) => <div key={i} className="mega-menu-column"><h4 className="column-title">{col.title}</h4><ul>{col.links.map(l => <li key={l.id||l.name}><Link to={l.path}>{l.name}</Link></li>)}</ul></div>) : <p>No subcategories found.</p>}</div></div>}
+                {loadingCategories ? <p className="loading-text">Loading Categories...</p> : categories.map(c =>
+                    <div key={c.id} className="category-item-wrapper" onMouseEnter={() => handleCategoryMouseEnter(c.id)}>
+                        <Link to={c.path} className="category-link" state={{ categoryId: c.id, categoryName: c.name }}>
+                            <img src={c.iconUrl} alt={c.name} className="category-icon" />
+                            <span className="category-name">{c.name}</span>
+                        </Link>
+                    </div>
+                )}
+                {activeCategoryData?.subcategories &&
+                    <div className="mega-menu">
+                        <div className="mega-menu-content">
+                            {activeCategoryData.subcategories.length > 0 ? activeCategoryData.subcategories.map((col, i) =>
+                                <div key={i} className="mega-menu-column">
+                                    <h4 className="column-title">{col.title}</h4>
+                                    <ul>
+                                        {col.links.map(l =>
+                                            <li key={l.id||l.name}>
+                                                <Link
+                                                    to={l.path}
+                                                    state={{
+                                                        categoryId: activeCategoryData.id,
+                                                        categoryName: activeCategoryData.name,
+                                                        subcategoryId: l.id,
+                                                        subcategoryName: l.name
+                                                    }}
+                                                >
+                                                    {l.name}
+                                                </Link>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                            ) : <p>No subcategories found.</p>}
+                        </div>
+                    </div>
+                }
             </nav>
 
             {isBrandMenuOpen && <div className="brands-mega-menu" onMouseEnter={handleBrandMouseEnter} onMouseLeave={handleBrandMouseLeave}>{isLoadingBrands ? <p className="loading-text">Loading Brands...</p> : brandMenuData && <div className="brands-mega-menu-content"><div className="brands-menu-left"><div className="brand-list-scrollable"><div className="brand-section"><h4 className="brand-section-title">TOP BRANDS</h4><ul>{brandMenuData.topBrands.map(b => <li key={b.id}><Link to={`/brand/${b.slug}`} state={{brandName:b.name, brandId:b.id}}>{b.name}<span className="brand-product-count">{b.productCount}</span></Link></li>)}</ul></div><div className="brand-section"><h4 className="brand-section-title">ALL BRANDS</h4>{Object.keys(groupedBrands).sort().map(l => <div key={l} className="brand-group" id={`brand-group-${l}`}><h5 className="brand-letter-title">{l}</h5><ul>{groupedBrands[l].map(b => <li key={b.id}><Link to={`/brand/${b.slug}`} state={{brandName:b.name, brandId:b.id}}>{b.name}<span className="brand-product-count">{b.productCount}</span></Link></li>)}</ul></div>)}</div></div></div><div className="brands-menu-right"><div className="alphabet-index">{alphabet.map(c => <a href={`#brand-group-${c}`} key={c}>{c}</a>)}</div><div className="top-brands-grid"><h4>TOP BRANDS</h4><div className="logo-grid">{brandMenuData.topBrands.map(b => <Link to={`/brand/${b.slug}`} key={b.id} className="brand-logo-item" state={{brandName:b.name, brandId:b.id}}><img src={b.logoUrl} alt={b.name}/><p>{b.name}</p></Link>)}</div></div></div></div>}</div>}

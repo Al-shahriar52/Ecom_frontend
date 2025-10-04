@@ -7,7 +7,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import BrandPage from './pages/BrandPage';
+import ShopPage from './pages/ShopPage';
 import AllProductsPage from './pages/AllProductsPage';
 
 // --- Context Providers ---
@@ -55,7 +55,9 @@ function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/cart" element={<Cart />} />
                             <Route path="/login" element={<AuthPage />} />
-                            <Route path="/brand/:slug" element={<BrandPage />} />
+                            <Route path="/brand/:slug" element={<ShopPage />} />
+                            <Route path="/category/:slug" element={<ShopPage />} />
+                            <Route path="/subcategory/:slug" element={<ShopPage />} />
                             <Route path="/products" element={<AllProductsPage />} />
 
                             {/* --- User Dashboard Routes --- */}
