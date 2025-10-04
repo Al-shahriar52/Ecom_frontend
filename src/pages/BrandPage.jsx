@@ -165,13 +165,31 @@ const BrandPage = () => {
     return (
         <div className="brand-page-container">
             <aside className="sidebar">
-                {filterData && priceRange ? (
+                {filterData ? (
                     <>
                         <div className="filter-block">
                             <h4>Filter by Price</h4>
                             <div className="price-slider-wrapper">
-                                <Slider range min={filterData.minPrice} max={filterData.maxPrice} value={priceRange} onChange={handlePriceChange} allowCross={false} />
-                                <div className="price-slider-labels"><span>৳{priceRange[0]}</span><span>৳{priceRange[1]}</span></div>
+                                <Slider
+                                    range
+                                    // If a real price range exists, use it. Otherwise, use a dummy 0-100 range for visuals.
+                                    min={filterData.minPrice !== null ? filterData.minPrice : 0}
+                                    max={filterData.maxPrice !== null ? filterData.maxPrice : 100}
+
+                                    // If a real range exists, use the state. Otherwise, set handles to the ends of the dummy range.
+                                    value={filterData.minPrice !== null && priceRange ? priceRange : [0, 100]}
+
+                                    // The slider is disabled if no minPrice is returned from the API.
+                                    disabled={filterData.minPrice === null}
+
+                                    onChange={handlePriceChange}
+                                    allowCross={false}
+                                />
+                                <div className="price-slider-labels">
+                                    {/* Only show numbers if a real price range exists */}
+                                    <span>৳{filterData.minPrice !== null && priceRange ? priceRange[0] : ''}</span>
+                                    <span>৳{filterData.maxPrice !== null && priceRange ? priceRange[1] : ''}</span>
+                                </div>
                             </div>
                         </div>
                         <div className="filter-block">

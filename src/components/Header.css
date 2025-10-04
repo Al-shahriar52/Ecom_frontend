@@ -350,19 +350,6 @@
 /* --- BRANDS MEGA MENU STYLES  --- */
 /* ======================================== */
 .brands-link-wrapper {}
-.brands-mega-menu {
-    position: absolute;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 1200px;
-    background-color: #fff;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    z-index: 1001;
-    border-top: 1px solid #f0f0f0;
-    border-radius: 0 0 8px 8px;
-}
 .brands-mega-menu-content {
     max-width: 1200px;
     margin: 0 auto;
