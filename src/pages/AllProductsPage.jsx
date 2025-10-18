@@ -1,5 +1,5 @@
+/*
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
 import ProductCard from '../components/ProductCard';
 import { toast } from 'react-hot-toast';
@@ -8,7 +8,6 @@ import 'rc-slider/assets/index.css';
 import './ShopPage.css'; // We reuse the same CSS file
 
 const AllProductsPage = () => {
-    const navigate = useNavigate();
 
     // State for products and pagination
     const [products, setProducts] = useState([]);
@@ -92,29 +91,6 @@ const AllProductsPage = () => {
         setSelectedBrandId(newId);
     };
 
-    const handleCategoryClick = (id) => {
-        const newId = selectedCategoryId === id ? null : id;
-        setSelectedCategoryId(newId);
-        setSelectedSubCategoryId(null);
-    };
-
-    const handleSubCategoryClick = (id) => {
-        const newId = selectedSubCategoryId === id ? null : id;
-        setSelectedSubCategoryId(newId);
-    };
-
-    const handleTagClick = (id) => {
-        const newId = selectedTagId === id ? null : id;
-        setSelectedTagId(newId);
-    };
-
-    const toggleExpandCategory = (categoryId) => {
-        const newSet = new Set(expandedCategories);
-        if (newSet.has(categoryId)) newSet.delete(categoryId);
-        else newSet.add(categoryId);
-        setExpandedCategories(newSet);
-    };
-
     const removeFilter = (filterType) => {
         if (filterType === 'brand') setSelectedBrandId(null);
         if (filterType === 'price' && filterData) {
@@ -153,13 +129,13 @@ const AllProductsPage = () => {
             <aside className="sidebar">
                 {filterData ? (
                     <>
-                        <div className="filter-block">
+                        {/!*<div className="filter-block">
                             <h4>Filter by Price</h4>
                             <div className="price-slider-wrapper">
                                 <Slider range min={filterData.minPrice} max={filterData.maxPrice} value={priceRange} onChange={handlePriceChange} allowCross={false} />
                                 <div className="price-slider-labels"><span>৳{priceRange[0]}</span><span>৳{priceRange[1]}</span></div>
                             </div>
-                        </div>
+                        </div>*!/}
 
                         {filterData.availableBrands?.length > 0 && (
                             <div className="filter-block">
@@ -177,13 +153,13 @@ const AllProductsPage = () => {
 
                         <div className="filter-block">
                             <h4>Product Categories</h4>
-                            {/* Category & Subcategory mapping JSX */}
+                            {/!* Category & Subcategory mapping JSX *!/}
                         </div>
 
                         {filterData.availableTags?.length > 0 && (
                             <div className="filter-block">
                                 <h4>Tags</h4>
-                                {/* Tag mapping JSX */}
+                                {/!* Tag mapping JSX *!/}
                             </div>
                         )}
                     </>
@@ -193,7 +169,7 @@ const AllProductsPage = () => {
                 <div className="page-header">
                     <div className="active-filters">
                         <span>All Products</span>
-                        {/* Logic for dynamically showing active filter pills */}
+                        {/!* Logic for dynamically showing active filter pills *!/}
                         {areFiltersActive && <button className="clear-all-btn" onClick={clearAllFilters}>Clear all</button>}
                     </div>
                     <select className="sort-dropdown"><option>Default sorting</option></select>
@@ -207,4 +183,4 @@ const AllProductsPage = () => {
     );
 };
 
-export default AllProductsPage;
+export default AllProductsPage;*/

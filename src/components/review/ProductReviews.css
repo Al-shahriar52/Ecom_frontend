@@ -1,0 +1,78 @@
+.product-reviews-container {
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.review-list {
+    margin-top: 2rem;
+}
+
+.review-item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.review-author {
+    font-weight: 600;
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.review-comment {
+    color: #555;
+    line-height: 1.6;
+}
+
+.load-more-reviews {
+    display: block;
+    margin: 2rem auto 0;
+    padding: 10px 20px;
+    border: 1px solid #E91E63;
+    background-color: #fff;
+    color: #E91E63;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Add these styles to the end of ProductReviews.css */
+
+.review-list h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.review-image-wrapper {
+    margin-top: 1rem;
+}
+
+.review-image {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    object-fit: cover;
+}
+
+.loading-text {
+    text-align: center;
+    padding: 1rem;
+    color: #888;
+}

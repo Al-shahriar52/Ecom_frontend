@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ShopPage from './pages/ShopPage';
-import AllProductsPage from './pages/AllProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
 
 // --- Context Providers ---
 import { AuthProvider } from './context/AuthContext';
@@ -58,7 +58,7 @@ function App() {
                             <Route path="/brand/:slug" element={<ShopPage />} />
                             <Route path="/category/:slug" element={<ShopPage />} />
                             <Route path="/subcategory/:slug" element={<ShopPage />} />
-                            <Route path="/products" element={<AllProductsPage />} />
+                            <Route path="/product/:productId" element={<ProductDetailPage />} />
 
                             {/* --- User Dashboard Routes --- */}
                             <Route path="/dashboard" element={<DashboardLayout />}>

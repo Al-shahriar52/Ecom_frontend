@@ -1,0 +1,20 @@
+.star-rating span {
+    font-size: 1.8rem;
+    color: #ddd;
+    transition: color 0.2s;
+}
+
+/* Make stars yellow when the 'on' class is applied */
+.star-rating span.on {
+    color: #f8d64e;
+}
+
+/* Make stars gray when the 'off' class is applied */
+.star-rating span.off {
+    color: #ccc;
+}
+
+/* Add a pointer cursor ONLY when the star rating is interactive */
+.star-rating.interactive span {
+    cursor: pointer;
+}
