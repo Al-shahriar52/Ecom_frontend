@@ -65,7 +65,11 @@ const ProductDetailPage = () => {
                         </div>
                     </Tab>
                     <Tab label={`Reviews (${product.numReviews || 0})`}>
-                        <ProductReviews productId={productId} />
+                        <ProductReviews
+                            productId={productId}
+                            averageRating={product.rating}
+                            numReviews={product.numReviews}
+                        />
                     </Tab>
                 </Tabs>
             </div>
