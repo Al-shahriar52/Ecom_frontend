@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ShopPage from './pages/ShopPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import FbtManagementPage from './pages/admin/FbtManagementPage';
 
 // --- Context Providers ---
 import { AuthProvider } from './context/AuthContext';
@@ -79,6 +80,7 @@ function App() {
                                     <Route path="orders" element={<AdminOrders />} />
                                     <Route path="accounting" element={<Accounting />} />
                                     <Route path="products/add" element={<AddProduct />} />
+                                    <Route path="frequently-bought-together" element={<FbtManagementPage />} />
                                 </Route>
                             </Route>
 
