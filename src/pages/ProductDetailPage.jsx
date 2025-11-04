@@ -6,6 +6,8 @@ import ProductGallery from '../components/productDetails/ProductGallery';
 import ProductInfo from '../components/productDetails/ProductInfo';
 import { Tabs, Tab } from '../components/productDetails/Tabs';
 import ProductReviews from '../components/review/ProductReviews';
+import FrequentlyBoughtTogether from '../components/productDetails/FrequentlyBoughtTogether';
+import SimilarProducts from '../components/productDetails/SimilarProducts';
 const ProductDetailPage = () => {
     const { productId } = useParams();
     const [product, setProduct] = useState(null);
@@ -48,6 +50,8 @@ const ProductDetailPage = () => {
                 <ProductInfo product={product} />
             </div>
 
+            <FrequentlyBoughtTogether mainProduct={product} />
+
             <div className="pdp-extra-info" id="full-description">
                 <Tabs>
                     <Tab label="Description">
@@ -73,6 +77,8 @@ const ProductDetailPage = () => {
                     </Tab>
                 </Tabs>
             </div>
+
+            <SimilarProducts productId={product.productId} />
 
             {/* We will add more sections later */}
         </div>

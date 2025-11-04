@@ -3,6 +3,7 @@ import { CartContext } from '../../context/CartContext';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import './ProductInfo.css';
+import ProductOffers from './ProductOffers';
 
 const ProductInfo = ({ product }) => {
     const { addToCart } = useContext(CartContext);
@@ -47,6 +48,8 @@ const ProductInfo = ({ product }) => {
                 Download App for <a href="#">iOS</a> or <a href="#">Android</a>
             </div>
 
+            <ProductOffers tagNames={product.tagNames} />
+
             <div className="pdp-actions-wrapper">
                 <button className="pdp-wishlist-btn" onClick={handleWishlistClick}>
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -68,9 +71,7 @@ const ProductInfo = ({ product }) => {
                     🔥 Only {product.quantity} items left in stock
                 </div>
             )}
-
-            {/* Add this entire block to ProductInfo.jsx */}
-
+            
             <div className="pdp-details-list">
 
                 <div className="pdp-brief-description">

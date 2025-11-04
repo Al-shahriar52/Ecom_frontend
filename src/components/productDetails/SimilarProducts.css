@@ -1,0 +1,26 @@
+/* src/components/productDetails/SimilarProducts.css */
+
+.similar-products-container {
+    margin: 3rem 0;
+}
+
+.similar-products-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.similar-products-list {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto; /* This enables horizontal scrolling */
+    padding-bottom: 1.5rem; /* Adds space for the scrollbar */
+}
+
+/* This targets each card inside the scrolling list */
+.similar-products-list .product-card {
+    flex: 0 0 250px; /* Each card has a fixed width, won't shrink or grow */
+    width: 250px;
+}

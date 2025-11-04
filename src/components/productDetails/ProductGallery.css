@@ -1,25 +1,33 @@
+/* src/components/productDetails/ProductGallery.css */
+
 .gallery-container {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    /* --- THIS IS THE KEY CHANGE --- */
+    /* It can grow and shrink, with a preferred base width of 500px */
+    flex: 1 1 500px;
+    max-width: 500px; /* Prevents it from becoming too large on wide screens */
 }
 
 .main-image-wrapper {
+    width: 100%;
     border: 1px solid #eee;
     border-radius: 8px;
     overflow: hidden;
-    aspect-ratio: 1 / 1; /* Makes the image container a perfect square */
+    aspect-ratio: 1 / 1;
 }
 
 .main-product-image {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Use 'contain' to see the whole product */
+    object-fit: contain;
 }
 
 .thumbnail-wrapper {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* Creates a row of 5 thumbnails */
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
     gap: 10px;
 }
 
@@ -44,4 +52,13 @@
 
 .thumbnail-item.active {
     border-color: #E91E63;
+}
+
+@media (max-width: 992px) {
+    .gallery-container {
+        max-width: 100%; /* Allows it to take full width when stacked */
+    }
+    .thumbnail-wrapper {
+        display: none; /* Hides thumbnails on smaller screens */
+    }
 }

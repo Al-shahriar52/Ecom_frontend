@@ -1,6 +1,9 @@
+/* src/components/productDetails/ProductInfo.css (Final Corrected Version) */
+
 .info-container {
     display: flex;
     flex-direction: column;
+    flex: 1 1 500px;
 }
 
 .info-container .pdp-title {
@@ -88,7 +91,7 @@
     background-color: #f7f7f7;
     border-radius: 6px;
     align-self: flex-start;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .info-container .pdp-app-download a {
@@ -123,7 +126,6 @@
     background-color: #34495e;
 }
 
-/* --- THIS RULE FIXES THE ICON SIZE --- */
 .info-container .pdp-wishlist-btn svg {
     width: 28px;
     height: 35px;
@@ -221,55 +223,28 @@
 
 .info-container .pdp-detail-item {
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #eee;
     font-size: 0.95rem;
+    gap: 1.5rem;
 }
 
 .info-container .pdp-detail-label {
-    color: #888;
-    width: 100px; /* Aligns the values vertically */
+    color: #666;
+    font-weight: 500;
+    width: 120px;
     flex-shrink: 0;
 }
 
 .info-container .pdp-detail-value {
-    color: #333;
+    color: #111;
     font-weight: 500;
+    line-height: 1.6;
 }
 
 .info-container .pdp-detail-value a {
-    color: #007bff;
-    text-decoration: none;
-    transition: text-decoration 0.2s ease;
-}
-
-.info-container .pdp-detail-value a:hover {
-    text-decoration: underline;
-}
-
-.info-container .pdp-detail-item {
-    display: flex;
-    align-items: baseline; /* Aligns the text on the same line */
-    padding: 0.8rem 0; /* Vertical spacing */
-    border-bottom: 1px solid #eee; /* Horizontal line between rows */
-    font-size: 0.95rem;
-    gap: 1.5rem; /* Space between label and value */
-}
-
-.info-container .pdp-detail-label {
-    color: #666; /* Medium gray color for label */
-    font-weight: 500;
-    width: 120px;
-    flex-shrink: 0; /* Prevents the label from shrinking */
-}
-
-.info-container .pdp-detail-value {
-    color: #111; /* Darker color for value */
-    font-weight: 500;
-    line-height: 1.6; /* More space for long, wrapping text */
-}
-
-.info-container .pdp-detail-value a {
-    color: #E91E63; /* Use your theme's link color */
+    color: #E91E63;
     text-decoration: none;
     font-weight: 600;
 }
@@ -277,6 +252,7 @@
 .info-container .pdp-detail-value a:hover {
     text-decoration: underline;
 }
+
 .info-container .pdp-brief-description {
     display: flex;
     gap: 1.5rem;
@@ -284,16 +260,34 @@
     padding-top: 1.5rem;
 }
 
-.info-container .pdp-brief-description h4 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #888;
-    margin: 0 0 0.5rem 0;
-}
+/* --- RESPONSIVE STYLES FOR PRODUCT INFO --- */
+@media (max-width: 768px) {
 
-.info-container .pdp-brief-description p {
-    font-size: 0.95rem;
-    line-height: 1.7;
-    color: #555;
-    margin: 0;
+    /* Use a more specific selector to win the specificity war */
+    .info-container .pdp-actions-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+    }
+
+    .info-container .pdp-wishlist-btn,
+    .info-container .pdp-quantity-selector,
+    .info-container .pdp-add-to-cart-btn {
+        height: 48px;
+        width: 100%;
+    }
+
+    .info-container .pdp-detail-item,
+    .info-container .pdp-brief-description {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .info-container .pdp-detail-label,
+    .info-container .pdp-brief-label {
+        width: auto;
+        font-weight: 600;
+        color: #555;
+    }
 }
