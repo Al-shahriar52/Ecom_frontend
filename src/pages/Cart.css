@@ -220,6 +220,22 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    /* Add transition for smooth effect */
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* --- HOVER EFFECT --- */
+.proceed-checkout-btn:hover {
+    background-color: #E91E63; /* Changes from Black to Dark Grey */
+    transform: translateY(-2px); /* Moves button up slightly */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Increases shadow */
+}
+
+/* Optional: Active State (Clicking) */
+.proceed-checkout-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .clickable {

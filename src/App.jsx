@@ -20,6 +20,7 @@ import { Toaster } from 'react-hot-toast';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import AuthPage from './pages/AuthPage';
+import Checkout from './pages/Checkout';
 
 // --- User Dashboard Pages ---
 import DashboardLayout from './pages/dashboard/DashboardLayout';
@@ -58,6 +59,7 @@ function App() {
                             <Route path="/category/:slug" element={<ShopPage />} />
                             <Route path="/subcategory/:slug" element={<ShopPage />} />
                             <Route path="/product/:productId" element={<ProductDetailPage />} />
+                            <Route path="/checkout" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
 
                             {/* --- User Dashboard Routes --- */}
                             <Route path="/dashboard" element={<DashboardLayout />}>
