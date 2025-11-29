@@ -1,7 +1,6 @@
 
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-hot-toast'; // Import toast for user feedback
 import { CartContext } from '../context/CartContext';
 import './ProductCard.css';
 import StarRating from './StarRating';
@@ -18,9 +17,14 @@ const ProductCard = ({ product }) => {
     const amountSaved = hasDiscount ? (product.originalPrice - product.discountedPrice).toFixed(2) : 0;
 
     // A handler to provide user feedback
-    const handleAddToCart = () => {
-        addToCart(product);
-        toast.success(`${product.name} added to cart!`);
+    const handleAddToCart = (e) => {
+        // Prevent the click from bubbling up if you wrap the card in a Link later
+        e.preventDefault();
+
+        // Just call the context function.
+        // Pass quantity '1' explicitly.
+        // The Context will handle the API call, the loading state, and the Toast message.
+        addToCart(product, 1);
     };
 
     // Use a placeholder if imageUrl is missing from the API response
