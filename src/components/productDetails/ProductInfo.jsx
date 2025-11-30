@@ -5,17 +5,19 @@ import { toast } from 'react-hot-toast';
 import './ProductInfo.css';
 import ProductOffers from './ProductOffers';
 
-const ProductInfo = ({ product }) => {
+const ProductInfo = ({ product, isWishlisted, onWishlistToggle }) => {
     const { addToCart } = useContext(CartContext);
     const [quantity, setQuantity] = useState(1);
 
-    const handleAddToCart = () => {
-        addToCart(product, quantity);
-        toast.success(`${quantity} x ${product.name} added to cart!`);
-    };
+    // --- UPDATED HANDLER ---
+    const handleAddToCart = async () => {
+        // 1. Wait for addToCart to finish
+        const success = await addToCart(product, quantity);
 
-    const handleWishlistClick = () => {
-        toast.success(`${product.name} added to wishlist!`);
+        // 2. Only show toast if it returned TRUE (Logged in & API Success)
+        if (success) {
+            toast.success(`${quantity} x ${product.name} added to cart!`);
+        }
     };
 
     const savedAmount = Math.round(product.originalPrice - product.discountedPrice);
@@ -51,11 +53,21 @@ const ProductInfo = ({ product }) => {
             <ProductOffers tagNames={product.tagNames} />
 
             <div className="pdp-actions-wrapper">
-                <button className="pdp-wishlist-btn" onClick={handleWishlistClick}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <button
+                    className={`pdp-wishlist-btn ${isWishlisted ? 'active' : ''}`}
+                    onClick={onWishlistToggle}
+                    title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                >
+                    <svg
+                        width="28" height="28" viewBox="0 0 24 24"
+                        fill={isWishlisted ? "#E91E63" : "none"}
+                        stroke={isWishlisted ? "#E91E63" : "currentColor"}
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    >
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                 </button>
+
                 <div className="pdp-quantity-selector">
                     <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</button>
                     <span>{quantity}</span>
@@ -71,16 +83,15 @@ const ProductInfo = ({ product }) => {
                     🔥 Only {product.quantity} items left in stock
                 </div>
             )}
-            
-            <div className="pdp-details-list">
 
+            <div className="pdp-details-list">
                 <div className="pdp-brief-description">
                     <span className="pdp-brief-label">Brief Description</span>
                     <div className="pdp-brief-content">
                         <p>
                             <strong><em>Please note: The packaging might be slightly scratched, distorted, torn, slightly dirty, or look old.</em></strong>
                             {' '}
-                            {product.description.split('.').slice(0, 1).join('.') + '.'}
+                            {product.description ? product.description.split('.').slice(0, 1).join('.') + '.' : ''}
                         </p>
                         <a href="#full-description" className="read-more-link">Read More...</a>
                     </div>

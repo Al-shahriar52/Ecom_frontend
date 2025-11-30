@@ -1,3 +1,4 @@
+/*
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
@@ -62,6 +63,127 @@ export const CartProvider = ({ children }) => {
             await fetchCart(true);
         } catch (error) {
             toast.error("Failed to add item.");
+        }
+    };
+
+    // --- UPDATE QUANTITY ---
+    const updateQuantity = async (cartItemId, newQuantity) => {
+        if (!user) return;
+        setUpdatingItemIds(prev => [...prev, cartItemId]);
+
+        try {
+            await axiosInstance.put('/api/v1/cart/update', {
+                cartItemId,
+                quantity: newQuantity
+            });
+            await fetchCart(true);
+        } catch (error) {
+            toast.error("Could not update quantity");
+        } finally {
+            setUpdatingItemIds(prev => prev.filter(id => id !== cartItemId));
+        }
+    };
+
+    // --- REMOVE ITEM ---
+    const removeFromCart = async (cartItemId) => {
+        if (!user) return;
+        setUpdatingItemIds(prev => [...prev, cartItemId]);
+
+        try {
+            await axiosInstance.delete(`/api/v1/cart/delete/${cartItemId}`);
+            toast.success("Item removed");
+            await fetchCart(true);
+        } catch (error) {
+            toast.error("Could not remove item");
+        } finally {
+            setUpdatingItemIds(prev => prev.filter(id => id !== cartItemId));
+        }
+    };
+
+    return (
+        <CartContext.Provider value={{
+            cart,
+            cartTotal,
+            loading,
+            updatingItemIds,
+            addToCart,
+            removeFromCart,
+            updateQuantity,
+            fetchCart
+        }}>
+            {children}
+        </CartContext.Provider>
+    );
+};*/
+
+
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import axiosInstance from '../api/AxiosInstance';
+import { toast } from 'react-hot-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { AuthContext } from './AuthContext';
+
+export const CartContext = createContext();
+
+export const CartProvider = ({ children }) => {
+    const [cart, setCart] = useState([]);
+    const [cartTotal, setCartTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [updatingItemIds, setUpdatingItemIds] = useState([]);
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const { user } = useContext(AuthContext);
+
+    // --- FETCH CART ---
+    const fetchCart = async (isBackground = false) => {
+        if (!user) {
+            setCart([]);
+            setCartTotal(0);
+            return;
+        }
+
+        if (!isBackground) setLoading(true);
+
+        try {
+            const response = await axiosInstance.get('/api/v1/cart/getCart');
+            const data = response.data.data;
+            setCart(data.items || []);
+            setCartTotal(data.totalPrice || 0);
+        } catch (error) {
+            console.error("Failed to fetch cart:", error);
+        } finally {
+            if (!isBackground) setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCart();
+    }, [user]);
+
+    // --- ADD TO CART (UPDATED) ---
+    const addToCart = async (product, quantity = 1) => {
+        // 1. If not logged in, Redirect and Return FALSE
+        if (!user) {
+            navigate('/login', { state: { from: location } });
+            return false; // <--- Indicates failure/redirect
+        }
+
+        try {
+            await axiosInstance.post('/api/v1/cart/addToCart', {
+                productId: product.productId || product.id,
+                quantity: quantity
+            });
+
+            // Optional: Remove this generic toast if you prefer the specific one in ProductInfo
+            // toast.success("Item added!");
+
+            await fetchCart(true);
+            return true; // <--- Indicates Success
+        } catch (error) {
+            toast.error("Failed to add item.");
+            return false; // <--- Indicates Failure
         }
     };
 

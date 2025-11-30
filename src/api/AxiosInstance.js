@@ -10,6 +10,22 @@ const axiosInstance = axios.create({
     },
 });
 
+// --- QUEUE SYSTEM FOR PARALLEL REQUESTS ---
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
+// --- RESPONSE INTERCEPTOR ---
 axiosInstance.interceptors.response.use(
     (response) => {
         return response;
@@ -17,28 +33,46 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // 1. PREVENT INFINITE LOOP
-        // If the error comes from the Login or Refresh endpoint, DO NOT try to refresh again.
+        // 1. IGNORE LOGIN/REFRESH ERRORS
+        // Use YOUR correct endpoint here
         if (originalRequest.url.includes('/auth/login') || originalRequest.url.includes('/user/refreshAccessToken')) {
             return Promise.reject(error);
         }
 
-        // 2. Check for 401 and if we haven't retried yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // 2. CHECK FOR 401 OR 403
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+
+            // A. QUEUE REQUESTS IF ALREADY REFRESHING
+            if (isRefreshing) {
+                return new Promise(function(resolve, reject) {
+                    failedQueue.push({resolve, reject});
+                }).then(() => {
+                    return axiosInstance(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            // B. START REFRESH
             originalRequest._retry = true;
+            isRefreshing = true;
 
             try {
-                // Attempt to Refresh
+                // Call YOUR correct endpoint
                 await axiosInstance.post('/api/v1/user/refreshAccessToken');
 
-                // If success, retry the original request
+                processQueue(null, 'success');
+                isRefreshing = false;
+
                 return axiosInstance(originalRequest);
+
             } catch (refreshError) {
+                processQueue(refreshError, null);
+                isRefreshing = false;
+
                 console.error("Session expired.");
                 localStorage.removeItem('user');
 
-                // 3. PREVENT RELOAD LOOP ON LOGIN PAGE
-                // Only redirect if we are NOT already on the login page
                 if (window.location.pathname !== '/login') {
                     window.location.href = '/login';
                 }
