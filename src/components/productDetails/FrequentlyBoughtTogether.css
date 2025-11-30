@@ -1,0 +1,150 @@
+.fbt-container {
+    margin: 3rem 0;
+    padding: 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fdfaf9;
+}
+
+.fbt-container h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* --- NEW: This is the main layout container --- */
+.fbt-top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.fbt-visuals {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fbt-visuals img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.fbt-plus-icon {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #555;
+}
+
+/* --- UPDATED: This now stacks the price and button vertically --- */
+.fbt-summary-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fbt-total-price-wrapper {
+    text-align: center;
+}
+
+.fbt-total-price-wrapper span {
+    font-size: 1rem;
+    color: #333;
+}
+
+.fbt-total-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #E91E63;
+}
+
+.fbt-add-selected-btn {
+    padding: 14px 30px;
+    background-color: #E91E63;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.fbt-add-selected-btn:hover {
+    background-color: #c2185b;
+}
+
+.fbt-add-selected-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* The list of selectable items */
+.fbt-item-list {
+    list-style: none;
+    padding: 1rem 0 0 0;
+    margin: 0;
+}
+
+.fbt-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.fbt-item-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: #E91E63;
+    flex-shrink: 0;
+}
+
+.fbt-item-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.fbt-item-name {
+    font-size: 1rem;
+    color: #333;
+}
+
+.fbt-item-name strong {
+    color: #000;
+}
+
+.fbt-item-pricing {
+    margin-top: 4px;
+}
+
+.fbt-item-pricing .original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 8px;
+}
+
+.fbt-item-pricing .discounted-price {
+    font-weight: 700;
+    color: #E91E63;
+}
+
+/* --- RESPONSIVE STYLES FOR FREQUENTLY BOUGHT TOGETHER --- */
+
+@media (max-width: 768px) {
+
+    /* This is the key fix */
+    .fbt-top-section {
+        flex-direction: column; /* Stack the images and summary vertically */
+        align-items: center; /* Center them horizontally */
+        gap: 2rem; /* Add space between the stacked items */
+    }
+
+    .fbt-summary-box {
+        width: 100%; /* Make the summary box take full width */
+    }
+}

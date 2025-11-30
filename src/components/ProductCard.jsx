@@ -1,33 +1,3 @@
-/*
-import React, { useContext } from 'react';
-import { CartContext } from '../context/CartContext';
-import './ProductCard.css';
-
-const ProductCard = ({ product }) => {
-    const { addToCart } = useContext(CartContext);
-
-    return (
-        <div className="product-card">
-            <div className="product-image-container">
-                <img src={product.image} alt={product.title} className="product-image" />
-            </div>
-            <div className="product-details">
-                <h3 className="product-title">{product.title}</h3>
-                <p className="product-description">{product.description}</p>
-                <div className="product-meta">
-                    <span className="product-price">${product.price.toFixed(2)}</span>
-                    <span className="product-rating">⭐ {product.rating}</span>
-                </div>
-                <button className="btn add-to-cart-btn" onClick={() => addToCart(product)}>
-                    Add to Cart
-                </button>
-            </div>
-        </div>
-    );
-};
-
-export default ProductCard;*/
-
 
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
@@ -38,33 +8,58 @@ import StarRating from './StarRating';
 const ProductCard = ({ product }) => {
     const { addToCart } = useContext(CartContext);
 
-    const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+    // This logic correctly uses the API's price fields
+    const hasDiscount = product.originalPrice && product.originalPrice > product.discountedPrice;
     const discountPercentage = hasDiscount
-        ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+        ? Math.round(((product.originalPrice - product.discountedPrice) / product.originalPrice) * 100)
         : 0;
+
+    const amountSaved = hasDiscount ? (product.originalPrice - product.discountedPrice).toFixed(2) : 0;
+
+    // A handler to provide user feedback
+    const handleAddToCart = (e) => {
+        // Prevent the click from bubbling up if you wrap the card in a Link later
+        e.preventDefault();
+
+        // Just call the context function.
+        // Pass quantity '1' explicitly.
+        // The Context will handle the API call, the loading state, and the Toast message.
+        addToCart(product, 1);
+    };
+
+    // Use a placeholder if imageUrl is missing from the API response
+    const imageUrl = product.imageUrl || 'https://via.placeholder.com/300';
 
     return (
         <div className="product-card">
-            <Link to={`/product/${product.id}`} className="product-image-link">
+            {/* Change: Use product.productId from the API for the link */}
+            <Link to={`/product/${product.productId}`} className="product-image-link">
                 <div className="product-image-container">
-                    {/* Fix 1: Changed product.name to product.title for the alt text */}
-                    <img src={product.image} alt={product.title} className="product-image" />
+                    {/* Change: Use product.imageUrl from the API */}
+                    <img src={imageUrl} alt={product.name} className="product-image" />
                     {hasDiscount && (
-                        <div className="discount-badge">{discountPercentage}% OFF</div>
+                        <>
+                            <div className="discount-badge discount-percent">
+                                {discountPercentage}% OFF
+                            </div>
+                            <div className="discount-badge amount-saved">
+                                SAVE ৳{amountSaved}
+                            </div>
+                        </>
+
                     )}
                 </div>
             </Link>
             <div className="product-info">
                 <h3 className="product-name">
-                    {/* Fix 1: Changed product.name to product.title to display the title */}
-                    <Link to={`/product/${product.id}`}>{product.title}</Link>
+                    {/* Change: Use product.productId for the link and product.name for the title */}
+                    <Link to={`/product/${product.productId}`}>{product.name}</Link>
                 </h3>
 
-                {/* Fix 2: Always render the container to maintain consistent height */}
                 <div className="product-tag-container">
-                    {product.tag && (
-                        <span className={`product-tag tag-${product.tag.toLowerCase().replace(' ', '-')}`}>
-                            {product.tag}
+                    {product.tagName && (
+                        <span className={`product-tag tag-${product.tagName.toLowerCase().replace(' ', '-')}`}>
+                            {product.tagName}
                         </span>
                     )}
                 </div>
@@ -73,14 +68,14 @@ const ProductCard = ({ product }) => {
                     {hasDiscount && (
                         <span className="original-price">৳{product.originalPrice.toFixed(2)}</span>
                     )}
-                    <span className="current-price">৳{product.price.toFixed(2)}</span>
+                    <span className="current-price">৳{product.discountedPrice.toFixed(2)}</span>
                 </div>
 
                 <div className="product-rating">
                     <StarRating rating={product.rating} />
                 </div>
 
-                <button onClick={() => addToCart(product)} className="add-to-cart-btn">
+                <button onClick={handleAddToCart} className="add-to-cart-btn">
                     ADD TO CART
                 </button>
             </div>

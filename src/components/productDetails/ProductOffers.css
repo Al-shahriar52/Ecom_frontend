@@ -1,0 +1,40 @@
+.offers-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.offer-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000;
+    transition: all 0.25s ease-in-out;
+}
+
+.offer-tag svg {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.offer-tag span {
+    user-select: none;
+}
+
+.offer-tag:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+.offer-tag:hover svg {
+    filter: invert(1);
+    transition: filter 0.25s ease-in-out;
+}

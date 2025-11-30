@@ -37,9 +37,6 @@
 
 .discount-badge {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: #ef4444; /* Red */
     color: white;
     padding: 4px 8px;
     border-radius: 4px;
@@ -48,20 +45,33 @@
     z-index: 2;
 }
 
+.discount-badge.discount-percent {
+    top: 10px;
+    left: 10px;
+    background-color: #ef4444;
+}
+
+.discount-badge.amount-saved {
+    top: 10px;
+    right: 10px;
+    background-color: #3b82f6;
+}
+
 .product-info {
-    padding: 15px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 .product-name {
-    font-size: 15px;
-    font-weight: 500;
-    color: #333;
-    height: 45px;
-    overflow: hidden;
-    margin: 0 0 10px 0;
+    font-size: 14px;
+    height: 21px; /* Enforces a single line */
+    margin: 0 0 8px 0;
+    width: 100%; /* Ensure it takes full width to apply ellipsis */
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden; /* Hides the overflowing text */
+    text-overflow: ellipsis; /* Adds the "..." at the end */
 }
 .product-name a {
     text-decoration: none;
@@ -82,17 +92,33 @@
     font-weight: 600;
     text-transform: uppercase;
 }
-.tag-sale {
+.product-tag.tag-sale {
     background-color: #fee2e2; /* Light Red */
-    color: #ef4444; /* Red */
+    color: #ef4444; /* Dark Red */
 }
-.tag-free-shipping {
+
+/* For "Free Shipping" Tag */
+.product-tag.tag-free-shipping {
     background-color: #dcfce7; /* Light Green */
-    color: #22c55e; /* Green */
+    color: #22c55e; /* Dark Green */
 }
-.tag-exclusive {
-    background-color: #e0e7ff; /* Light Indigo */
-    color: #4f46e5; /* Indigo */
+
+/* For "Best Selling" Tag */
+.product-tag.tag-best-selling {
+    background-color: #ffedd5; /* Light Orange */
+    color: #f97316; /* Dark Orange */
+}
+
+/* For "Top Rating" Tag */
+.product-tag.tag-top-rating {
+    background-color: #fef9c3; /* Light Yellow */
+    color: #eab308; /* Dark Yellow */
+}
+
+/* For "New Arrival" Tag */
+.product-tag.tag-new-arrival {
+    background-color: #dbeafe; /* Light Blue */
+    color: #3b82f6; /* Dark Blue */
 }
 
 .price-container {
@@ -134,4 +160,40 @@
 .add-to-cart-btn:hover {
     background-color: #34495e; /* Slightly lighter shade for hover */
     transform: translateY(-2px);
+}
+
+/* ======================================== */
+/* --- Product Card Responsive Styles --- */
+/* ======================================== */
+
+@media (max-width: 480px) {
+    /* This targets screens smaller than 480px, like most mobile phones */
+
+    .product-card .discount-badge {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 6px;
+    }
+
+    .product-card .product-info {
+        padding: 10px; /* Reduce padding inside the info section */
+    }
+
+    .product-card .product-name {
+        font-size: 13px;
+        height: 19px; /* Adjust height for the smaller font */
+    }
+
+    .product-card .current-price {
+        font-size: 16px;
+    }
+
+    .product-card .original-price {
+        font-size: 12px;
+    }
+
+    .product-card .add-to-cart-btn {
+        padding: 10px;
+        font-size: 12px;
+    }
 }

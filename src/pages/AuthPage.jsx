@@ -1,9 +1,10 @@
 
 import React, { useState, useContext } from 'react';
+// ADDED: useNavigate and useLocation to handle the redirection logic
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import './AuthPage.css';
 
-// This validation function is used by both Login and Register
 const validateField = (name, value) => {
     switch (name) {
         case 'name':
@@ -60,6 +61,11 @@ const AuthPage = () => {
 // --- Updated LoginForm Component ---
 const LoginForm = () => {
     const { login } = useContext(AuthContext);
+
+    // 1. Hooks for Navigation
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [formData, setFormData] = useState({ emailOrPhone: '', password: '' });
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
@@ -88,7 +94,25 @@ const LoginForm = () => {
         setTouched({ emailOrPhone: true, password: true });
 
         if (!formErrors.emailOrPhone && !formErrors.password) {
-            await login(formData.emailOrPhone, formData.password);
+            // 2. Call Login and wait for result
+            const result = await login(formData.emailOrPhone, formData.password);
+
+            if (result.success) {
+                // 3. LOGIC: Check if we have a "from" location (e.g. Product Page)
+                const from = location.state?.from?.pathname;
+
+                if (from) {
+                    // Go back to where user came from
+                    navigate(from, { replace: true });
+                } else {
+                    // Default Logic (No previous page found)
+                    if (result.role === 'ADMIN') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/dashboard');
+                    }
+                }
+            }
         }
     };
 
@@ -112,9 +136,14 @@ const LoginForm = () => {
     );
 };
 
-// --- UPDATED RegisterForm Component ---
+// --- Updated RegisterForm Component ---
 const RegisterForm = () => {
     const { register } = useContext(AuthContext);
+
+    // Hooks for Navigation
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [formData, setFormData] = useState({ name: '', emailOrPhone: '', password: '' });
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
@@ -133,7 +162,7 @@ const RegisterForm = () => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const formErrors = {
             name: validateField('name', formData.name),
@@ -144,7 +173,24 @@ const RegisterForm = () => {
         setTouched({ name: true, emailOrPhone: true, password: true });
 
         if (!formErrors.name && !formErrors.emailOrPhone && !formErrors.password) {
-            register(formData.name, formData.emailOrPhone, formData.password);
+            // Register calls login internally in your AuthContext
+            const result = await register(formData.name, formData.emailOrPhone, formData.password);
+
+            if (result && result.success) {
+                // Same logic as Login: Check if we have a "from" location
+                const from = location.state?.from?.pathname;
+
+                if (from) {
+                    navigate(from, { replace: true });
+                } else {
+                    // Default logic
+                    if (result.role === 'ADMIN') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/dashboard');
+                    }
+                }
+            }
         }
     };
 

@@ -44,7 +44,7 @@ const ProductManagement = () => {
                     sortBy: sortConfig.key,
                     sortDir: sortConfig.direction,
                     query: searchTerm,
-                    category: categoryFilter === 'All' ? '' : categoryFilter,
+                    categoryId: categoryFilter === 'All' ? '' : categoryFilter,
                 };
 
                 const response = await axiosInstance.get('/api/v1/product/search', { params });
@@ -60,7 +60,7 @@ const ProductManagement = () => {
         };
 
         fetchProducts();
-    }, [pagination.pageNo, sortConfig, searchTerm, categoryFilter]); // Dependencies array
+    }, [pagination.pageNo, pagination.pageSize, sortConfig, searchTerm, categoryFilter]);// Dependencies array
 
     // Updates the sort configuration, which triggers the useEffect to re-fetch
     const requestSort = (key) => {
@@ -131,7 +131,7 @@ const ProductManagement = () => {
                         <select className="filter-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                             <option value="All">All Categories</option>
                             {categories.map(cat => (
-                                <option key={cat.id} value={cat.name}>
+                                <option key={cat.id} value={cat.id}>
                                     {cat.name}
                                 </option>
                             ))}

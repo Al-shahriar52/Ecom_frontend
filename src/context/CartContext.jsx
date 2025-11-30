@@ -1,68 +1,116 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { AuthContext } from './AuthContext';
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
-    const [selectedItems, setSelectedItems] = useState([]);
-    const [shippingDetails, setShippingDetails] = useState(null);
+    const [cartTotal, setCartTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [updatingItemIds, setUpdatingItemIds] = useState([]);
 
-    // Add to cart or increment quantity
-    const addToCart = (product) => {
-        setCart((prevCart) => {
-            const existingItem = prevCart.find((item) => item.id === product.id);
-            if (existingItem) {
-                return prevCart.map((item) =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-                );
-            }
-            return [...prevCart, { ...product, quantity: 1 }];
-        });
-        toast.success(`${product.title} added to cart!`);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // We only need 'user' to know IF we should try fetching
+    const { user } = useContext(AuthContext);
+
+    // --- FETCH CART ---
+    const fetchCart = async (isBackground = false) => {
+        // If not logged in, clear cart and return
+        if (!user) {
+            setCart([]);
+            setCartTotal(0);
+            return;
+        }
+
+        if (!isBackground) setLoading(true);
+
+        try {
+            // NO HEADERS NEEDED! Cookies are sent automatically.
+            const response = await axiosInstance.get('/api/v1/cart/getCart');
+            const data = response.data.data;
+            setCart(data.items || []);
+            setCartTotal(data.totalPrice || 0);
+        } catch (error) {
+            console.error("Failed to fetch cart:", error);
+        } finally {
+            if (!isBackground) setLoading(false);
+        }
     };
 
-    // Update item quantity
-    const updateQuantity = (productId, quantity) => {
-        setCart((prevCart) =>
-            prevCart.map((item) =>
-                item.id === productId ? { ...item, quantity: Math.max(1, quantity) } : item
-            )
-        );
+    useEffect(() => {
+        fetchCart();
+    }, [user]); // Re-fetch when user logs in/out
+
+    // --- ADD TO CART ---
+    const addToCart = async (product, quantity = 1) => {
+        if (!user) {
+            navigate('/login', { state: { from: location } });
+            return;
+        }
+
+        try {
+            await axiosInstance.post('/api/v1/cart/addToCart', {
+                productId: product.productId || product.id,
+                quantity: quantity
+            });
+            toast.success("Item added!");
+            await fetchCart(true);
+        } catch (error) {
+            toast.error("Failed to add item.");
+        }
     };
 
-    // Remove from cart
-    const removeFromCart = (productId) => {
-        setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
-        setSelectedItems((prevSelected) => prevSelected.filter(id => id !== productId));
+    // --- UPDATE QUANTITY ---
+    const updateQuantity = async (cartItemId, newQuantity) => {
+        if (!user) return;
+        setUpdatingItemIds(prev => [...prev, cartItemId]);
+
+        try {
+            await axiosInstance.put('/api/v1/cart/update', {
+                cartItemId,
+                quantity: newQuantity
+            });
+            await fetchCart(true);
+        } catch (error) {
+            toast.error("Could not update quantity");
+        } finally {
+            setUpdatingItemIds(prev => prev.filter(id => id !== cartItemId));
+        }
     };
 
-    // Toggle item selection
-    const toggleItemSelection = (productId) => {
-        setSelectedItems((prevSelected) =>
-            prevSelected.includes(productId)
-                ? prevSelected.filter((id) => id !== productId)
-                : [...prevSelected, productId]
-        );
+    // --- REMOVE ITEM ---
+    const removeFromCart = async (cartItemId) => {
+        if (!user) return;
+        setUpdatingItemIds(prev => [...prev, cartItemId]);
+
+        try {
+            await axiosInstance.delete(`/api/v1/cart/delete/${cartItemId}`);
+            toast.success("Item removed");
+            await fetchCart(true);
+        } catch (error) {
+            toast.error("Could not remove item");
+        } finally {
+            setUpdatingItemIds(prev => prev.filter(id => id !== cartItemId));
+        }
     };
 
-    // Clear cart after successful payment
-    const clearCart = () => {
-        setCart([]);
-        setSelectedItems([]);
-    }
-
-    const value = {
-        cart,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        selectedItems,
-        toggleItemSelection,
-        shippingDetails,
-        setShippingDetails,
-        clearCart,
-    };
-
-    return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+    return (
+        <CartContext.Provider value={{
+            cart,
+            cartTotal,
+            loading,
+            updatingItemIds,
+            addToCart,
+            removeFromCart,
+            updateQuantity,
+            fetchCart
+        }}>
+            {children}
+        </CartContext.Provider>
+    );
 };

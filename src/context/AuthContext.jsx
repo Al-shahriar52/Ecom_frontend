@@ -1,92 +1,87 @@
-/*
-
 import React, { createContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
-import { jwtDecode } from 'jwt-decode';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
 
+    // --- CHECK SESSION ON LOAD ---
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
+        const checkAuth = async () => {
+            try {
+                // We check if the cookie is valid by calling the /me endpoint
+                // (Ensure you added the /me endpoint to AuthController as discussed)
+                const response = await axiosInstance.get('/api/v1/auth/me');
+
+                // If successful, update user state
+                const userData = {
+                    name: response.data.data.name,
+                    role: response.data.data.role
+                };
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+            } catch (error) {
+                // If 401, cookies are invalid/missing
+                setUser(null);
+                localStorage.removeItem('user');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAuth();
     }, []);
 
+    // --- LOGIN ---
     const login = async (emailOrPhone, password) => {
         try {
-            const response = await axiosInstance.post('/api/v1/auth/login', {
-                emailOrPhone,
-                password
-            });
-            if (response.data?.data?.accessToken) {
-                const { accessToken, refreshToken } = response.data.data;
+            const response = await axiosInstance.post('/api/v1/auth/login', { emailOrPhone, password });
 
-                const decodedToken = jwtDecode(accessToken);
-                const userRole = decodedToken.roles && decodedToken.roles.length > 0
-                    ? decodedToken.roles[0].authority
-                    : 'USER';
+            // Note: response.data.data NO LONGER has the token string.
+            // It only has { name: "...", role: "..." }
+            const { name, role } = response.data.data;
 
-                const userData = {
-                    name: response.data.data.name || emailOrPhone,
-                    emailOrPhone,
-                    role: userRole
-                };
+            const userData = { name, role };
 
-                localStorage.setItem('user', JSON.stringify(userData));
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
+            // Update UI State
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
 
-                setUser(userData);
-                toast.success(response.data.message || "Login successful!");
-                navigate('/');
-                return { success: true };
-            }
+            toast.success("Login successful!");
+            return { success: true, role: role };
+
         } catch (error) {
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
-            } else {
-                toast.error('Login failed. Please try again.');
-            }
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Login failed.');
             return { success: false };
         }
     };
 
+    // --- REGISTER ---
     const register = async (name, emailOrPhone, password) => {
         try {
-            const response = await axiosInstance.post('/api/v1/auth/register', {
-                name,
-                emailOrPhone,
-                password
-            });
+            const response = await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
             toast.success(response.data.message);
-
-            // After successful registration, immediately call the login function
-            await login(emailOrPhone, password);
-
+            return await login(emailOrPhone, password);
         } catch (error) {
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
-            } else {
-                toast.error('Registration failed. Please try again.');
-            }
+            toast.error(error.response?.data?.message || 'Registration failed.');
+            return { success: false };
         }
     };
 
+    // --- LOGOUT ---
     const logout = async () => {
         try {
-            await axiosInstance.post('/api/v1/user/logout', {});
-            toast.success("Successfully logged out.");
+            // Call backend to clear cookies
+            await axiosInstance.post('/api/v1/user/logout');
         } catch (error) {
-            console.error("Logout failed:", error);
+            console.error("Logout error", error);
         } finally {
-            localStorage.clear();
+            // Clear UI state
+            localStorage.removeItem('user');
             setUser(null);
             window.location.href = '/login';
         }
@@ -94,123 +89,7 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
-        login,
-        logout,
-        register,
-        isAuthenticated: !!user,
-    };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};*/
-
-
-import React, { createContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../api/AxiosInstance';
-import { toast } from 'react-hot-toast';
-import { jwtDecode } from 'jwt-decode';
-
-export const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true); // Start as true to prevent premature rendering
-    const navigate = useNavigate();
-
-    // This effect runs once on app load to re-authenticate from localStorage
-    useEffect(() => {
-        try {
-            const storedUser = localStorage.getItem('user');
-            const accessToken = localStorage.getItem('accessToken');
-
-            if (storedUser && accessToken) {
-                // If user and token exist, set the user state and axios headers
-                setUser(JSON.parse(storedUser));
-                axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-            }
-        } catch (error) {
-            console.error("Failed to initialize auth state from localStorage", error);
-            // Clear corrupted storage if parsing fails
-            localStorage.clear();
-        } finally {
-            // Always set loading to false after the check is complete
-            setLoading(false);
-        }
-    }, []);
-
-    const login = async (emailOrPhone, password) => {
-        try {
-            const response = await axiosInstance.post('/api/v1/auth/login', { emailOrPhone, password });
-
-            if (response.data?.data?.accessToken) {
-                const { accessToken, refreshToken, name } = response.data.data;
-
-                // Decode token to get user roles/authorities
-                const decodedToken = jwtDecode(accessToken);
-                const userRole = decodedToken.roles && decodedToken.roles.length > 0
-                    ? decodedToken.roles[0].authority
-                    : 'USER'; // Default to USER if no roles found
-
-                const userData = {
-                    name: name || emailOrPhone, // Use name from response if available
-                    role: userRole
-                };
-
-                // Store everything needed for session persistence
-                localStorage.setItem('user', JSON.stringify(userData));
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
-
-                // Set default authorization header for all subsequent requests
-                axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
-                setUser(userData);
-                toast.success(response.data.message || "Login successful!");
-
-                // Restore role-based navigation
-                if (userRole === 'ADMIN') {
-                    navigate('/admin');
-                } else {
-                    navigate('/dashboard');
-                }
-
-                return { success: true };
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Login failed. Please try again.');
-            return { success: false };
-        }
-    };
-
-    const register = async (name, emailOrPhone, password) => {
-        try {
-            const response = await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
-            toast.success(response.data.message);
-            // After successful registration, automatically log the user in
-            await login(emailOrPhone, password);
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
-        }
-    };
-
-    const logout = async () => {
-        try {
-            await axiosInstance.post('/api/v1/user/logout', {});
-        } catch (error) {
-            // Don't show an error to the user, just log it. The main goal is to clear the session.
-            console.error("Logout API call failed:", error);
-        } finally {
-            // Clear everything regardless of API call success
-            localStorage.clear();
-            setUser(null);
-            delete axiosInstance.defaults.headers.common['Authorization']; // Clean up axios instance
-            window.location.href = '/login'; // Force a clean reload to the login page
-        }
-    };
-
-    const value = {
-        user,
-        setUser, // Provide setUser for profile updates
+        setUser,
         login,
         logout,
         register,
@@ -220,7 +99,6 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {/* Don't render children until the initial auth check is complete */}
             {!loading && children}
         </AuthContext.Provider>
     );
