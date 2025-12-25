@@ -14,6 +14,7 @@ import FloatingCartButton from './components/FloatingCartButton';
 // --- Context Providers ---
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { Toaster } from 'react-hot-toast';
 
 // --- Main Pages ---
@@ -39,6 +40,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 import Accounting from './pages/admin/Accounting';
 import CouponManagement from './pages/admin/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';
+import Wishlist from './pages/Wishlist';
 
 function App() {
     return (
@@ -46,6 +48,7 @@ function App() {
             <ScrollToTop />
             <AuthProvider>
                 <CartProvider>
+                    <WishlistProvider>
                     <Toaster position="top-center" reverseOrder={false} />
                     <Header />
                     <FloatingCartButton />
@@ -60,6 +63,7 @@ function App() {
                             <Route path="/subcategory/:slug" element={<ShopPage />} />
                             <Route path="/product/:productId" element={<ProductDetailPage />} />
                             <Route path="/checkout" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
+                            <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Wishlist /></ProtectedRoute>}/>
 
                             {/* --- User Dashboard Routes --- */}
                             <Route path="/dashboard" element={<DashboardLayout />}>
@@ -87,6 +91,7 @@ function App() {
                         </Routes>
                     </main>
                     <Footer />
+                    </WishlistProvider>
                 </CartProvider>
             </AuthProvider>
         </Router>

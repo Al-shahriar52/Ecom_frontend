@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
 import './ProductDetailPage.css';
@@ -8,11 +8,14 @@ import { Tabs, Tab } from '../components/productDetails/Tabs';
 import ProductReviews from '../components/review/ProductReviews';
 import FrequentlyBoughtTogether from '../components/productDetails/FrequentlyBoughtTogether';
 import SimilarProducts from '../components/productDetails/SimilarProducts';
+import { WishlistContext } from '../context/WishlistContext';
+
 const ProductDetailPage = () => {
     const { productId } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -43,11 +46,29 @@ const ProductDetailPage = () => {
         return <div className="pdp-error">Product not found.</div>;
     }
 
+    const isWishlisted = product ? isInWishlist(product.productId) : false;
+
+    // 4. DEFINE THE TOGGLE FUNCTION
+    const handleWishlistToggle = () => {
+        if (!product) return;
+
+        if (isWishlisted) {
+            removeFromWishlist(product.productId);
+        } else {
+            addToWishlist(product);
+        }
+    };
+
     return (
         <div className="pdp-container container">
             <div className="pdp-main-content">
                 <ProductGallery imageUrls={product.imageUrls} />
-                <ProductInfo product={product} />
+
+                <ProductInfo
+                    product={product}
+                    isWishlisted={isWishlisted}
+                    onWishlistToggle={handleWishlistToggle}
+                />
             </div>
 
             <FrequentlyBoughtTogether mainProduct={product} />
@@ -79,8 +100,6 @@ const ProductDetailPage = () => {
             </div>
 
             <SimilarProducts productId={product.productId} />
-
-            {/* We will add more sections later */}
         </div>
     );
 };

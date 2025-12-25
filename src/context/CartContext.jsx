@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
@@ -15,12 +16,10 @@ export const CartProvider = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // We only need 'user' to know IF we should try fetching
     const { user } = useContext(AuthContext);
 
     // --- FETCH CART ---
     const fetchCart = async (isBackground = false) => {
-        // If not logged in, clear cart and return
         if (!user) {
             setCart([]);
             setCartTotal(0);
@@ -30,7 +29,6 @@ export const CartProvider = ({ children }) => {
         if (!isBackground) setLoading(true);
 
         try {
-            // NO HEADERS NEEDED! Cookies are sent automatically.
             const response = await axiosInstance.get('/api/v1/cart/getCart');
             const data = response.data.data;
             setCart(data.items || []);
@@ -44,13 +42,14 @@ export const CartProvider = ({ children }) => {
 
     useEffect(() => {
         fetchCart();
-    }, [user]); // Re-fetch when user logs in/out
+    }, [user]);
 
-    // --- ADD TO CART ---
+    // --- ADD TO CART (UPDATED) ---
     const addToCart = async (product, quantity = 1) => {
+        // 1. If not logged in, Redirect and Return FALSE
         if (!user) {
             navigate('/login', { state: { from: location } });
-            return;
+            return false; // <--- Indicates failure/redirect
         }
 
         try {
@@ -58,10 +57,15 @@ export const CartProvider = ({ children }) => {
                 productId: product.productId || product.id,
                 quantity: quantity
             });
-            toast.success("Item added!");
+
+            // Optional: Remove this generic toast if you prefer the specific one in ProductInfo
+            // toast.success("Item added!");
+
             await fetchCart(true);
+            return true; // <--- Indicates Success
         } catch (error) {
             toast.error("Failed to add item.");
+            return false; // <--- Indicates Failure
         }
     };
 
@@ -99,6 +103,34 @@ export const CartProvider = ({ children }) => {
         }
     };
 
+    const addAllToCart = async (products) => {
+        // 1. Check Login
+        if (!user) {
+            navigate('/login', { state: { from: location } });
+            return false;
+        }
+
+        try {
+            // 2. Format data for Backend: List of { productId, quantity }
+            const payload = products.map(p => ({
+                productId: p.productId || p.id,
+                quantity: 1 // Default to 1 for FBT items
+            }));
+
+            // 3. Call the new endpoint
+            await axiosInstance.post('/api/v1/cart/add-multiple', payload);
+
+            // 4. Refresh Cart
+            await fetchCart(true);
+            return true;
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to add bundle to cart");
+            return false;
+        }
+    };
+
     return (
         <CartContext.Provider value={{
             cart,
@@ -106,6 +138,7 @@ export const CartProvider = ({ children }) => {
             loading,
             updatingItemIds,
             addToCart,
+            addAllToCart,
             removeFromCart,
             updateQuantity,
             fetchCart

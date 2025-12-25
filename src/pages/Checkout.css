@@ -145,7 +145,7 @@
 /* Place Order Button */
 .place-order-btn {
     width: 100%;
-    background-color: #961c36; /* Deep Burgundy color from image */
+    background-color: #2c3e50; /* Deep Burgundy color from image */
     color: white;
     border: none;
     padding: 15px;
@@ -159,7 +159,9 @@
 }
 
 .place-order-btn:hover {
-    background-color: #7a152b;
+    background-color: #E91E63; /* Changes from Black to Dark Grey */
+    transform: translateY(-2px); /* Moves button up slightly */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Increases shadow */
 }
 
 /* Mobile Responsiveness */
@@ -172,4 +174,16 @@
         flex-direction: column;
         gap: 15px;
     }
+}
+
+.radio-option.disabled-option {
+    opacity: 0.5;
+    pointer-events: none; /* Prevents clicking */
+    background-color: #f9f9f9;
+    border-color: #eee;
+    cursor: not-allowed;
+}
+
+.radio-option.disabled-option input {
+    cursor: not-allowed;
 }
