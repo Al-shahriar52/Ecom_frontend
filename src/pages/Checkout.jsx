@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
@@ -13,30 +14,54 @@ const Checkout = () => {
 
     // --- STATE ---
     const [formData, setFormData] = useState({
-        name: user?.name || '',
+        name: '',
         phone: '',
         city: '',
         cityId: '',
         area: '',
         address: '',
-        email: user?.email || '',
+        email: '',
         note: ''
     });
 
+    const [lockedField, setLockedField] = useState(null); // 'email' or 'phone'
     const [cities, setCities] = useState([]);
     const [areas, setAreas] = useState([]);
     const [loadingAreas, setLoadingAreas] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    // Shipping State
+    // Shipping & Payment State
     const [shippingMethod, setShippingMethod] = useState('inside');
-
-    // Updated Costs: 60 for Inside, 120 for Outside
     const shippingCost = shippingMethod === 'inside' ? 60 : 120;
-
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const grandTotal = cartTotal + shippingCost;
 
-    // --- FETCH CITIES ---
+    // --- 1. INITIALIZE USER DATA (Fixing Name/Email/Phone logic) ---
+    useEffect(() => {
+        if (user) {
+            // The auth identifier comes in 'user.name' or 'user.username' based on your Auth response.
+            // Let's assume user.name holds the login identifier (Email or Phone) as per your issue.
+            const loginIdentifier = user.name || user.username || "";
+
+            // Regex to check if it's an email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const isEmail = emailRegex.test(loginIdentifier);
+
+            setFormData(prev => ({
+                ...prev,
+                // If login ID is Email, set Email. If Phone, set Phone.
+                email: isEmail ? loginIdentifier : '',
+                phone: !isEmail ? loginIdentifier : '',
+                // If the user object actually has a separate real name field, use it, otherwise keep empty
+                name: ''
+            }));
+
+            // Lock the field they used to login
+            setLockedField(isEmail ? 'email' : 'phone');
+        }
+    }, [user]);
+
+    // --- 2. FETCH CITIES ---
     useEffect(() => {
         const fetchCities = async () => {
             try {
@@ -66,22 +91,14 @@ const Checkout = () => {
         }
 
         const cityName = selectedCityObj.name;
+        setFormData(prev => ({ ...prev, city: cityName, cityId: selectedCityId, area: '' }));
 
-        setFormData(prev => ({
-            ...prev,
-            city: cityName,
-            cityId: selectedCityId,
-            area: ''
-        }));
-
-        // --- AUTO SELECT SHIPPING LOGIC ---
         if (cityName.toLowerCase() === 'dhaka') {
             setShippingMethod('inside');
         } else {
             setShippingMethod('outside');
         }
 
-        // Fetch Areas
         setLoadingAreas(true);
         try {
             const response = await axiosInstance.get(`/api/v1/location/areas?city_id=${selectedCityId}`);
@@ -93,11 +110,55 @@ const Checkout = () => {
         }
     };
 
-    const handlePlaceOrder = async () => {
-        if (!formData.name || !formData.phone || !formData.address || !formData.city || !formData.area) {
-            toast.error("Please fill in all required fields.");
-            return;
+    // --- 3. FRONTEND VALIDATION (Matching Backend) ---
+    const validateForm = () => {
+        // Backend Regex for Phone: (^([+]{1}[8]{2}|0088)?(01){1}[3-9]{1}\d{8})$
+        // Matches: 017..., +88017..., 0088017...
+        const phoneRegex = /(^([+]{1}[8]{2}|0088)?(01){1}[3-9]{1}\d{8})$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!formData.name.trim()) {
+            toast.error("Full Name is required.");
+            return false;
         }
+
+        if (!formData.phone.trim()) {
+            toast.error("Phone number is required.");
+            return false;
+        }
+        if (!phoneRegex.test(formData.phone)) {
+            toast.error("Invalid Phone Number format (e.g., 017xxxxxxxx).");
+            return false;
+        }
+
+        if (!formData.email.trim()) {
+            toast.error("Email is required.");
+            return false;
+        }
+        if (!emailRegex.test(formData.email)) {
+            toast.error("Invalid Email format.");
+            return false;
+        }
+
+        if (!formData.address.trim()) {
+            toast.error("Shipping Address is required.");
+            return false;
+        }
+
+        if (!formData.city || !formData.area) {
+            toast.error("City and Area are required.");
+            return false;
+        }
+
+        return true;
+    };
+
+    // --- PLACE ORDER ---
+    const handlePlaceOrder = async () => {
+        // Run Validation
+        if (!validateForm()) return;
+
+        setIsProcessing(true);
 
         const orderPayload = {
             shippingAddress: formData.address,
@@ -105,9 +166,8 @@ const Checkout = () => {
             area: formData.area,
             phone: formData.phone,
             email: formData.email,
+            name: formData.name,
             orderNote: formData.note,
-            shippingMethod: shippingMethod === 'inside' ? "Inside Dhaka" : "Outside Dhaka",
-            shippingCost: shippingCost,
             paymentMethod: paymentMethod,
             items: cart.map(item => ({
                 productId: item.productId || item.id,
@@ -116,15 +176,21 @@ const Checkout = () => {
         };
 
         try {
-            const response = await axiosInstance.post('/api/v1/orders/place', orderPayload);
-            if(response.status === 200 || response.data.status === 200) {
+            const response = await axiosInstance.post('/api/v1/order/placeOrder', orderPayload);
+
+            if(response.status === 201 || response.status === 200 || response.data.status === 201) {
+                const orderId = response.data.data;
                 toast.success("Order placed successfully!");
                 fetchCart(true);
-                navigate('/dashboard/orders');
+                navigate(`/order-success/${orderId}`);
             }
         } catch (error) {
             console.error("Order failed:", error);
-            toast.error(error.response?.data?.message || "Failed to place order.");
+            // Show exact backend error message if available
+            const errMsg = error.response?.data?.message || "Failed to place order.";
+            toast.error(errMsg);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -132,7 +198,6 @@ const Checkout = () => {
         return <div className="checkout-empty">Your cart is empty. <button onClick={() => navigate('/')}>Shop Now</button></div>;
     }
 
-    // --- HELPER TO CHECK CITY ---
     const isCitySelected = formData.city !== '';
     const isDhaka = formData.city.toLowerCase() === 'dhaka';
 
@@ -142,10 +207,43 @@ const Checkout = () => {
                 {/* LEFT SIDE */}
                 <div className="checkout-left">
                     <h2 className="section-title">BILLING & SHIPPING</h2>
+
+                    {/* Name Field - Always Editable */}
                     <div className="form-row">
-                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleInputChange} className="form-input" />
-                        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleInputChange} className="form-input" />
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Full Name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className="form-input"
+                        />
                     </div>
+
+                    {/* 2. Phone & Email (Removed form-group wrappers) */}
+                    <div className="form-row">
+                        <input
+                            type="text"
+                            name="phone"
+                            placeholder="Phone (01xxxxxxxxx)"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className={`form-input ${lockedField === 'phone' ? 'input-locked' : ''}`}
+                            readOnly={lockedField === 'phone'}
+                            title={lockedField === 'phone' ? "Logged in with Phone (Cannot edit)" : ""}
+                        />
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email Address"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className={`form-input ${lockedField === 'email' ? 'input-locked' : ''}`}
+                            readOnly={lockedField === 'email'}
+                            title={lockedField === 'email' ? "Logged in with Email (Cannot edit)" : ""}
+                        />
+                    </div>
+
                     <div className="form-row">
                         <select name="cityId" value={formData.cityId} onChange={handleCityChange} className="form-input">
                             <option value="">Select City</option>
@@ -160,9 +258,6 @@ const Checkout = () => {
                         <input type="text" name="address" placeholder="Address (House No, Road No...)" value={formData.address} onChange={handleInputChange} className="form-input full-width" />
                     </div>
                     <div className="form-row">
-                        <input type="email" name="email" placeholder="Email (optional)" value={formData.email} onChange={handleInputChange} className="form-input full-width" />
-                    </div>
-                    <div className="form-row">
                         <textarea name="note" placeholder="Order Note (optional)" value={formData.note} onChange={handleInputChange} className="form-input textarea"></textarea>
                     </div>
                 </div>
@@ -173,40 +268,17 @@ const Checkout = () => {
 
                     <div className="summary-section">
                         <h3>Choose Shipping Method</h3>
-
-                        {/* OUTSIDE DHAKA OPTION */}
-                        <label
-                            className={`radio-option 
-                                ${shippingMethod === 'outside' ? 'selected' : ''} 
-                                ${isCitySelected && isDhaka ? 'disabled-option' : ''}` // Disable if Dhaka is selected
-                            }
-                        >
+                        <label className={`radio-option ${shippingMethod === 'outside' ? 'selected' : ''} ${isCitySelected && isDhaka ? 'disabled-option' : ''}`}>
                             <div className="radio-label">
-                                <input
-                                    type="radio" name="shipping"
-                                    checked={shippingMethod === 'outside'}
-                                    onChange={() => setShippingMethod('outside')}
-                                    disabled={isCitySelected && isDhaka} // Lock it
-                                />
+                                <input type="radio" name="shipping" checked={shippingMethod === 'outside'} onChange={() => setShippingMethod('outside')} disabled={isCitySelected && isDhaka} />
                                 <span>Delivery Outside Dhaka</span>
                             </div>
                             <span className="price">৳ 120.00</span>
                         </label>
 
-                        {/* INSIDE DHAKA OPTION */}
-                        <label
-                            className={`radio-option 
-                                ${shippingMethod === 'inside' ? 'selected' : ''} 
-                                ${isCitySelected && !isDhaka ? 'disabled-option' : ''}` // Disable if Non-Dhaka is selected
-                            }
-                        >
+                        <label className={`radio-option ${shippingMethod === 'inside' ? 'selected' : ''} ${isCitySelected && !isDhaka ? 'disabled-option' : ''}`}>
                             <div className="radio-label">
-                                <input
-                                    type="radio" name="shipping"
-                                    checked={shippingMethod === 'inside'}
-                                    onChange={() => setShippingMethod('inside')}
-                                    disabled={isCitySelected && !isDhaka} // Lock it
-                                />
+                                <input type="radio" name="shipping" checked={shippingMethod === 'inside'} onChange={() => setShippingMethod('inside')} disabled={isCitySelected && !isDhaka} />
                                 <span>Delivery Inside Dhaka</span>
                             </div>
                             <span className="price">৳ 60.00</span>
@@ -230,7 +302,9 @@ const Checkout = () => {
                         </label>
                     </div>
 
-                    <button className="place-order-btn" onClick={handlePlaceOrder}>PLACE ORDER</button>
+                    <button className="place-order-btn" onClick={handlePlaceOrder} disabled={isProcessing}>
+                        {isProcessing ? 'Processing...' : 'PLACE ORDER'}
+                    </button>
                 </div>
             </div>
         </div>

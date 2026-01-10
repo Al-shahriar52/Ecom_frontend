@@ -1,0 +1,204 @@
+/* Page Background */
+.order-success-page {
+    background-color: #fdf2f5; /* Light pink background */
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+}
+
+.order-success-container {
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* 1. Success Banner */
+.success-banner {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    padding: 15px 25px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 30px;
+    border: 1px solid #badbcc;
+}
+
+/* 2. Header (Order # and Status) */
+.order-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 0 10px;
+}
+
+.order-header-row h2 {
+    font-size: 22px;
+    color: #333;
+    font-weight: 700;
+    margin: 0;
+}
+
+.highlight-pink {
+    color: #E91E63;
+}
+
+.status-text {
+    text-transform: uppercase;
+}
+
+/* Common Box Style */
+.order-section {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4a5568;
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    letter-spacing: 0.5px;
+}
+
+/* 3. Items Table */
+.order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-items-table th {
+    background-color: #f9fafb;
+    text-align: center;
+    padding: 15px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.order-items-table td {
+    padding: 20px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    color: #333;
+    font-size: 15px;
+    text-align: center;
+}
+
+.col-image img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.col-name {
+    text-align: left !important;
+    font-weight: 500;
+    color: #2d3748 !important;
+}
+
+/* 4. Details Rows */
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.value {
+    color: #4a5568;
+    font-size: 14px;
+    text-align: right;
+    font-weight: 500;
+}
+
+/* 5. Split Container */
+.bottom-split-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+/* 6. Grand Total Bar */
+.grand-total-bar {
+    background-color: #fff;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #2d3748;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.total-value {
+    color: #2d3748;
+}
+
+/* Continue Button */
+.floating-action {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.continue-btn {
+    background-color: #E91E63;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.continue-btn:hover {
+    background-color: #d01854;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bottom-split-container {
+        grid-template-columns: 1fr;
+    }
+
+    .order-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    /* Table Scroll on Mobile */
+    .items-section {
+        overflow-x: auto;
+    }
+
+    .order-items-table {
+        min-width: 600px;
+    }
+}

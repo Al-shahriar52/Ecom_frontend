@@ -187,3 +187,17 @@
 .radio-option.disabled-option input {
     cursor: not-allowed;
 }
+
+/* --- Add this for Locked Fields --- */
+.input-locked {
+    background-color: #e9ecef; /* Light gray background */
+    color: #495057; /* Darker gray text */
+    cursor: not-allowed;
+    border-color: #ced4da;
+    font-weight: 500;
+}
+
+.input-locked:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+}
