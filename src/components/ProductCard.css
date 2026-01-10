@@ -197,3 +197,56 @@
         font-size: 12px;
     }
 }
+
+/* ======================================== */
+/* --- OUT OF STOCK / SOLD OUT STYLES --- */
+/* ======================================== */
+
+/* 1. Sold Out Badge Overlay */
+/* This centers the "SOLD OUT" text over the image */
+.oos-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.75); /* Dark semi-transparent background */
+    color: white;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 4px;
+    z-index: 10; /* Above the image */
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    pointer-events: none; /* Allows clicks to pass through to the product link */
+    white-space: nowrap;
+}
+
+/* 2. Disabled Card Visuals */
+/* Grayscale the image to indicate unavailability */
+.product-card.card-disabled .product-image {
+    opacity: 0.6;
+    filter: grayscale(100%);
+}
+
+/* Lighten the text color for disabled cards */
+.product-card.card-disabled .product-name a,
+.product-card.card-disabled .current-price {
+    color: #a3a3a3;
+}
+
+/* 3. Disabled Button Style */
+/* Overrides your .add-to-cart-btn styles when disabled */
+.add-to-cart-btn.btn-disabled {
+    background-color: #e5e7eb; /* Light Gray */
+    color: #9ca3af;            /* Muted Text */
+    cursor: not-allowed;       /* Shows 'stop' cursor */
+    border: 1px solid #d1d5db;
+    transform: none !important; /* Prevents the hover lift effect */
+}
+
+/* Prevent hover effects on disabled button */
+.add-to-cart-btn.btn-disabled:hover {
+    background-color: #e5e7eb;
+    transform: none;
+}

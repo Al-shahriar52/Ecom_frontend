@@ -1,4 +1,3 @@
-
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
@@ -8,7 +7,10 @@ import StarRating from './StarRating';
 const ProductCard = ({ product }) => {
     const { addToCart } = useContext(CartContext);
 
-    // This logic correctly uses the API's price fields
+    // 1. Check Stock Status
+    const isOutOfStock = product.quantity <= 0;
+
+    // Existing Price Logic
     const hasDiscount = product.originalPrice && product.originalPrice > product.discountedPrice;
     const discountPercentage = hasDiscount
         ? Math.round(((product.originalPrice - product.discountedPrice) / product.originalPrice) * 100)
@@ -16,28 +18,30 @@ const ProductCard = ({ product }) => {
 
     const amountSaved = hasDiscount ? (product.originalPrice - product.discountedPrice).toFixed(2) : 0;
 
-    // A handler to provide user feedback
     const handleAddToCart = (e) => {
-        // Prevent the click from bubbling up if you wrap the card in a Link later
         e.preventDefault();
 
-        // Just call the context function.
-        // Pass quantity '1' explicitly.
-        // The Context will handle the API call, the loading state, and the Toast message.
+        // 2. Prevent adding if out of stock
+        if (isOutOfStock) return;
+
         addToCart(product, 1);
     };
 
-    // Use a placeholder if imageUrl is missing from the API response
     const imageUrl = product.imageUrl || 'https://via.placeholder.com/300';
 
     return (
-        <div className="product-card">
-            {/* Change: Use product.productId from the API for the link */}
+        <div className={`product-card ${isOutOfStock ? 'card-disabled' : ''}`}>
             <Link to={`/product/${product.productId}`} className="product-image-link">
                 <div className="product-image-container">
-                    {/* Change: Use product.imageUrl from the API */}
                     <img src={imageUrl} alt={product.name} className="product-image" />
-                    {hasDiscount && (
+
+                    {/* 3. Out of Stock Badge (High Priority) */}
+                    {isOutOfStock && (
+                        <div className="oos-badge">SOLD OUT</div>
+                    )}
+
+                    {/* Discount Badges (Only show if IN STOCK to avoid clutter, or keep both) */}
+                    {!isOutOfStock && hasDiscount && (
                         <>
                             <div className="discount-badge discount-percent">
                                 {discountPercentage}% OFF
@@ -46,13 +50,12 @@ const ProductCard = ({ product }) => {
                                 SAVE ৳{amountSaved}
                             </div>
                         </>
-
                     )}
                 </div>
             </Link>
+
             <div className="product-info">
                 <h3 className="product-name">
-                    {/* Change: Use product.productId for the link and product.name for the title */}
                     <Link to={`/product/${product.productId}`}>{product.name}</Link>
                 </h3>
 
@@ -75,8 +78,13 @@ const ProductCard = ({ product }) => {
                     <StarRating rating={product.rating} />
                 </div>
 
-                <button onClick={handleAddToCart} className="add-to-cart-btn">
-                    ADD TO CART
+                {/* 4. Disable Button if Out of Stock */}
+                <button
+                    onClick={handleAddToCart}
+                    className={`add-to-cart-btn ${isOutOfStock ? 'btn-disabled' : ''}`}
+                    disabled={isOutOfStock}
+                >
+                    {isOutOfStock ? 'SOLD OUT' : 'ADD TO CART'}
                 </button>
             </div>
         </div>

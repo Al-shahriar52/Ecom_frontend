@@ -41,6 +41,7 @@ import Accounting from './pages/admin/Accounting';
 import CouponManagement from './pages/admin/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';
 import Wishlist from './pages/Wishlist';
+import OrderSuccess from './pages/OrderSuccess';
 
 function App() {
     return (
@@ -64,6 +65,7 @@ function App() {
                             <Route path="/product/:productId" element={<ProductDetailPage />} />
                             <Route path="/checkout" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
                             <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Wishlist /></ProtectedRoute>}/>
+                            <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />
 
                             {/* --- User Dashboard Routes --- */}
                             <Route path="/dashboard" element={<DashboardLayout />}>
