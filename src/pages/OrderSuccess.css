@@ -1,6 +1,6 @@
 /* Page Background */
 .order-success-page {
-    background-color: #fdf2f5; /* Light pink background */
+    background-color: #fff9fb; /* Light pink background */
     min-height: 100vh;
     padding: 40px 20px;
     font-family: 'Poppins', sans-serif;
@@ -201,4 +201,38 @@
     .order-items-table {
         min-width: 600px;
     }
+}
+
+/* Product Name Link */
+.product-name-link {
+    text-decoration: none;
+    color: #333; /* Dark gray */
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.product-name-link:hover {
+    color: #E91E63; /* Pink on hover */
+    text-decoration: underline;
+}
+
+/* Order ID Link */
+.order-id-link {
+    text-decoration: none;
+    cursor: pointer;
+    color: inherit; /* Keep header color */
+}
+
+.order-id-link:hover .highlight-pink {
+    text-decoration: underline;
+    filter: brightness(0.9);
+}
+
+/* Image Link */
+.col-image a {
+    display: block;
+}
+
+.col-image a:hover img {
+    border-color: #E91E63; /* Pink border on hover */
 }
