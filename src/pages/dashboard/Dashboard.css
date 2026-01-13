@@ -174,7 +174,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 .order-detail-header h2 {
     margin: 0;
@@ -198,34 +198,54 @@
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    padding: 20px;
-    margin-bottom: 30px;
+    padding: 10px;
+    margin-bottom: 15px;
 }
 .product-list-header {
     display: grid;
-    grid-template-columns: 1fr 4fr 1fr 1fr 1fr;
+    /* CHANGE: 70px fixed for image, 2fr for name, others share equal space */
+    grid-template-columns: 70px 2fr 1fr 1fr 1fr;
     gap: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
     font-weight: 600;
     color: #888;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
+
 .product-item {
     display: grid;
-    grid-template-columns: 1fr 4fr 1fr 1fr 1fr;
+    /* CHANGE: Must match the header columns exactly */
+    grid-template-columns: 70px 2fr 1fr 1fr 1fr;
     gap: 15px;
     align-items: center;
     padding: 15px 0;
     border-bottom: 1px solid #eee;
 }
+
+/* NEW: Align Quantities and Prices to the RIGHT for a cleaner look */
+.product-list-header h4:nth-child(3),
+.product-list-header h4:nth-child(4),
+.product-list-header h4:nth-child(5),
+.product-item span:nth-child(3),
+.product-item span:nth-child(4),
+.product-item span:nth-child(5) {
+    text-align: right;
+}
+
 .product-item:last-child {
     border-bottom: none;
 }
+/* Ensure the image fits the 70px column perfectly */
 .product-item img {
     width: 60px;
     height: 60px;
-    border-radius: 5px;
+    border-radius: 6px;
     object-fit: cover;
+    border: 1px solid #f0f0f0;
+    display: block; /* Removes tiny bottom gap */
 }
 .product-item p {
     font-weight: 500;
@@ -426,7 +446,8 @@
 
 .account-details-form {
     margin-top: 20px;
-    max-width: 700px;
+    max-width: 100%;
+    width: 100%;
 }
 
 .account-details-form .form-group {
@@ -459,4 +480,235 @@
 .form-actions-details {
     display: flex;
     justify-content: flex-end;
+}
+
+/* --- Pagination (Admin Style) --- */
+.pagination {
+    display: flex;
+    justify-content: flex-end; /* Align to right like admin panel */
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9f9f9;
+    border-color: #ccc;
+    color: #333;
+}
+
+.pagination-btn:disabled {
+    background-color: #fafafa;
+    color: #ccc;
+    border-color: #eee;
+    cursor: not-allowed;
+}
+
+/* Page Numbers */
+.page-number {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.page-number:hover:not(.active) {
+    background-color: #f0f0f0;
+}
+
+/* Active Page Style (Dark Blue from your theme) */
+.page-number.active {
+    background-color: #2c3e50; /* Match your Order Header color */
+    color: white;
+    border-color: #2c3e50;
+    cursor: default;
+}
+
+/*
+!* ======================================================== *!
+!* --- FINAL RESPONSIVE FIX (Vertical Sidebar + Full Width Content) --- *!
+!* ======================================================== *!
+
+@media (max-width: 992px) {
+    !* 1. Layout: Stack Sidebar on top, Content below *!
+    .dashboard-layout {
+        display: block; !* Use block to stack them naturally *!
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    !* 2. SIDEBAR: Revert to Vertical List (Previous Style) *!
+    .dashboard-sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+        display: block; !* No flex, no scrolling *!
+        padding: 0;     !* Remove padding if needed to align edges *!
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    !* 3. LINKS: Full width vertical blocks *!
+    .sidebar-link {
+        display: flex;
+        width: 100%; !* Full width *!
+        margin-bottom: 5px; !* Small gap between links *!
+        background-color: #fff; !* White background for visibility *!
+        border: 1px solid #eee;
+        border-radius: 6px;
+        justify-content: flex-start; !* Align text to left *!
+        padding: 12px 15px;
+    }
+
+    .sidebar-link.active {
+        background-color: #E91E63;
+        color: white;
+        border-color: #E91E63;
+    }
+
+    !* 4. CONTENT: Force full width *!
+    .dashboard-content {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 20px 15px; !* Standard mobile padding *!
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+
+!* ================================================== *!
+!* --- GLOBAL FIXES (Address & Forms) --- *!
+!* ================================================== *!
+
+!* Force containers to take full width *!
+.account-details-form,
+.address-list,
+.address-card,
+.address-form {
+    width: 100% !important;
+    max-width: none !important; !* Kill the 700px limit *!
+}
+
+!* Force inputs to take full width *!
+.form-group,
+.form-row,
+input,
+select,
+textarea {
+    width: 100% !important;
+    box-sizing: border-box; !* Include padding in width *!
+    max-width: 100%;
+}
+*/
+
+/* ======================================================== */
+/* --- FINAL RESPONSIVE FIX (Horizontal Nav + Full Width) --- */
+/* ======================================================== */
+
+@media (max-width: 992px) {
+    /* 1. Layout: Stack Sidebar and Content */
+    .dashboard-layout {
+        display: block; /* Stack vertically */
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    /* 2. SIDEBAR: Horizontal Scrollable Menu */
+    .dashboard-sidebar {
+        width: 100%;
+        display: flex;       /* Horizontal row */
+        overflow-x: auto;    /* Enable scroll */
+        white-space: nowrap; /* Prevent wrapping */
+        gap: 10px;
+        padding: 5px 10px 15px 10px; /* Bottom padding for shadow/spacing */
+        background-color: transparent;
+        box-shadow: none;
+        margin-bottom: 5px;
+
+        /* Hide Scrollbars for cleaner look */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+
+    .dashboard-sidebar::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    /* 3. LINKS: Pill Style Buttons */
+    .sidebar-link {
+        width: auto;       /* Width based on text */
+        flex: 0 0 auto;    /* Don't shrink */
+        margin: 0;
+        padding: 8px 18px;
+        background-color: #fff;
+        border: 1px solid #eee;
+        border-radius: 50px; /* Pill shape */
+        font-size: 14px;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-link.active {
+        background-color: #E91E63;
+        color: white;
+        border-color: #E91E63;
+        box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3); /* Nice glow */
+    }
+
+    /* 4. CONTENT: Force full width */
+    .dashboard-content {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 20px 15px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+
+/* ================================================== */
+/* --- GLOBAL FIXES (Address & Forms Full Width) --- */
+/* ================================================== */
+
+/* Force all containers to take full width */
+.account-details-form,
+.address-list,
+.address-card,
+.address-form {
+    width: 100% !important;
+    max-width: none !important; /* Kill the 700px limit */
+}
+
+/* Force inputs to take full width */
+.form-group,
+.form-row,
+input,
+select,
+textarea {
+    width: 100% !important;
+    box-sizing: border-box; /* Include padding in width */
+    max-width: 100%;
 }
