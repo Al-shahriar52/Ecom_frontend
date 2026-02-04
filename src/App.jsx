@@ -36,7 +36,7 @@ import AdminDashboardLayout from './pages/admin/AdminDashboardLayout';
 import AdminHome from './pages/admin/AdminHome';
 import ProductManagement from './pages/admin/ProductManagement';
 import UserManagement from './pages/admin/UserManagement';
-import AdminOrders from './pages/admin/AdminOrders';
+import AdminOrders from './pages/admin/orders/AdminOrders';
 import Accounting from './pages/admin/Accounting';
 import CouponManagement from './pages/admin/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';

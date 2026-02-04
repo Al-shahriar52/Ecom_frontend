@@ -693,7 +693,7 @@ const Header = () => {
             <div className="header-main">
                 <div className="header-left">
                     <button className="hamburger-btn" onClick={() => setIsMobileMenuOpen(true)}>&#9776;</button>
-                    <Link to="/" className="logo">BrightnessBeauty</Link>
+                    <Link to="/" className="logo">BEAUTY HAAT</Link>
                     <div className="brands-link-wrapper desktop-only" onMouseEnter={handleBrandMouseEnter} onMouseLeave={handleBrandMouseLeave}>
                         <Link to="/brands" className="brands-link">BRANDS</Link>
                     </div>

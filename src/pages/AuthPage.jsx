@@ -39,7 +39,7 @@ const AuthPage = () => {
             <div className="auth-card">
                 <div className="auth-card-image">
                     <img
-                        src="https://res.cloudinary.com/dgxol8iyp/image/upload/v1754724593/image_rhqugy.png"
+                        src="https://res.cloudinary.com/dgxol8iyp/image/upload/v1769530091/ecommerce/ChatGPT_Image_Jan_27_2026_09_56_20_PM_fc2zji.png"
                         alt="BrightnessBeauty Logo"
                     />
                 </div>
