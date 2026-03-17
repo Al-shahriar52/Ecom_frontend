@@ -32,7 +32,11 @@ const ReviewForm = ({ productId, onReviewSubmitted }) => {
         }
 
         try {
-            await axiosInstance.post('/api/v1/review/add', formData);
+            await axiosInstance.post('/api/v1/review/add', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             toast.success("Thank you! Your review will be visible after admin approval.");
             setRating(0);
             setComment('');

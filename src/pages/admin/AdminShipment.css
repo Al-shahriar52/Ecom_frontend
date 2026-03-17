@@ -1,0 +1,255 @@
+/* General Layout */
+.admin-container {
+    padding: 20px;
+    background-color: #f8f9fa; /* Light grey background for the whole page */
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Header Card */
+.admin-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-left h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #1a1a1a;
+}
+
+.header-left .subtitle {
+    margin: 5px 0 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.btn-create-shipment {
+    background-color: #E91E63; /* Your Brand Pink */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+    transition: all 0.2s;
+}
+
+.btn-create-shipment:hover {
+    background-color: #c2185b;
+    transform: translateY(-1px);
+}
+
+.btn-back {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Content Card (White Box) */
+.admin-content-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Modern Table */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table th {
+    text-align: left;
+    padding: 15px;
+    color: #8898aa;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.modern-table td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f6f9fc;
+    color: #525f7f;
+    font-size: 14px;
+}
+
+.modern-table tr:hover td {
+    background-color: #fcfcfc;
+}
+
+/* Typography & Badges */
+.fw-bold { font-weight: 600; color: #32325d; }
+.text-muted { color: #8898aa; }
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.badge-success { background: #e0fbf4; color: #2dce89; }
+.badge-blue { background: #e6f6ff; color: #0091ff; }
+.badge-orange { background: #fff4e5; color: #ff9800; }
+
+.btn-track-action {
+    background: #5e72e4; /* Nice Blue */
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* --- Tracking View --- */
+.tracking-wrapper {
+    display: flex;
+    gap: 20px;
+    height: 500px;
+}
+
+.tracking-sidebar {
+    width: 300px;
+    border-right: 1px solid #eee;
+    padding-right: 20px;
+}
+
+.shipment-id-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.courier-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #f8f9fe;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.c-icon { font-size: 24px; }
+
+/* Timeline */
+.timeline-list {
+    list-style: none; /* Removes Bullet Points */
+    padding: 0;
+    margin: 0;
+}
+
+.timeline-list li {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 25px;
+}
+
+.timeline-list li::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 5px;
+    bottom: -25px;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-list li:last-child::before { display: none; }
+
+.timeline-list .dot {
+    position: absolute;
+    left: 0; top: 5px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #e9ecef;
+    border: 3px solid white;
+    box-shadow: 0 0 0 1px #dee2e6;
+}
+
+.timeline-list li.completed .dot { background: #2dce89; box-shadow: 0 0 0 1px #2dce89; }
+.timeline-list li.active .dot { background: #E91E63; box-shadow: 0 0 0 1px #E91E63; }
+
+.timeline-list .info { display: flex; flex-direction: column; }
+.timeline-list .info strong { font-size: 14px; color: #32325d; }
+.timeline-list .info span { font-size: 12px; color: #8898aa; }
+
+/* Map Area */
+.map-view {
+    flex: 1;
+    background: #f3f4f6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-placeholder-content { text-align: center; color: #adb5bd; }
+
+/* --- Modal --- */
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal-box {
+    background: white;
+    width: 500px;
+    border-radius: 8px;
+    padding: 20px;
+    animation: slideDown 0.2s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+
+.courier-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border: 1px solid #eee;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.courier-item:hover { border-color: #E91E63; background: #fff5f8; }
+
+.ci-left { display: flex; gap: 10px; align-items: center; }
+.ci-logo { font-size: 20px; }
+.btn-select {
+    background: #E91E63;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
