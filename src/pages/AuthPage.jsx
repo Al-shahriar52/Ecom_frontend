@@ -1,8 +1,8 @@
 
-import React, { useState, useContext } from 'react';
-// ADDED: useNavigate and useLocation to handle the redirection logic
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 import './AuthPage.css';
 
 const validateField = (name, value) => {
@@ -45,6 +45,8 @@ const AuthPage = () => {
                 </div>
                 <div className="auth-card-form">
                     {isLoginView ? <LoginForm /> : <RegisterForm />}
+
+                    {/* Only show the toggle text if we are in Login view OR Step 1 of Register view */}
                     <div className="auth-toggle">
                         {isLoginView ? (
                             <p>Don't have an account? <span onClick={toggleView}>Register</span></p>
@@ -58,11 +60,8 @@ const AuthPage = () => {
     );
 };
 
-// --- Updated LoginForm Component ---
 const LoginForm = () => {
     const { login } = useContext(AuthContext);
-
-    // 1. Hooks for Navigation
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -94,18 +93,13 @@ const LoginForm = () => {
         setTouched({ emailOrPhone: true, password: true });
 
         if (!formErrors.emailOrPhone && !formErrors.password) {
-            // 2. Call Login and wait for result
             const result = await login(formData.emailOrPhone, formData.password);
 
             if (result.success) {
-                // 3. LOGIC: Check if we have a "from" location (e.g. Product Page)
                 const from = location.state?.from?.pathname;
-
                 if (from) {
-                    // Go back to where user came from
                     navigate(from, { replace: true });
                 } else {
-                    // Default Logic (No previous page found)
                     if (result.role === 'ADMIN') {
                         navigate('/admin');
                     } else {
@@ -117,7 +111,7 @@ const LoginForm = () => {
     };
 
     return (
-        <div className="auth-form">
+        <div className="auth-form slide-in">
             <h2>Welcome Back!</h2>
             <form onSubmit={handleSubmit} noValidate>
                 <div className="form-group">
@@ -136,17 +130,36 @@ const LoginForm = () => {
     );
 };
 
-// --- Updated RegisterForm Component ---
 const RegisterForm = () => {
-    const { register } = useContext(AuthContext);
-
-    // Hooks for Navigation
+    const { register, verifyRegistrationOtp } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({ name: '', emailOrPhone: '', password: '' });
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
+
+    // OTP States
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const otpRefs = useRef([]);
+
+    // Resend Timer States
+    const [timer, setTimer] = useState(60);
+    const [canResend, setCanResend] = useState(false);
+
+    // Timer Logic
+    useEffect(() => {
+        let interval;
+        if (step === 2 && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setCanResend(true);
+        }
+        return () => clearInterval(interval);
+    }, [step, timer]);
 
     const handleBlur = (e) => {
         const { name, value } = e.target;
@@ -162,7 +175,8 @@ const RegisterForm = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
+    // Step 1: Register Submit
+    const handleRegisterSubmit = async (e) => {
         e.preventDefault();
         const formErrors = {
             name: validateField('name', formData.name),
@@ -173,48 +187,158 @@ const RegisterForm = () => {
         setTouched({ name: true, emailOrPhone: true, password: true });
 
         if (!formErrors.name && !formErrors.emailOrPhone && !formErrors.password) {
-            // Register calls login internally in your AuthContext
             const result = await register(formData.name, formData.emailOrPhone, formData.password);
 
             if (result && result.success) {
-                // Same logic as Login: Check if we have a "from" location
-                const from = location.state?.from?.pathname;
+                setStep(2);
+                setTimer(60);
+                setCanResend(false);
+            }
+        }
+    };
 
-                if (from) {
-                    navigate(from, { replace: true });
-                } else {
-                    // Default logic
-                    if (result.role === 'ADMIN') {
-                        navigate('/admin');
-                    } else {
-                        navigate('/dashboard');
-                    }
-                }
+    // Handle Resend OTP
+    const handleResendOtp = async () => {
+        if (!canResend) return;
+
+        const result = await register(formData.name, formData.emailOrPhone, formData.password);
+        if (result && result.success) {
+            setTimer(60);
+            setCanResend(false);
+            setOtp(['', '', '', '', '', '']);
+            otpRefs.current[0].focus();
+        }
+    };
+
+    // Handle OTP Box Input
+    const handleOtpChange = (index, value) => {
+        if (isNaN(value)) return;
+
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+
+        if (value !== '' && index < 5) {
+            otpRefs.current[index + 1].focus();
+        }
+    };
+
+    // Handle Backspace
+    const handleOtpKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            otpRefs.current[index - 1].focus();
+        }
+    };
+
+    // --- NEW: Handle Pasting OTP ---
+    const handleOtpPaste = (index, e) => {
+        e.preventDefault();
+        // Get pasted data, strip non-numbers, and slice it to fit remaining boxes
+        const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6 - index);
+
+        if (!pastedData) return;
+
+        const newOtp = [...otp];
+        // Distribute the pasted characters into the array
+        for (let i = 0; i < pastedData.length; i++) {
+            newOtp[index + i] = pastedData[i];
+        }
+
+        setOtp(newOtp);
+
+        // Move focus to the next empty box, or the last box if it's full
+        const focusIndex = Math.min(index + pastedData.length, 5);
+        otpRefs.current[focusIndex].focus();
+    };
+
+    // Step 2: Verify Submit
+    const handleVerifySubmit = async (e) => {
+        e.preventDefault();
+        const finalOtp = otp.join('');
+
+        if (finalOtp.length < 6) {
+            toast.error("Please enter all 6 digits.");
+            return;
+        }
+
+        const result = await verifyRegistrationOtp(formData.emailOrPhone, finalOtp, formData.password);
+
+        if (result && result.success) {
+            const from = location.state?.from?.pathname;
+            if (from) {
+                navigate(from, { replace: true });
+            } else {
+                navigate(result.role === 'ADMIN' ? '/admin' : '/dashboard');
             }
         }
     };
 
     return (
-        <div className="auth-form">
-            <h2>Create Account</h2>
-            <form onSubmit={handleSubmit} noValidate>
-                <div className="form-group">
-                    <label htmlFor="register-name">Name</label>
-                    <input type="text" id="register-name" name="name" value={formData.name} onChange={handleChange} onBlur={handleBlur} className={touched.name ? (errors.name ? 'invalid-field' : 'valid-field') : ''} required />
-                    {errors.name && <p className="field-error">{errors.name}</p>}
+        <div className="auth-form slide-in">
+            {step === 1 && (
+                <>
+                    <h2>Create Account</h2>
+                    <form onSubmit={handleRegisterSubmit} noValidate>
+                        <div className="form-group">
+                            <label htmlFor="register-name">Name</label>
+                            <input type="text" id="register-name" name="name" value={formData.name} onChange={handleChange} onBlur={handleBlur} className={touched.name ? (errors.name ? 'invalid-field' : 'valid-field') : ''} required />
+                            {errors.name && <p className="field-error">{errors.name}</p>}
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="register-emailOrPhone">Email or Phone</label>
+                            <input type="text" id="register-emailOrPhone" name="emailOrPhone" value={formData.emailOrPhone} onChange={handleChange} onBlur={handleBlur} className={touched.emailOrPhone ? (errors.emailOrPhone ? 'invalid-field' : 'valid-field') : ''} required />
+                            {errors.emailOrPhone && <p className="field-error">{errors.emailOrPhone}</p>}
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="register-password">Password</label>
+                            <input type="password" id="register-password" name="password" value={formData.password} onChange={handleChange} onBlur={handleBlur} className={touched.password ? (errors.password ? 'invalid-field' : 'valid-field') : ''} required />
+                            {errors.password && <p className="field-error">{errors.password}</p>}
+                        </div>
+                        <button type="submit" className="btn auth-btn">Register</button>
+                    </form>
+                </>
+            )}
+
+            {step === 2 && (
+                <div className="otp-wrapper slide-in">
+                    <h2>Verify Your Account</h2>
+
+                    {/* Removed inline styles, added className */}
+                    <p className="subtitle" style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        Code sent to <strong>{formData.emailOrPhone}</strong>
+                        <span className="change-link" onClick={() => setStep(1)}>
+                            (Change)
+                        </span>
+                    </p>
+
+                    <form onSubmit={handleVerifySubmit}>
+                        <div className="otp-container">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    type="text"
+                                    maxLength="1"
+                                    className="otp-box"
+                                    value={digit}
+                                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                    onPaste={(e) => handleOtpPaste(index, e)}
+                                    ref={(el) => (otpRefs.current[index] = el)}
+                                />
+                            ))}
+                        </div>
+                        <button type="submit" className="btn auth-btn">Verify & Complete</button>
+                    </form>
+
+                    <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#6c757d' }}>
+                        {timer > 0 ? (
+                            <span>Didn't receive code? Resend in <strong>{timer}s</strong></span>
+                        ) : (
+                            <span>Didn't receive code? <span className="resend-link" onClick={handleResendOtp}>Resend Now</span></span>
+                        )}
+                    </div>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="register-emailOrPhone">Email or Phone</label>
-                    <input type="text" id="register-emailOrPhone" name="emailOrPhone" value={formData.emailOrPhone} onChange={handleChange} onBlur={handleBlur} className={touched.emailOrPhone ? (errors.emailOrPhone ? 'invalid-field' : 'valid-field') : ''} required />
-                    {errors.emailOrPhone && <p className="field-error">{errors.emailOrPhone}</p>}
-                </div>
-                <div className="form-group">
-                    <label htmlFor="register-password">Password</label>
-                    <input type="password" id="register-password" name="password" value={formData.password} onChange={handleChange} onBlur={handleBlur} className={touched.password ? (errors.password ? 'invalid-field' : 'valid-field') : ''} required />
-                    {errors.password && <p className="field-error">{errors.password}</p>}
-                </div>
-                <button type="submit" className="btn auth-btn">Register</button>
-            </form>
+            )}
         </div>
     );
 };

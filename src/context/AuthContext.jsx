@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect } from 'react';
 import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
@@ -8,15 +9,10 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // --- CHECK SESSION ON LOAD ---
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // We check if the cookie is valid by calling the /me endpoint
-                // (Ensure you added the /me endpoint to AuthController as discussed)
                 const response = await axiosInstance.get('/api/v1/auth/me');
-
-                // If successful, update user state
                 const userData = {
                     name: response.data.data.name,
                     role: response.data.data.role
@@ -24,63 +20,65 @@ export const AuthProvider = ({ children }) => {
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
             } catch (error) {
-                // If 401, cookies are invalid/missing
                 setUser(null);
                 localStorage.removeItem('user');
             } finally {
                 setLoading(false);
             }
         };
-
         checkAuth();
     }, []);
 
-    // --- LOGIN ---
     const login = async (emailOrPhone, password) => {
         try {
             const response = await axiosInstance.post('/api/v1/auth/login', { emailOrPhone, password });
-
-            // Note: response.data.data NO LONGER has the token string.
-            // It only has { name: "...", role: "..." }
-            const { name, role } = response.data.data;
-
+            const { name, role } = response.data.data ? response.data.data : response.data;
             const userData = { name, role };
 
-            // Update UI State
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
 
             toast.success("Login successful!");
             return { success: true, role: role };
-
         } catch (error) {
-            console.error(error);
             toast.error(error.response?.data?.message || 'Login failed.');
             return { success: false };
         }
     };
 
-    // --- REGISTER ---
+    // --- STEP 1: CREATE UNVERIFIED USER & SEND OTP ---
     const register = async (name, emailOrPhone, password) => {
         try {
             const response = await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
-            toast.success(response.data.message);
-            return await login(emailOrPhone, password);
+            toast.success("OTP sent! Please check your email/phone.");
+            return { success: true };
         } catch (error) {
             toast.error(error.response?.data?.message || 'Registration failed.');
             return { success: false };
         }
     };
 
-    // --- LOGOUT ---
+    // --- STEP 2: VERIFY OTP & AUTO-LOGIN ---
+    const verifyRegistrationOtp = async (emailOrPhone, otp, password) => {
+        try {
+            // Hit the new Spring Boot endpoint we just created
+            await axiosInstance.post('/api/v1/auth/verify-otp', { emailOrPhone, otp });
+            toast.success("Account verified successfully!");
+
+            // Auto-login using the password they registered with
+            return await login(emailOrPhone, password);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Invalid or expired OTP.');
+            return { success: false };
+        }
+    };
+
     const logout = async () => {
         try {
-            // Call backend to clear cookies
             await axiosInstance.post('/api/v1/user/logout');
         } catch (error) {
             console.error("Logout error", error);
         } finally {
-            // Clear UI state
             localStorage.removeItem('user');
             setUser(null);
             window.location.href = '/login';
@@ -93,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         register,
+        verifyRegistrationOtp, // Export the new function
         isAuthenticated: !!user,
         loading
     };

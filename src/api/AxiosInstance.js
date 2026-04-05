@@ -34,7 +34,6 @@ axiosInstance.interceptors.response.use(
         const originalRequest = error.config;
 
         // 1. IGNORE LOGIN/REFRESH ERRORS
-        // Use YOUR correct endpoint here
         if (originalRequest.url.includes('/auth/login') || originalRequest.url.includes('/user/refreshAccessToken')) {
             return Promise.reject(error);
         }
@@ -58,7 +57,6 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                // Call YOUR correct endpoint
                 await axiosInstance.post('/api/v1/user/refreshAccessToken');
 
                 processQueue(null, 'success');
@@ -70,12 +68,13 @@ axiosInstance.interceptors.response.use(
                 processQueue(refreshError, null);
                 isRefreshing = false;
 
-                console.error("Session expired.");
+                console.error("Session expired or user is guest.");
+
+                // Clear user data, but DO NOT redirect here!
                 localStorage.removeItem('user');
 
-                if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
-                }
+                // REMOVED: window.location.href = '/login';
+                // Let the components or AuthContext handle the UI changes instead.
 
                 return Promise.reject(refreshError);
             }

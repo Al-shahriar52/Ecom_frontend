@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 // --- Core Components ---
 import Header from './components/Header';
@@ -44,6 +44,20 @@ import AddProduct from './pages/admin/AddProduct';
 import Wishlist from './pages/Wishlist';
 import OrderSuccess from './pages/OrderSuccess';
 
+// --- Helper Component to Hide Cart on Specific Routes ---
+const ConditionalFloatingCart = () => {
+    const location = useLocation();
+
+    // Add any other routes where you want to hide the cart here
+    const hideOnRoutes = ['/checkout'];
+
+    // If the current path is in the hidden list, return nothing
+    if (hideOnRoutes.includes(location.pathname)) {
+        return null;
+    }
+
+    return <FloatingCartButton />;
+};
 function App() {
     return (
         <Router>
@@ -53,7 +67,7 @@ function App() {
                     <WishlistProvider>
                     <Toaster position="top-center" reverseOrder={false} />
                     <Header />
-                    <FloatingCartButton />
+                        <ConditionalFloatingCart />
                     <main>
                         <Routes>
                             {/* --- Public Routes --- */}
