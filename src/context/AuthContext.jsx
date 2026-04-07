@@ -41,16 +41,20 @@ export const AuthProvider = ({ children }) => {
             toast.success("Login successful!");
             return { success: true, role: role };
         } catch (error) {
+            if (error.response && error.response.status === 403 && error.response.data.message === "Account is not verified. Please complete OTP verification.") {
+                // Passing password back so RegisterForm can auto-login after OTP
+                return { success: false, unverified: true, emailOrPhone, password };
+            }
+
             toast.error(error.response?.data?.message || 'Login failed.');
             return { success: false };
         }
     };
 
-    // --- STEP 1: CREATE UNVERIFIED USER & SEND OTP ---
     const register = async (name, emailOrPhone, password) => {
         try {
-            const response = await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
-            toast.success("OTP sent! Please check your email/phone.");
+            await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
+            toast.success("OTP sent! Please check your email/phone.", { duration: 4000 });
             return { success: true };
         } catch (error) {
             toast.error(error.response?.data?.message || 'Registration failed.');
@@ -58,17 +62,35 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // --- STEP 2: VERIFY OTP & AUTO-LOGIN ---
     const verifyRegistrationOtp = async (emailOrPhone, otp, password) => {
         try {
-            // Hit the new Spring Boot endpoint we just created
             await axiosInstance.post('/api/v1/auth/verify-otp', { emailOrPhone, otp });
             toast.success("Account verified successfully!");
-
-            // Auto-login using the password they registered with
             return await login(emailOrPhone, password);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Invalid or expired OTP.');
+            return { success: false };
+        }
+    };
+
+    const forgotPassword = async (emailOrPhone) => {
+        try {
+            const response = await axiosInstance.post('/api/v1/auth/forgot-password', { emailOrPhone });
+            toast.success(response.data.message || "OTP Sent!");
+            return { success: true };
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to send OTP.");
+            return { success: false };
+        }
+    };
+
+    const resetPassword = async (emailOrPhone, otp, password) => {
+        try {
+            const response = await axiosInstance.post('/api/v1/auth/reset-password', { emailOrPhone, otp, password });
+            toast.success(response.data.message || "Password reset successfully!");
+            return { success: true };
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to reset password.");
             return { success: false };
         }
     };
@@ -86,14 +108,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     const value = {
-        user,
-        setUser,
-        login,
-        logout,
-        register,
-        verifyRegistrationOtp, // Export the new function
-        isAuthenticated: !!user,
-        loading
+        user, setUser, login, logout, register,
+        verifyRegistrationOtp, forgotPassword, resetPassword,
+        isAuthenticated: !!user, loading
     };
 
     return (
