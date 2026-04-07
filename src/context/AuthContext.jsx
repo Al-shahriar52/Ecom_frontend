@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect } from 'react';
 import axiosInstance from '../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
@@ -8,15 +9,10 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // --- CHECK SESSION ON LOAD ---
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // We check if the cookie is valid by calling the /me endpoint
-                // (Ensure you added the /me endpoint to AuthController as discussed)
                 const response = await axiosInstance.get('/api/v1/auth/me');
-
-                // If successful, update user state
                 const userData = {
                     name: response.data.data.name,
                     role: response.data.data.role
@@ -24,63 +20,87 @@ export const AuthProvider = ({ children }) => {
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
             } catch (error) {
-                // If 401, cookies are invalid/missing
                 setUser(null);
                 localStorage.removeItem('user');
             } finally {
                 setLoading(false);
             }
         };
-
         checkAuth();
     }, []);
 
-    // --- LOGIN ---
     const login = async (emailOrPhone, password) => {
         try {
             const response = await axiosInstance.post('/api/v1/auth/login', { emailOrPhone, password });
-
-            // Note: response.data.data NO LONGER has the token string.
-            // It only has { name: "...", role: "..." }
-            const { name, role } = response.data.data;
-
+            const { name, role } = response.data.data ? response.data.data : response.data;
             const userData = { name, role };
 
-            // Update UI State
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
 
             toast.success("Login successful!");
             return { success: true, role: role };
-
         } catch (error) {
-            console.error(error);
+            if (error.response && error.response.status === 403 && error.response.data.message === "Account is not verified. Please complete OTP verification.") {
+                // Passing password back so RegisterForm can auto-login after OTP
+                return { success: false, unverified: true, emailOrPhone, password };
+            }
+
             toast.error(error.response?.data?.message || 'Login failed.');
             return { success: false };
         }
     };
 
-    // --- REGISTER ---
     const register = async (name, emailOrPhone, password) => {
         try {
-            const response = await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
-            toast.success(response.data.message);
-            return await login(emailOrPhone, password);
+            await axiosInstance.post('/api/v1/auth/register', { name, emailOrPhone, password });
+            toast.success("OTP sent! Please check your email/phone.", { duration: 4000 });
+            return { success: true };
         } catch (error) {
             toast.error(error.response?.data?.message || 'Registration failed.');
             return { success: false };
         }
     };
 
-    // --- LOGOUT ---
+    const verifyRegistrationOtp = async (emailOrPhone, otp, password) => {
+        try {
+            await axiosInstance.post('/api/v1/auth/verify-otp', { emailOrPhone, otp });
+            toast.success("Account verified successfully!");
+            return await login(emailOrPhone, password);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Invalid or expired OTP.');
+            return { success: false };
+        }
+    };
+
+    const forgotPassword = async (emailOrPhone) => {
+        try {
+            const response = await axiosInstance.post('/api/v1/auth/forgot-password', { emailOrPhone });
+            toast.success(response.data.message || "OTP Sent!");
+            return { success: true };
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to send OTP.");
+            return { success: false };
+        }
+    };
+
+    const resetPassword = async (emailOrPhone, otp, password) => {
+        try {
+            const response = await axiosInstance.post('/api/v1/auth/reset-password', { emailOrPhone, otp, password });
+            toast.success(response.data.message || "Password reset successfully!");
+            return { success: true };
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to reset password.");
+            return { success: false };
+        }
+    };
+
     const logout = async () => {
         try {
-            // Call backend to clear cookies
             await axiosInstance.post('/api/v1/user/logout');
         } catch (error) {
             console.error("Logout error", error);
         } finally {
-            // Clear UI state
             localStorage.removeItem('user');
             setUser(null);
             window.location.href = '/login';
@@ -88,13 +108,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     const value = {
-        user,
-        setUser,
-        login,
-        logout,
-        register,
-        isAuthenticated: !!user,
-        loading
+        user, setUser, login, logout, register,
+        verifyRegistrationOtp, forgotPassword, resetPassword,
+        isAuthenticated: !!user, loading
     };
 
     return (
