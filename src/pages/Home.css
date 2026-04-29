@@ -94,9 +94,11 @@
 
 .home-title {
     position: relative;
-    display: inline-flex; /* CHANGED: This is the key change for the layout */
-    align-items: center;  /* Vertically align arrows and text */
-    gap: 0.5rem;          /* Adds space between arrows and text */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* Centers the content */
+    flex-wrap: wrap;         /* Allows arrows and text to wrap if things get too tight */
+    gap: 0.5rem;
     color: #fff;
     padding: 1rem 1rem;
     font-size: 2rem;
@@ -105,9 +107,10 @@
     white-space: pre-wrap;
 }
 
-/* NEW: A wrapper for the animated text */
 .animated-title-text {
     display: inline-flex;
+    flex-wrap: wrap;         /* Allows the words to wrap naturally */
+    justify-content: center; /* Keeps wrapped words centered */
 }
 
 .home-title::after {
@@ -170,5 +173,15 @@
     to {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+/* =========================================
+   Mobile Responsiveness for Title
+   ========================================= */
+@media screen and (max-width: 768px) {
+    .home-title {
+        font-size: 1.4rem; /* Shrinks the text for mobile screens */
+        padding: 0.8rem 1rem;
     }
 }

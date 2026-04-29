@@ -50,7 +50,7 @@ const Home = () => {
                                     key={index}
                                     style={{ animationDelay: `${0.5 + index * 0.05}s` }}
                                 >
-                                    {char === ' ' ? '\u00A0' : char}
+                                    {char === ' ' ? ' ' : char}
                                 </span>
                             ))}
                         </span>
