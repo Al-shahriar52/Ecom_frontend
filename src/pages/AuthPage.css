@@ -230,3 +230,45 @@
         transform: translateY(0);
     }
 }
+
+/* =========================================
+   Responsive Styles (Mobile & Tablet)
+   ========================================= */
+
+@media screen and (max-width: 768px) {
+    /* 1. Stack the card contents vertically */
+    .auth-card {
+        flex-direction: column;
+        padding: 30px 20px; /* Reduce padding for smaller screens */
+        gap: 1.5rem;
+    }
+
+    /* 2. Adjust the image container */
+    .auth-card-image {
+        padding-right: 0; /* Remove right padding */
+        padding-bottom: 1.5rem; /* Add bottom padding */
+        border-right: none; /* Remove the vertical line */
+        border-bottom: 1px solid var(--border-color); /* Add a horizontal line */
+        width: 100%; /* Ensure the border stretches across */
+    }
+
+    /* 3. Make the image smaller on mobile */
+    .auth-card-image img {
+        max-width: 220px;
+    }
+
+    /* 4. Center the OTP boxes just in case */
+    .otp-container {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+/* For extremely small phones, adjust the OTP boxes slightly */
+@media screen and (max-width: 400px) {
+    .otp-box {
+        width: 40px;
+        height: 45px;
+        font-size: 18px;
+    }
+}
