@@ -58,7 +58,27 @@
     .gallery-container {
         max-width: 100%; /* Allows it to take full width when stacked */
     }
+
+    /* Updated: Make thumbnails a horizontally scrollable row */
     .thumbnail-wrapper {
-        display: none; /* Hides thumbnails on smaller screens */
+        display: flex;
+        flex-wrap: nowrap; /* Forces thumbnails onto a single line */
+        overflow-x: auto;  /* Allows swiping left/right */
+        gap: 10px;
+        padding-bottom: 8px; /* Gives a little breathing room at the bottom */
+
+        /* Hides the ugly scrollbar in Firefox */
+        scrollbar-width: none;
+    }
+
+    /* Hides the ugly scrollbar in Chrome, Safari, and Edge */
+    .thumbnail-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Updated: Ensure thumbnails don't shrink when they run out of space */
+    .thumbnail-item {
+        flex: 0 0 60px; /* Forces width to stay exactly 60px */
+        height: 60px;   /* Sets a fixed height */
     }
 }
