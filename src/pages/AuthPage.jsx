@@ -286,18 +286,85 @@ const RegisterForm = ({ initialData }) => {
                 <>
                     <h2>Create Account</h2>
                     <form onSubmit={handleRegisterSubmit} noValidate>
+                        {/* NAME FIELD */}
                         <div className="form-group">
                             <label htmlFor="register-name">Name</label>
-                            <input type="text" id="register-name" name="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+                            <input
+                                type="text"
+                                id="register-name"
+                                name="name"
+                                value={formData.name}
+                                onChange={(e) => {
+                                    const { name, value } = e.target;
+                                    setFormData({...formData, [name]: value});
+                                    // Clear or update error as user types if already touched
+                                    if (touched[name]) {
+                                        setErrors({...errors, [name]: validateField(name, value)});
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    const { name, value } = e.target;
+                                    setTouched({...touched, [name]: true});
+                                    setErrors({...errors, [name]: validateField(name, value)});
+                                }}
+                                className={touched.name ? (errors.name ? 'invalid-field' : 'valid-field') : ''}
+                                required
+                            />
+                            {errors.name && <p className="field-error">{errors.name}</p>}
                         </div>
+
+                        {/* EMAIL/PHONE FIELD */}
                         <div className="form-group">
                             <label htmlFor="register-emailOrPhone">Email or Phone</label>
-                            <input type="text" id="register-emailOrPhone" name="emailOrPhone" value={formData.emailOrPhone} onChange={(e) => setFormData({...formData, emailOrPhone: e.target.value})} required />
+                            <input
+                                type="text"
+                                id="register-emailOrPhone"
+                                name="emailOrPhone"
+                                value={formData.emailOrPhone}
+                                onChange={(e) => {
+                                    const { name, value } = e.target;
+                                    setFormData({...formData, [name]: value});
+                                    if (touched[name]) {
+                                        setErrors({...errors, [name]: validateField(name, value)});
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    const { name, value } = e.target;
+                                    setTouched({...touched, [name]: true});
+                                    setErrors({...errors, [name]: validateField(name, value)});
+                                }}
+                                className={touched.emailOrPhone ? (errors.emailOrPhone ? 'invalid-field' : 'valid-field') : ''}
+                                required
+                            />
+                            {errors.emailOrPhone && <p className="field-error">{errors.emailOrPhone}</p>}
                         </div>
+
+                        {/* PASSWORD FIELD */}
                         <div className="form-group">
                             <label htmlFor="register-password">Password</label>
-                            <input type="password" id="register-password" name="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} required />
+                            <input
+                                type="password"
+                                id="register-password"
+                                name="password"
+                                value={formData.password}
+                                onChange={(e) => {
+                                    const { name, value } = e.target;
+                                    setFormData({...formData, [name]: value});
+                                    if (touched[name]) {
+                                        setErrors({...errors, [name]: validateField(name, value)});
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    const { name, value } = e.target;
+                                    setTouched({...touched, [name]: true});
+                                    setErrors({...errors, [name]: validateField(name, value)});
+                                }}
+                                className={touched.password ? (errors.password ? 'invalid-field' : 'valid-field') : ''}
+                                required
+                            />
+                            {errors.password && <p className="field-error">{errors.password}</p>}
                         </div>
+
                         <button type="submit" className="btn auth-btn" disabled={isRegistering}>
                             {isRegistering ? 'Sending OTP...' : 'Register'}
                         </button>
