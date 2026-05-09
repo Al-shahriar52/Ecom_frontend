@@ -41,6 +41,7 @@ import AdminOrderDetails from "./pages/admin/orders/AdminOrderDetails";
 import Accounting from './pages/admin/Accounting';
 import CouponManagement from './pages/admin/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';
+import EditProductPage from './pages/admin/EditProductPage';
 import Wishlist from './pages/Wishlist';
 import OrderSuccess from './pages/OrderSuccess';
 
@@ -102,6 +103,7 @@ function App() {
                                     <Route path="orders/:orderId" element={<AdminOrderDetails />} />
                                     <Route path="accounting" element={<Accounting />} />
                                     <Route path="products/add" element={<AddProduct />} />
+                                    <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
                                     <Route path="frequently-bought-together" element={<FbtManagementPage />} />
                                 </Route>
                             </Route>

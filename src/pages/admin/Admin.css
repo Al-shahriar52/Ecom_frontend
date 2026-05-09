@@ -79,6 +79,14 @@
     color: #9fa2b4;
     justify-content: center; /* Centers the icons in the column */
 }
+.action-icons .edit-icon-link {
+    color: #6c757d; /* Replace with the exact grey hex code of your trash icon */
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
 .admin-page-content .action-icons svg { cursor: pointer; }
 .admin-page-content .action-icons svg:hover { color: #2c3e50; }
 .admin-page-content .pagination { display: flex; justify-content: flex-end; align-items: center; padding-top: 20px; border-top: 1px solid #dfe0eb; margin-top: 20px; gap: 10px; }

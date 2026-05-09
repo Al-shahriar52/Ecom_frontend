@@ -10,7 +10,6 @@ const ProductManagement = () => {
     // State for data fetched from the API
     const [products, setProducts] = useState([]);
     const [pagination, setPagination] = useState({ pageNo: 0, pageSize: 10, totalPages: 1 });
-
     const [categories, setCategories] = useState([]);
     // State for API query parameters
     const [searchTerm, setSearchTerm] = useState('');
@@ -100,6 +99,17 @@ const ProductManagement = () => {
 
     const handlePageChange = (newPageNo) => {
         setPagination(prev => ({ ...prev, pageNo: newPageNo }));
+    };
+
+    const handleDeleteClick = async (productId) => {
+        if (!window.confirm("Are you sure you want to delete this product?")) return;
+        try {
+            await axiosInstance.delete(`/api/v1/product/delete/${productId}`);
+            toast.success("Product deleted successfully!");
+            setProducts(prevProducts => prevProducts.filter(p => p.productId !== productId));
+        } catch (error) {
+            toast.error("Failed to delete product.");
+        }
     };
 
     return (
@@ -195,8 +205,24 @@ const ProductManagement = () => {
                                     <td><StarRating rating={product.rating} /></td>
                                     <td>
                                         <div className="action-icons">
-                                            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z" /></svg>
-                                            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>
+                                            <Link
+                                                to={`/admin/products/edit/${product.productId}`}
+                                                state={{ product: product }}
+                                                className="edit-icon-link"
+                                            >
+                                                {/* Changed width and height to 18 to visually balance with the trash icon */}
+                                                <svg width="18" height="18" viewBox="0 0 24 24">
+                                                    <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z" />
+                                                </svg>
+                                            </Link>
+
+                                            <svg
+                                                className="delete-icon"
+                                                onClick={() => handleDeleteClick(product.productId)}
+                                                width="20" height="20" viewBox="0 0 24 24"
+                                            >
+                                                <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                                            </svg>
                                         </div>
                                     </td>
                                 </tr>
