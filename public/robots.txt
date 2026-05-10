@@ -1,3 +1,14 @@
-# https://www.robotstxt.org/robotstxt.html
+# Tell all search engine bots (*) that these rules apply to them
 User-agent: *
-Disallow:
+
+# Pages they are ALLOWED to crawl
+Allow: /
+
+# Pages they are FORBIDDEN from crawling (protecting your secure routes)
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /checkout/
+Disallow: /cart/
+
+# Tell the bots exactly where to find the Spring Boot sitemap you just built!
+Sitemap: https://api.beautyhaat.com/sitemap.xml

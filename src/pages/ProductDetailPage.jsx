@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
+import { Helmet } from 'react-helmet-async'; // 1. IMPORT HELMET HERE
 import './ProductDetailPage.css';
 import ProductGallery from '../components/productDetails/ProductGallery';
 import ProductInfo from '../components/productDetails/ProductInfo';
@@ -48,7 +50,6 @@ const ProductDetailPage = () => {
 
     const isWishlisted = product ? isInWishlist(product.productId) : false;
 
-    // 4. DEFINE THE TOGGLE FUNCTION
     const handleWishlistToggle = () => {
         if (!product) return;
 
@@ -59,8 +60,82 @@ const ProductDetailPage = () => {
         }
     };
 
+    // 2. CREATE THE JSON-LD SCHEMA OBJECT
+    // Note: Please check that `product.name`, `product.price`, etc., match the exact
+    // property names returned by your Spring Boot backend. Adjust them if needed!
+    const schemaData = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.name,
+        "image": product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls : [],
+        "description": product.description,
+        "sku": product.sku || product.productId, // Fallback to ID if no SKU exists
+        "brand": {
+            "@type": "Brand",
+            "name": product.brandName || "BeautyHaat" // Adjust variable if needed
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": `https://beautyhaat.com/product/${productId}`,
+            "priceCurrency": "BDT",
+            "price": product.price || product.currentPrice, // Adjust variable if needed
+            "availability": product.stockQuantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+        }
+    };
+
+    // 1. Safely grab the category name, defaulting to "Shop" if null
+    const categoryName = product.category?.name || "Shop";
+
+    // 2. Safely grab the slug if your backend provides it.
+    // If not, automatically convert the name "Personal Care" into "personal-care"
+    const categorySlug = product.category?.slug
+        || categoryName.toLowerCase().replace(/\s+/g, '-');
+
+    // 3. Create the Breadcrumb Schema Object with the correct URL structure
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://beautyhaat.com/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": categoryName,
+                // Now it builds: https://beautyhaat.com/category/personal-care
+                "item": `https://beautyhaat.com/category/${categorySlug}`
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": product.name,
+                "item": `https://beautyhaat.com/product/${productId}`
+            }
+        ]
+    };
+
     return (
         <div className="pdp-container container">
+
+            {/* 3. INJECT THE SEO TAGS */}
+            <Helmet>
+                <title>{product.name ? `${product.name} | BeautyHaat` : 'Product | BeautyHaat'}</title>
+                {/* We substring the description to 160 characters as that is the max for search engine snippets */}
+                <meta name="description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
+                <link rel="canonical" href={`https://beautyhaat.com/product/${productId}`} />
+                <script type="application/ld+json">
+                    {JSON.stringify(schemaData)}
+                </script>
+
+                <script type="application/ld+json">
+                    {JSON.stringify(breadcrumbSchema)}
+                </script>
+            </Helmet>
+
             <div className="pdp-main-content">
                 <ProductGallery imageUrls={product.imageUrls} />
 

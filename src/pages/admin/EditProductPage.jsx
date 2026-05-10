@@ -151,6 +151,8 @@ const EditProductPage = () => {
         setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
+    const retainedUrls = imagePreviews.filter(url => !url.startsWith('blob:'));
+
     const handleUpdate = async (e) => {
         e.preventDefault();
         const toastId = toast.loading('Updating product...');
@@ -170,6 +172,7 @@ const EditProductPage = () => {
             quantity: parseInt(productData.quantity) || 0,
             sku: productData.sku,
             rating: parseFloat(productData.rating) || 0,
+            retainedImageUrls: retainedUrls,
         };
 
         const formData = new FormData();

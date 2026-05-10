@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 
 // --- Core Components ---
 import Header from './components/Header';
@@ -61,6 +62,7 @@ const ConditionalFloatingCart = () => {
 };
 function App() {
     return (
+        <HelmetProvider>
         <Router>
             <ScrollToTop />
             <AuthProvider>
@@ -115,6 +117,7 @@ function App() {
                 </CartProvider>
             </AuthProvider>
         </Router>
+        </HelmetProvider>
     );
 }
 
