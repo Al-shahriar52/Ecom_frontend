@@ -1,14 +1,29 @@
-# Tell all search engine bots (*) that these rules apply to them
-User-agent: *
+# 1. Block specific aggressive AI/Scraper bots
+User-agent: Amazonbot
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: CCBot
+User-agent: ClaudeBot
+User-agent: GPTBot
+User-agent: Google-Extended
+User-agent: meta-externalagent
+Disallow: /
 
-# Pages they are ALLOWED to crawl
+# 2. Rules for all other search engines (Google, Bing, etc.)
+User-agent: *
+# Cloudflare Content Signals
+Content-Signal: search=yes,ai-train=no
+
+# Allow indexing of the main site
 Allow: /
 
-# Pages they are FORBIDDEN from crawling (protecting your secure routes)
+# FORBIDDEN: Protect secure/private routes
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /checkout/
 Disallow: /cart/
+Disallow: /api/
+Disallow: /*?* # Optional: Blocks crawl of search result parameters to save crawl budget
 
-# Tell the bots exactly where to find the Spring Boot sitemap you just built!
+# 3. Sitemap location
 Sitemap: https://api.beautyhaat.com/sitemap.xml
