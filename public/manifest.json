@@ -1,19 +1,19 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BeautyHaat",
+  "name": "BeautyHaat - Finest Beauty Products",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "https://res.cloudinary.com/dgxol8iyp/image/upload/v1778592921/ecommerce/ChatGPT_Image_May_12_2026_07_34_49_PM_hauhxs.png",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
-      "src": "logo192.png",
+      "src": "https://res.cloudinary.com/dgxol8iyp/image/upload/v1778592921/ecommerce/ChatGPT_Image_May_12_2026_07_34_49_PM_hauhxs.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "https://res.cloudinary.com/dgxol8iyp/image/upload/v1778592921/ecommerce/ChatGPT_Image_May_12_2026_07_34_49_PM_hauhxs.png",
       "type": "image/png",
       "sizes": "512x512"
     }
