@@ -1,18 +1,5 @@
-# 1. Block specific aggressive AI/Scraper bots
-User-agent: Amazonbot
-User-agent: Applebot-Extended
-User-agent: Bytespider
-User-agent: CCBot
-User-agent: ClaudeBot
-User-agent: GPTBot
-User-agent: Google-Extended
-User-agent: meta-externalagent
-Disallow: /
-
-# 2. Rules for all other search engines (Google, Bing, etc.)
+# 1. Rules for all search engines
 User-agent: *
-# Cloudflare Content Signals
-Content-Signal: search=yes,ai-train=no
 
 # Allow indexing of the main site
 Allow: /
@@ -23,7 +10,5 @@ Disallow: /dashboard/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /api/
-Disallow: /*?* # Optional: Blocks crawl of search result parameters to save crawl budget
-
-# 3. Sitemap location
+Disallow: /*?* # 2. Sitemap location
 Sitemap: https://api.beautyhaat.com/sitemap.xml
