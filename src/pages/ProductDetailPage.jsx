@@ -64,6 +64,7 @@ const ProductDetailPage = () => {
     // Note: Please check that `product.name`, `product.price`, etc., match the exact
     // property names returned by your Spring Boot backend. Adjust them if needed!
         // 2. CREATE THE JSON-LD SCHEMA OBJECT
+// 2. CREATE THE JSON-LD SCHEMA OBJECT
     const schemaData = {
         "@context": "https://schema.org/",
         "@type": "Product",
@@ -73,19 +74,55 @@ const ProductDetailPage = () => {
         "sku": product.sku || product.productId,
         "brand": {
             "@type": "Brand",
-            "name": product.brandName || "BeautyHaat" 
+            "name": product.brandName || "BeautyHaat"
         },
         "offers": {
             "@type": "Offer",
             "url": `https://beautyhaat.com/product/${productId}`,
             "priceCurrency": "BDT",
-            // FIX 1: Map to the correct price fields from your API
-            "price": product.discountedPrice || product.originalPrice, 
+            "price": product.discountedPrice || product.originalPrice,
             "itemCondition": "https://schema.org/NewCondition",
-            // FIX 2: Map to 'quantity' instead of 'stockQuantity'
-            "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+
+            // --- NEW: Return Policy ---
+            "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "applicableCountry": "BD",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                "merchantReturnDays": 7, // CHANGE THIS: Your return window (e.g., 3, 7, 14)
+                "returnMethod": "https://schema.org/ReturnByMail",
+                "returnFees": "https://schema.org/CustomerResponsibility" // Or "https://schema.org/FreeReturn"
+            },
+
+            // --- NEW: Shipping Details ---
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": "60", // CHANGE THIS: Your standard shipping cost
+                    "currency": "BDT"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "BD"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 0,
+                        "maxValue": 1, // Max days to process order
+                        "unitCode": "d" // 'd' means days
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 2, // Min delivery days
+                        "maxValue": 5, // Max delivery days
+                        "unitCode": "d"
+                    }
+                }
+            }
         },
-        // FIX 3: Include the review data from your API for rich snippets
         ...(product.rating && product.numReviews > 0 && {
             "aggregateRating": {
                 "@type": "AggregateRating",
