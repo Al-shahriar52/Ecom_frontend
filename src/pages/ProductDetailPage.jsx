@@ -61,10 +61,6 @@ const ProductDetailPage = () => {
     };
 
     // 2. CREATE THE JSON-LD SCHEMA OBJECT
-    // Note: Please check that `product.name`, `product.price`, etc., match the exact
-    // property names returned by your Spring Boot backend. Adjust them if needed!
-        // 2. CREATE THE JSON-LD SCHEMA OBJECT
-// 2. CREATE THE JSON-LD SCHEMA OBJECT
     const schemaData = {
         "@context": "https://schema.org/",
         "@type": "Product",
@@ -84,22 +80,22 @@ const ProductDetailPage = () => {
             "itemCondition": "https://schema.org/NewCondition",
             "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
 
-            // --- NEW: Return Policy ---
+            // Return Policy
             "hasMerchantReturnPolicy": {
                 "@type": "MerchantReturnPolicy",
                 "applicableCountry": "BD",
                 "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-                "merchantReturnDays": 7, // CHANGE THIS: Your return window (e.g., 3, 7, 14)
+                "merchantReturnDays": 7, // Adjust to your actual policy
                 "returnMethod": "https://schema.org/ReturnByMail",
-                "returnFees": "https://schema.org/CustomerResponsibility" // Or "https://schema.org/FreeReturn"
+                "returnFees": "https://schema.org/CustomerResponsibility"
             },
 
-            // --- NEW: Shipping Details ---
+            // Shipping Details
             "shippingDetails": {
                 "@type": "OfferShippingDetails",
                 "shippingRate": {
                     "@type": "MonetaryAmount",
-                    "value": "60", // CHANGE THIS: Your standard shipping cost
+                    "value": "60", // Adjust to your actual standard shipping rate
                     "currency": "BDT"
                 },
                 "shippingDestination": {
@@ -111,19 +107,20 @@ const ProductDetailPage = () => {
                     "handlingTime": {
                         "@type": "QuantitativeValue",
                         "minValue": 0,
-                        "maxValue": 1, // Max days to process order
-                        "unitCode": "d" // 'd' means days
+                        "maxValue": 1,
+                        "unitCode": "d"
                     },
                     "transitTime": {
                         "@type": "QuantitativeValue",
-                        "minValue": 2, // Min delivery days
-                        "maxValue": 5, // Max delivery days
+                        "minValue": 2,
+                        "maxValue": 5,
                         "unitCode": "d"
                     }
                 }
             }
         },
-        ...(product.rating && product.numReviews > 0 && {
+        // Review & Rating Data (Only added if reviews exist)
+        ...(product.rating > 0 && product.numReviews > 0 && {
             "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": product.rating,
