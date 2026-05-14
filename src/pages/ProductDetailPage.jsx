@@ -63,25 +63,38 @@ const ProductDetailPage = () => {
     // 2. CREATE THE JSON-LD SCHEMA OBJECT
     // Note: Please check that `product.name`, `product.price`, etc., match the exact
     // property names returned by your Spring Boot backend. Adjust them if needed!
+        // 2. CREATE THE JSON-LD SCHEMA OBJECT
     const schemaData = {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": product.name,
-        "image": product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls : [],
+        "image": product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls : undefined,
         "description": product.description,
-        "sku": product.sku || product.productId, // Fallback to ID if no SKU exists
+        "sku": product.sku || product.productId,
         "brand": {
             "@type": "Brand",
-            "name": product.brandName || "BeautyHaat" // Adjust variable if needed
+            "name": product.brandName || "BeautyHaat" 
         },
         "offers": {
             "@type": "Offer",
             "url": `https://beautyhaat.com/product/${productId}`,
             "priceCurrency": "BDT",
-            "price": product.price || product.currentPrice, // Adjust variable if needed
-            "availability": product.stockQuantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
-        }
+            // FIX 1: Map to the correct price fields from your API
+            "price": product.discountedPrice || product.originalPrice, 
+            "itemCondition": "https://schema.org/NewCondition",
+            // FIX 2: Map to 'quantity' instead of 'stockQuantity'
+            "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+        },
+        // FIX 3: Include the review data from your API for rich snippets
+        ...(product.rating && product.numReviews > 0 && {
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": product.rating,
+                "reviewCount": product.numReviews
+            }
+        })
     };
+    
 
     // 1. Safely grab the category name, defaulting to "Shop" if null
     const categoryName = product.category?.name || "Shop";
