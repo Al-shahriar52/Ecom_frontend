@@ -87,7 +87,7 @@ const ProductDetailPage = () => {
                 "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
                 "merchantReturnDays": 7, // Adjust to your actual policy
                 "returnMethod": "https://schema.org/ReturnByMail",
-                "returnFees": "https://schema.org/CustomerResponsibility"
+                "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility"
             },
 
             // Shipping Details
