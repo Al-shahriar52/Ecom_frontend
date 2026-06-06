@@ -11,6 +11,7 @@ import ShopPage from './pages/ShopPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import FbtManagementPage from './pages/admin/FbtManagementPage';
 import FloatingCartButton from './components/FloatingCartButton';
+import Contact from './pages/Contact';
 
 // --- Context Providers ---
 import { AuthProvider } from './context/AuthContext';
@@ -75,6 +76,7 @@ function App() {
                         <Routes>
                             {/* --- Public Routes --- */}
                             <Route path="/" element={<Home />} />
+                            <Route path="/contact" element={<Contact />} />
                             <Route path="/cart" element={<Cart />} />
                             <Route path="/login" element={<AuthPage />} />
                             <Route path="/brand/:slug" element={<ShopPage />} />
