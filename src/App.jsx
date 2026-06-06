@@ -12,6 +12,11 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import FbtManagementPage from './pages/admin/FbtManagementPage';
 import FloatingCartButton from './components/FloatingCartButton';
 import Contact from './pages/Contact';
+import Shipping from './pages/ShippingDeliveryFooter';
+import RefundPolicy from './pages/RefundPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Shop from './pages/ShopPage'
+import AboutUs from './pages/AboutUs';
 
 // --- Context Providers ---
 import { AuthProvider } from './context/AuthContext';
@@ -76,7 +81,12 @@ function App() {
                         <Routes>
                             {/* --- Public Routes --- */}
                             <Route path="/" element={<Home />} />
+                            <Route path="/shop" element={<Shop />} />
                             <Route path="/contact" element={<Contact />} />
+                            <Route path="/shipping-delivery" element={<Shipping />} />
+                            <Route path="/refund-policy" element={<RefundPolicy />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                            <Route path="/about" element={<AboutUs />} />
                             <Route path="/cart" element={<Cart />} />
                             <Route path="/login" element={<AuthPage />} />
                             <Route path="/brand/:slug" element={<ShopPage />} />

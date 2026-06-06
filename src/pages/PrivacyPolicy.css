@@ -1,0 +1,121 @@
+.privacy-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.privacy-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.privacy-header h2 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.language-toggle {
+    display: inline-flex;
+    background-color: #f1f1f1;
+    border-radius: 30px;
+    padding: 5px;
+}
+
+.language-toggle button {
+    background: none;
+    border: none;
+    padding: 10px 25px;
+    font-size: 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #555;
+}
+
+.language-toggle button.active {
+    background-color: #e84393;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.privacy-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.policy-section {
+    margin-bottom: 35px;
+}
+
+.policy-section h3 {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f1f1f1;
+    padding-bottom: 8px;
+}
+
+.policy-section p {
+    line-height: 1.7;
+    color: #555;
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.intro-section {
+    background-color: #fcf4f7;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #e84393;
+    border-bottom: none;
+}
+
+.intro-section h3 {
+    border-bottom: none;
+    margin-top: 0;
+}
+
+.contact-highlight {
+    margin-top: 25px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.contact-highlight p {
+    margin-bottom: 10px;
+    text-align: center;
+    color: #444;
+}
+
+.email-link {
+    display: inline-block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #e84393;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.email-link:hover {
+    color: #d6307c;
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .privacy-header h2 {
+        font-size: 2rem;
+    }
+    .privacy-content {
+        padding: 20px;
+    }
+}
