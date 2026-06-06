@@ -56,3 +56,71 @@
     background-color: #233140;
     border-top: 1px solid #34495e;
 }
+
+.payment-methods-block {
+    margin-top: 25px;
+    display: block !important;
+    width: 100%;
+    clear: both;
+}
+
+/* Header style forced onto its own independent top line */
+.payment-methods-block h5 {
+    color: #fff;
+    font-size: 0.95rem;
+    margin: 0 0 12px 0 !important;
+    font-weight: normal;
+    display: block !important;
+    text-align: left;
+}
+
+/* Horizontal badge row layout container */
+.payment-badges-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    flex-wrap: wrap;
+}
+
+/* Master card frame for completely identical element dimensions */
+.payment-badge-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e1e4e6 !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    height: 38px !important; /* Forces uniform pixel height */
+    min-width: 115px;
+    box-sizing: border-box !important;
+    gap: 8px !important;
+}
+
+/* Proportional constraints for the bKash bird mark inside its card */
+.bkash-bird-logo {
+    height: 26px !important;
+    width: auto !important;
+    object-fit: contain !important;
+}
+
+/* Structured text container inside each payment card */
+.badge-card-text {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    color: #2c3e50 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+}
+
+/* Visual match accenting for the bKash label text */
+.badge-card-text.bkash-text-accent {
+    font-size: 13px !important;
+    color: #e2136e !important; /* Official bKash brand identity color */
+}
