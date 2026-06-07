@@ -8,6 +8,7 @@ const OrderDetail = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -23,6 +24,36 @@ const OrderDetail = () => {
         };
         fetchOrder();
     }, [orderId]);
+
+    const handleDownloadInvoice = async () => {
+        if (!orderId) return;
+
+        try {
+            setIsDownloading(true);
+
+            const response = await axiosInstance.get(`/api/v1/order/${orderId}/invoice/download`, {
+                responseType: 'blob' // Essential for parsing PDF binary streams
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', `BeautyHaat_Invoice_INV-${orderId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up temporary DOM anchors
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+
+        } catch (error) {
+            console.error('Error downloading invoice:', error);
+            alert("Could not download the invoice at this time.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     // --- HELPER: Format Date/Time from Array ---
     const formatDate = (dateArray) => {
@@ -67,6 +98,14 @@ const OrderDetail = () => {
                     <span className={`status-badge ${getStatusClass(order.orderStatus)}`}>
                         {order.orderStatus}
                     </span>
+
+                    <button
+                        onClick={handleDownloadInvoice}
+                        disabled={isDownloading}
+                        className="dashboard-download-btn"
+                    >
+                        {isDownloading ? 'Downloading...' : 'Download Invoice'}
+                    </button>
 
                     {/* Show Pay Button only if Pending & NOT Cash on Delivery */}
                     {order.orderStatus === 'PENDING' && order.paymentMethod !== 'COD' && (
