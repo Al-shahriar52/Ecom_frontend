@@ -10,6 +10,9 @@ const OrderSuccess = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // 1. ADDED: State to track download status
+    const [isDownloading, setIsDownloading] = useState(false);
+
     useEffect(() => {
         const fetchOrder = async () => {
             try {
@@ -25,6 +28,37 @@ const OrderSuccess = () => {
         };
         fetchOrder();
     }, [orderId]);
+
+    // 2. ADDED: Invoice Download Handler using axiosInstance
+    const handleDownloadInvoice = async () => {
+        if (!orderId) return;
+
+        try {
+            setIsDownloading(true);
+
+            const response = await axiosInstance.get(`/api/v1/order/${orderId}/invoice/download`, {
+                responseType: 'blob' // CRITICAL for PDF download
+            });
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', `BeautyHaat_Invoice_INV-${orderId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+
+        } catch (error) {
+            console.error('Error downloading invoice:', error);
+            alert("Could not download the invoice at this time.");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     if (loading) return <div className="order-loader">Loading Order Details...</div>;
     if (error || !order) return <div className="order-error">{error || "Order not found"}</div>;
@@ -196,8 +230,17 @@ const OrderSuccess = () => {
                     <span className="total-value">৳ {order.totalAmount.toFixed(2)}</span>
                 </div>
 
-                {/* Continue Shopping Button (Floating on Right) */}
-                <div className="floating-action">
+                {/* 7. UPDATED: Action Buttons Container */}
+                <div className="floating-action" style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px' }}>
+
+                    <button
+                        onClick={handleDownloadInvoice}
+                        disabled={isDownloading}
+                        className="download-invoice-btn"
+                    >
+                        {isDownloading ? 'Downloading...' : 'Download Invoice'}
+                    </button>
+
                     <Link to="/" className="continue-btn">Continue Shopping</Link>
                 </div>
 
