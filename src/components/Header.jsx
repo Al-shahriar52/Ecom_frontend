@@ -3,7 +3,6 @@ import React, { useState, useContext, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
-// 1. IMPORT WISHLIST CONTEXT
 import { WishlistContext } from '../context/WishlistContext';
 import axiosInstance from '../api/AxiosInstance';
 import './Header.css';
@@ -57,7 +56,7 @@ const Header = () => {
     const { cart } = useContext(CartContext);
     // 2. GET WISHLIST FROM CONTEXT
     const { wishlist } = useContext(WishlistContext);
-    const { user, logout } = useContext(AuthContext);
+    const { user, logout, isAuthenticated } = useContext(AuthContext);
 
     const totalItemsInCart = cart.reduce((sum, item) => sum + item.quantity, 0);
     // Calculate Wishlist Count (Safe check if undefined)
@@ -285,7 +284,7 @@ const Header = () => {
                     <hr />
                     <Link to="/brands" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Brands</Link>
                     <Link to="/wishlist" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
-                    {user ? <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>My Account</Link> : <Link to="/login" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>}
+                    {isAuthenticated ? <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>My Account</Link> : <Link to="/login" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>}
                 </div>
             </div>
 
@@ -346,7 +345,7 @@ const Header = () => {
                     </Link>
 
                     <div className="desktop-only">
-                        {user ? (
+                        {isAuthenticated ? (
                             <div className="user-menu-container" ref={dropdownRef}>
                                 <button className="header-action-btn btn-account" onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>MY ACCOUNT</button>
                                 {isUserDropdownOpen && (

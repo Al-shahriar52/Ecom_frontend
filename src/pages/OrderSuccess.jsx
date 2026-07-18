@@ -1,7 +1,8 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
+import { AuthContext } from '../context/AuthContext'; // Check this path matches your folder structure
 import './OrderSuccess.css';
 
 const OrderSuccess = () => {
@@ -10,13 +11,15 @@ const OrderSuccess = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 1. ADDED: State to track download status
+    // Track download status
     const [isDownloading, setIsDownloading] = useState(false);
+
+    // Consume the AuthContext
+    const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
 
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                // Endpoint matching your CURL: /order/{id}
                 const response = await axiosInstance.get(`/api/v1/order/${orderId}`);
                 setOrder(response.data.data);
             } catch (err) {
@@ -29,7 +32,7 @@ const OrderSuccess = () => {
         fetchOrder();
     }, [orderId]);
 
-    // 2. ADDED: Invoice Download Handler using axiosInstance
+    // Invoice Download Handler
     const handleDownloadInvoice = async () => {
         if (!orderId) return;
 
@@ -37,7 +40,7 @@ const OrderSuccess = () => {
             setIsDownloading(true);
 
             const response = await axiosInstance.get(`/api/v1/order/${orderId}/invoice/download`, {
-                responseType: 'blob' // CRITICAL for PDF download
+                responseType: 'blob'
             });
 
             const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -60,17 +63,17 @@ const OrderSuccess = () => {
         }
     };
 
-    if (loading) return <div className="order-loader">Loading Order Details...</div>;
+    // Wait for BOTH the order details and the auth context to finish loading
+    if (loading || authLoading) return <div className="order-loader">Loading Order Details...</div>;
     if (error || !order) return <div className="order-error">{error || "Order not found"}</div>;
 
-    // --- HELPER: FORMAT DATE FROM ARRAY [2026, 1, 1, 12, 5, 11] ---
+    // --- HELPER: FORMAT DATE FROM ARRAY ---
     const formatDate = (dateArray) => {
         if (!Array.isArray(dateArray)) return { date: 'N/A', time: 'N/A' };
 
-        // JS Date month is 0-indexed (0=Jan), Java is 1-indexed (1=Jan)
         const date = new Date(
             dateArray[0],      // Year
-            dateArray[1] - 1,  // Month
+            dateArray[1] - 1,  // Month (0-indexed)
             dateArray[2],      // Day
             dateArray[3],      // Hour
             dateArray[4],      // Minute
@@ -86,6 +89,9 @@ const OrderSuccess = () => {
     const { date, time } = formatDate(order.createdAt);
     const subTotal = order.totalAmount - order.shippingCost;
 
+    // --- DETERMINE GUEST STATUS ---
+    const isGuest = !isAuthenticated;
+
     return (
         <div className="order-success-page">
             <div className="order-success-container">
@@ -99,15 +105,34 @@ const OrderSuccess = () => {
                 <div className="order-header-row">
                     <h2 className="header-title">
                         Order Number :
-                        {/* --- LINK TO DASHBOARD ORDER DETAILS --- */}
-                        <Link to={`/dashboard/orders/${order.id}`} className="order-id-link">
-                            <span className="highlight-pink">#{order.id}</span>
-                        </Link>
+                        {isGuest ? (
+                            <span className="highlight-pink" style={{ marginLeft: '8px' }}>#{order.id}</span>
+                        ) : (
+                            <Link to={`/dashboard/orders/${order.id}`} className="order-id-link" style={{ marginLeft: '8px' }}>
+                                <span className="highlight-pink">#{order.id}</span>
+                            </Link>
+                        )}
                     </h2>
                     <h2 className="header-status">
                         Status : <span className="highlight-pink status-text">{order.orderStatus}</span>
                     </h2>
                 </div>
+
+                {/* --- GUEST NOTICE MESSAGE --- */}
+                {isGuest && (
+                    <div className="guest-login-notice" style={{
+                        backgroundColor: '#f9f9f9',
+                        borderLeft: '4px solid #ff69b4',
+                        padding: '12px 20px',
+                        margin: '15px 0 25px 0',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        color: '#555',
+                        lineHeight: '1.5'
+                    }}>
+                        💡 <strong>Want to track this order?</strong> To view your full purchase history and manage this order online, please <Link to="/login" style={{ color: '#ff69b4', fontWeight: 'bold', textDecoration: 'underline' }}>Log In</Link> or create an account using the email address provided above.
+                    </div>
+                )}
 
                 {/* 3. ITEMS TABLE */}
                 <div className="order-section items-section">
@@ -125,7 +150,6 @@ const OrderSuccess = () => {
                         {order.orderItems.map((item, index) => (
                             <tr key={index}>
                                 <td className="col-image">
-                                    {/* --- LINK TO PRODUCT PAGE (IMAGE) --- */}
                                     <Link to={`/product/${item.productId}`}>
                                         <img
                                             src={item.productImageUrl || 'https://via.placeholder.com/60'}
@@ -134,7 +158,6 @@ const OrderSuccess = () => {
                                     </Link>
                                 </td>
                                 <td className="col-name">
-                                    {/* --- LINK TO PRODUCT PAGE (NAME) --- */}
                                     <Link to={`/product/${item.productId}`} className="product-name-link">
                                         {item.productName}
                                     </Link>
@@ -184,8 +207,6 @@ const OrderSuccess = () => {
 
                 {/* 5. SPLIT SECTION: ADDRESS & SUMMARY */}
                 <div className="bottom-split-container">
-
-                    {/* Delivery Address */}
                     <div className="order-section address-box">
                         <h3 className="section-title">DELIVERY ADDRESS</h3>
                         <div className="detail-row">
@@ -202,7 +223,6 @@ const OrderSuccess = () => {
                         </div>
                     </div>
 
-                    {/* Order Summary */}
                     <div className="order-section summary-box">
                         <h3 className="section-title">ORDER SUMMARY</h3>
                         <div className="detail-row">
@@ -230,9 +250,8 @@ const OrderSuccess = () => {
                     <span className="total-value">৳ {order.totalAmount.toFixed(2)}</span>
                 </div>
 
-                {/* 7. UPDATED: Action Buttons Container */}
+                {/* 7. Action Buttons */}
                 <div className="floating-action" style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px' }}>
-
                     <button
                         onClick={handleDownloadInvoice}
                         disabled={isDownloading}
@@ -240,7 +259,6 @@ const OrderSuccess = () => {
                     >
                         {isDownloading ? 'Downloading...' : 'Download Invoice'}
                     </button>
-
                     <Link to="/" className="continue-btn">Continue Shopping</Link>
                 </div>
 
