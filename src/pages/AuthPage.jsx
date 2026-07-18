@@ -20,9 +20,13 @@ const validateField = (name, value) => {
             return '';
         case 'password':
             if (!value) return 'Password is required.';
-            const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
-            if (!passwordRegex.test(value)) {
-                return 'Password must be 8+ characters and include uppercase, lowercase, number, & special character.';
+            // const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+            // if (!passwordRegex.test(value)) {
+            //     return 'Password must be 8+ characters and include uppercase, lowercase, number, & special character.';
+            // }
+
+            if (value.length < 8) {
+                return 'Password must be at least 8 characters.';
             }
             return '';
         default:

@@ -93,17 +93,20 @@ function App() {
                             <Route path="/category/:slug" element={<ShopPage />} />
                             <Route path="/subcategory/:slug" element={<ShopPage />} />
                             <Route path="/product/:productId" element={<ProductDetailPage />} />
-                            <Route path="/checkout" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
+                            <Route path="/checkout" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
                             <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Wishlist /></ProtectedRoute>}/>
-                            <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />
+                            <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />
 
                             {/* --- User Dashboard Routes --- */}
-                            <Route path="/dashboard" element={<DashboardLayout />}>
-                                <Route index element={<DashboardHome />} />
-                                <Route path="orders" element={<Orders />} />
-                                <Route path="orders/:orderId" element={<OrderDetail />} />
-                                <Route path="address" element={<Address />} />
-                                <Route path="account-details" element={<AccountDetails />} />
+                            {/* Wrap the entire dashboard layout to block guests. Only logged-in users/admins allowed. */}
+                            <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']} />}>
+                                <Route path="/dashboard" element={<DashboardLayout />}>
+                                    <Route index element={<DashboardHome />} />
+                                    <Route path="orders" element={<Orders />} />
+                                    <Route path="orders/:orderId" element={<OrderDetail />} />
+                                    <Route path="address" element={<Address />} />
+                                    <Route path="account-details" element={<AccountDetails />} />
+                                </Route>
                             </Route>
 
                             {/* --- Protected Admin Routes --- */}

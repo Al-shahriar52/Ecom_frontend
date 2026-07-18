@@ -107,10 +107,36 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginAsGuest = async () => {
+        try {
+            setLoading(true);
+            // Call your new backend endpoint
+            const response = await axiosInstance.post('/api/v1/auth/guest');
+
+            // Extract the data just like your standard login
+            const { name, role } = response.data.data ? response.data.data : response.data;
+            const userData = { name, role };
+
+            // Update global state and local storage
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            return { success: true, role };
+        } catch (error) {
+            console.error("Failed to initialize guest session:", error);
+            return { success: false };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const value = {
-        user, setUser, login, logout, register,
+        user, setUser, login, logout, register, loginAsGuest,
         verifyRegistrationOtp, forgotPassword, resetPassword,
-        isAuthenticated: !!user, loading
+        isAuthenticated: user && user.role !== 'GUEST',
+        isGuest: user?.role === 'GUEST',
+        loading
+
     };
 
     return (

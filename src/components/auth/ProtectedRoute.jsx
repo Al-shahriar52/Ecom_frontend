@@ -3,35 +3,36 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-    const { user, isAuthenticated, loading } = useContext(AuthContext);
+    // 1. EXTRACT isGuest FROM YOUR AUTH CONTEXT
+    const { user, isAuthenticated, loading, isGuest } = useContext(AuthContext);
     const location = useLocation();
 
     // 1. Loading State: Wait for Auth check to finish
-    // If we don't wait, it might redirect to login before knowing you are actually logged in.
     if (loading) {
         return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>Loading...</div>;
     }
 
-    // 2. Not Authenticated: Redirect to Login
-    if (!isAuthenticated || !user) {
-        // 'state' saves the current location so we can send them back after login
+    // 2. Not Authenticated & Not a Guest: Redirect to Login
+    // This allows guest users to bypass the login screen wall
+    if (!isAuthenticated && !isGuest) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // 3. Debugging Role Mismatch (Check console if it fails!)
-    // console.log("User Role:", user.role);
-    // console.log("Allowed:", allowedRoles);
+    // 3. Role Authorization
+    // If allowedRoles is defined, ensure the user has permission
+    if (allowedRoles) {
+        const userRole = user?.role || (isGuest ? 'GUEST' : '');
 
-    // 4. Role Authorization
-    // We check if the user's role exists in the allowed list
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-        console.warn(`Access Denied: User role '${user.role}' is not in [${allowedRoles.join(', ')}]`);
-        return <Navigate to="/" replace />;
+        // Guests are allowed to access routes designated for 'CUSTOMER' (like Checkout)
+        const hasAccess = allowedRoles.includes(userRole) || (isGuest && allowedRoles.includes('CUSTOMER'));
+
+        if (!hasAccess) {
+            console.warn(`Access Denied: User role '${userRole}' is not authorized.`);
+            return <Navigate to="/" replace />;
+        }
     }
 
-    // 5. Render the Component
-    // If 'children' are passed (like in your App.js), render them.
-    // Otherwise, render <Outlet /> for nested routes.
+    // 4. Render the Component
     return children ? children : <Outlet />;
 };
 
