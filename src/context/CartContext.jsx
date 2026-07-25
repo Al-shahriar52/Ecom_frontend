@@ -169,6 +169,27 @@ export const CartProvider = ({ children }) => {
 
     const { user, loginAsGuest } = useContext(AuthContext);
 
+    // Guards against out-of-order responses: only the response from the
+    // MOST RECENTLY issued fetchCart call is allowed to update state.
+    const fetchSeqRef = React.useRef(0);
+
+    // Ensures loginAsGuest() is only ever in flight once, even if
+    // addToCart/addAllToCart are triggered multiple times before the
+    // first guest session finishes provisioning (e.g. double-click).
+    const guestLoginPromiseRef = React.useRef(null);
+
+    const ensureGuestSession = async () => {
+        if (user) return { success: true };
+
+        if (!guestLoginPromiseRef.current) {
+            guestLoginPromiseRef.current = loginAsGuest().finally(() => {
+                guestLoginPromiseRef.current = null;
+            });
+        }
+
+        return guestLoginPromiseRef.current;
+    };
+
     // --- FETCH CART ---
     // `force` lets callers bypass the `user` guard right after a guest
     // session was just provisioned, since the backend already trusts the
@@ -181,17 +202,24 @@ export const CartProvider = ({ children }) => {
             return;
         }
 
+        const seq = ++fetchSeqRef.current;
+
         if (!isBackground) setLoading(true);
 
         try {
             const response = await axiosInstance.get('/api/v1/cart/getCart');
+
+            // A newer fetchCart call was issued after this one — discard
+            // this response so it can't clobber fresher data.
+            if (seq !== fetchSeqRef.current) return;
+
             const data = response.data.data;
             setCart(data.items || []);
             setCartTotal(data.totalPrice || 0);
         } catch (error) {
             console.error("Failed to fetch cart:", error);
         } finally {
-            if (!isBackground) setLoading(false);
+            if (seq === fetchSeqRef.current && !isBackground) setLoading(false);
         }
     };
 
@@ -205,7 +233,7 @@ export const CartProvider = ({ children }) => {
         let justProvisioned = false;
 
         if (!user) {
-            const guestSession = await loginAsGuest();
+            const guestSession = await ensureGuestSession();
             if (!guestSession || !guestSession.success) {
                 toast.error("Could not initialize a shopping session.");
                 return false;
@@ -268,7 +296,7 @@ export const CartProvider = ({ children }) => {
         let justProvisioned = false;
 
         if (!user) {
-            const guestSession = await loginAsGuest();
+            const guestSession = await ensureGuestSession();
             if (!guestSession || !guestSession.success) {
                 toast.error("Could not initialize a shopping session.");
                 return false;
