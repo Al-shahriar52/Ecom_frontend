@@ -179,22 +179,144 @@
 }
 
 /* ======================================== */
+/* --- Mobile Filter Overlays & Buttons --- */
+/* ======================================== */
+.mobile-filter-toggle {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid #ccc;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.sidebar-header-mobile,
+.mobile-filter-overlay,
+.mobile-filter-footer {
+    display: none;
+}
+
+/* ======================================== */
+/* --- Sticky Container (Search + Filter + Sort) --- */
+/* ======================================== */
+.sticky-top-controls {
+    position: sticky;
+    top: 115px; /* Adjusted to sit cleanly under desktop header */
+    background-color: #ffffff;
+    z-index: 90; /* Sits below top header (z-index 1000+) but above product cards */
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.sticky-top-controls .main-search-bar-wrapper {
+    margin-bottom: 0.75rem;
+}
+
+/* ======================================== */
 /* --- Responsive Styles --- */
 /* ======================================== */
 @media (max-width: 992px) {
+
+    .sticky-top-controls {
+        /* Set to match the total height of your sticky header (Logo row + Main search row) */
+        top: 115px;
+        padding: 10px;
+    }
+
     .shop-page-container {
         flex-direction: column;
     }
-    .sidebar {
-        max-width: 100%;
-        position: static;
-        height: auto;
-        overflow-y: visible;
+
+    /* Show toggle button on mobile */
+    .mobile-filter-toggle {
+        display: flex;
     }
-}
-@media (max-width: 768px) {
-    .product-grid-brand {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 1rem;
+
+    .page-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 10px;
+        padding: 0;
+        background-color: transparent;
+    }
+
+    .mobile-filter-toggle,
+    .sort-dropdown {
+        flex: 1; /* Gives buttons equal width on mobile */
+        justify-content: center;
+    }
+
+    /* Sliding Drawer Styles */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85%;
+        max-width: 350px;
+        height: 100vh;
+        background-color: white;
+        z-index: 9999;
+        transition: left 0.3s ease-in-out;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .sidebar-scrollable-content {
+        overflow-y: auto;
+        padding: 20px;
+        flex-grow: 1;
+        padding-bottom: 80px;
+    }
+
+    .sidebar-header-mobile {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .sidebar-header-mobile h3 { margin: 0; font-size: 1.2rem; }
+    .close-filter-btn { background: transparent; border: none; font-size: 1.8rem; cursor: pointer; color: #333; }
+
+    .mobile-filter-overlay {
+        display: block;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+    }
+
+    .mobile-filter-footer {
+        display: block;
+        position: absolute;
+        bottom: 0; left: 0; width: 100%;
+        padding: 15px; background: white;
+        border-top: 1px solid #eee;
+        box-sizing: border-box;
+    }
+
+    .apply-filters-btn {
+        width: 100%;
+        background-color: #E91E63;
+        color: white;
+        padding: 12px; border: none; border-radius: 6px;
+        font-size: 1rem; font-weight: bold; cursor: pointer;
     }
 }
