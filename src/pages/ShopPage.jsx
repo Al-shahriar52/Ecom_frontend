@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useMatch } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
@@ -7,6 +8,18 @@ import { toast } from 'react-hot-toast';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import './ShopPage.css';
+
+const SkeletonCard = () => {
+    return (
+        <div className="skeleton-card">
+            <div className="skeleton-image skeleton-animate"></div>
+            <div className="skeleton-text skeleton-animate"></div>
+            <div className="skeleton-text short skeleton-animate"></div>
+            <div className="skeleton-text price skeleton-animate"></div>
+            <div className="skeleton-button skeleton-animate"></div>
+        </div>
+    );
+};
 
 const ShopPage = () => {
     const location = useLocation();
@@ -74,12 +87,15 @@ const ShopPage = () => {
                 setPriceRange([0, 0]);
                 setDebouncedPriceRange([0, 0]);
             }
-        } catch (error) { console.error("Error fetching filter data:", error); }
+        } catch (error) {
+            console.error("Error fetching filter data:", error);
+        }
     }, [selectedBrandId, selectedCategoryId, selectedSubCategoryId]);
 
     const fetchProducts = useCallback(async (currentPage) => {
         if (!debouncedPriceRange) return;
         if (loading && currentPage > 0) return;
+
         setLoading(true);
         try {
             const params = {
@@ -98,14 +114,20 @@ const ShopPage = () => {
                 params.sortDir = direction;
             }
             Object.keys(params).forEach(key => (params[key] == null) && delete params[key]);
+
             const response = await axiosInstance.get('/api/v1/product/search', { params });
             const data = response.data.data;
+
             if (currentPage === 0) setProducts(data.content || []);
             else setProducts(prev => [...prev, ...(data.content || [])]);
+
             setHasMore(!data.last);
             setPageNo(currentPage);
-        } catch (error) { toast.error("Could not load products."); }
-        finally { setLoading(false); }
+        } catch (error) {
+            toast.error("Could not load products.");
+        } finally {
+            setLoading(false);
+        }
     }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, sortOption]);
 
     useEffect(() => {
@@ -374,18 +396,32 @@ const ShopPage = () => {
                     )}
                 </div>
 
-                {/* Product Grid */}
+                {/* Product Grid & Loading Skeletons */}
                 <div className="product-grid-brand">
-                    {displayedProducts.map(product => <ProductCard key={product.productId} product={product} />)}
+                    {/* Render actual products */}
+                    {displayedProducts.map(product => (
+                        <ProductCard key={product.productId} product={product} />
+                    ))}
+
+                    {/* Render Skeleton Cards when loading */}
+                    {loading && [...Array(products.length === 0 ? 12 : 4)].map((_, index) => (
+                        <SkeletonCard key={`skeleton-${index}`} />
+                    ))}
                 </div>
 
                 {/* Scroll Observer Target */}
                 <div ref={observerTarget} style={{ height: '10px' }}></div>
 
-                {loading && <p className="loading-indicator">Loading...</p>}
-                {!loading && products.length === 0 && <p className="end-of-results">No products found for your selection.</p>}
-                {!loading && products.length > 0 && displayedProducts.length === 0 && <p className="end-of-results">No products match your search.</p>}
-                {!loading && !hasMore && displayedProducts.length > 0 && <p className="end-of-results">You've reached the end of the list.</p>}
+                {/* State Messages */}
+                {!loading && products.length === 0 && (
+                    <p className="end-of-results">No products found for your selection.</p>
+                )}
+                {!loading && products.length > 0 && displayedProducts.length === 0 && (
+                    <p className="end-of-results">No products match your search.</p>
+                )}
+                {!loading && !hasMore && displayedProducts.length > 0 && (
+                    <p className="end-of-results">You've reached the end of the list.</p>
+                )}
             </main>
         </div>
     );

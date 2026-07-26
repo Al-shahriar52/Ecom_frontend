@@ -218,6 +218,69 @@
 }
 
 /* ======================================== */
+/* --- Skeleton Loading Animation --- */
+/* ======================================== */
+
+.skeleton-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    height: 100%;
+}
+
+.skeleton-animate {
+    background: #f6f7f8;
+    background: linear-gradient(
+            to right,
+            #eeeeee 8%,
+            #dddddd 18%,
+            #eeeeee 33%
+    );
+    background-size: 800px 104px;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+}
+
+.skeleton-image {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Keeps it square like a product image */
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.skeleton-text {
+    height: 14px;
+    width: 100%;
+}
+
+.skeleton-text.short {
+    width: 60%;
+}
+
+.skeleton-text.price {
+    height: 18px;
+    width: 40%;
+    margin-top: 10px;
+}
+
+.skeleton-button {
+    height: 35px;
+    width: 100%;
+    border-radius: 6px;
+    margin-top: auto; /* Pushes button to bottom */
+}
+
+@keyframes shimmer {
+    0% { background-position: -468px 0; }
+    100% { background-position: 468px 0; }
+}
+
+/* ======================================== */
 /* --- Responsive Styles --- */
 /* ======================================== */
 @media (max-width: 992px) {
