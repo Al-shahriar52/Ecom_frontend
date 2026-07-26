@@ -1,8 +1,9 @@
 
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
-import { Helmet } from 'react-helmet-async'; // 1. IMPORT HELMET HERE
+import { Helmet } from 'react-helmet-async';
 import './ProductDetailPage.css';
 import ProductGallery from '../components/productDetails/ProductGallery';
 import ProductInfo from '../components/productDetails/ProductInfo';
@@ -36,8 +37,53 @@ const ProductDetailPage = () => {
         fetchProductDetails();
     }, [productId]);
 
+    /* ================= SKELETON LOADER STATE ================= */
     if (loading) {
-        return <div className="pdp-loading">Loading...</div>;
+        return (
+            <div className="pdp-container container pdp-skeleton-container">
+                <div className="pdp-main-content">
+                    {/* Left Side: Gallery Skeleton */}
+                    <div className="pdp-skeleton-gallery">
+                        <div className="pdp-skeleton-box pdp-skeleton-main-image"></div>
+                        <div className="pdp-skeleton-thumbnails">
+                            <div className="pdp-skeleton-box pdp-skeleton-thumb"></div>
+                            <div className="pdp-skeleton-box pdp-skeleton-thumb"></div>
+                            <div className="pdp-skeleton-box pdp-skeleton-thumb"></div>
+                            <div className="pdp-skeleton-box pdp-skeleton-thumb"></div>
+                        </div>
+                    </div>
+
+                    {/* Right Side: Info Skeleton */}
+                    <div className="pdp-skeleton-info">
+                        <div className="pdp-skeleton-box pdp-skeleton-brand"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-title"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-title-short"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-rating"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-price"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-button-bar"></div>
+                        <div className="pdp-skeleton-bullets">
+                            <div className="pdp-skeleton-box pdp-skeleton-line"></div>
+                            <div className="pdp-skeleton-box pdp-skeleton-line"></div>
+                            <div className="pdp-skeleton-box pdp-skeleton-line short"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tabs & Full Details Skeleton */}
+                <div className="pdp-skeleton-extra">
+                    <div className="pdp-skeleton-tabs-header">
+                        <div className="pdp-skeleton-box pdp-skeleton-tab-btn"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-tab-btn"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-tab-btn"></div>
+                    </div>
+                    <div className="pdp-skeleton-tab-body">
+                        <div className="pdp-skeleton-box pdp-skeleton-line"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-line"></div>
+                        <div className="pdp-skeleton-box pdp-skeleton-line short"></div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (error) {
@@ -60,7 +106,6 @@ const ProductDetailPage = () => {
         }
     };
 
-    // 2. CREATE THE JSON-LD SCHEMA OBJECT
     const schemaData = {
         "@context": "https://schema.org/",
         "@type": "Product",
@@ -80,22 +125,20 @@ const ProductDetailPage = () => {
             "itemCondition": "https://schema.org/NewCondition",
             "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
 
-            // Return Policy
             "hasMerchantReturnPolicy": {
                 "@type": "MerchantReturnPolicy",
                 "applicableCountry": "BD",
                 "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-                "merchantReturnDays": 7, // Adjust to your actual policy
+                "merchantReturnDays": 7,
                 "returnMethod": "https://schema.org/ReturnByMail",
                 "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility"
             },
 
-            // Shipping Details
             "shippingDetails": {
                 "@type": "OfferShippingDetails",
                 "shippingRate": {
                     "@type": "MonetaryAmount",
-                    "value": "60", // Adjust to your actual standard shipping rate
+                    "value": "60",
                     "currency": "BDT"
                 },
                 "shippingDestination": {
@@ -119,7 +162,6 @@ const ProductDetailPage = () => {
                 }
             }
         },
-        // Review & Rating Data (Only added if reviews exist)
         ...(product.rating > 0 && product.numReviews > 0 && {
             "aggregateRating": {
                 "@type": "AggregateRating",
@@ -128,17 +170,10 @@ const ProductDetailPage = () => {
             }
         })
     };
-    
 
-    // 1. Safely grab the category name, defaulting to "Shop" if null
     const categoryName = product.category?.name || "Shop";
+    const categorySlug = product.category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-');
 
-    // 2. Safely grab the slug if your backend provides it.
-    // If not, automatically convert the name "Personal Care" into "personal-care"
-    const categorySlug = product.category?.slug
-        || categoryName.toLowerCase().replace(/\s+/g, '-');
-
-    // 3. Create the Breadcrumb Schema Object with the correct URL structure
     const breadcrumbSchema = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -153,7 +188,6 @@ const ProductDetailPage = () => {
                 "@type": "ListItem",
                 "position": 2,
                 "name": categoryName,
-                // Now it builds: https://beautyhaat.com/category/personal-care
                 "item": `https://beautyhaat.com/category/${categorySlug}`
             },
             {
@@ -168,10 +202,8 @@ const ProductDetailPage = () => {
     return (
         <div className="pdp-container container">
 
-            {/* 3. INJECT THE SEO TAGS */}
             <Helmet>
                 <title>{product.name ? `${product.name} | BeautyHaat` : 'Product | BeautyHaat'}</title>
-                {/* We substring the description to 160 characters as that is the max for search engine snippets */}
                 <meta name="description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
                 <link rel="canonical" href={`https://beautyhaat.com/product/${productId}`} />
                 <script type="application/ld+json">

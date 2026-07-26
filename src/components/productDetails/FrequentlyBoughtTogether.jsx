@@ -1,12 +1,13 @@
 
+
 import React, { useState, useEffect, useContext } from 'react';
 import axiosInstance from '../../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
 import { CartContext } from '../../context/CartContext';
 import './FrequentlyBoughtTogether.css';
+import ImageWithSkeleton from '../ImageWithSkeleton';
 
 const FrequentlyBoughtTogether = ({ mainProduct }) => {
-    // 1. Get the new 'addAllToCart' function from Context
     const { addAllToCart } = useContext(CartContext);
 
     const [pairedProducts, setPairedProducts] = useState([]);
@@ -27,7 +28,6 @@ const FrequentlyBoughtTogether = ({ mainProduct }) => {
                 const response = await axiosInstance.get(`/api/v1/frequently-bought/get/product/${productId}`);
                 const fetchedPaired = response.data.data || [];
                 setPairedProducts(fetchedPaired);
-                // Default: Select Main Product + All Paired Products
                 const allProductIds = [productId, ...fetchedPaired.map(p => p.id || p.productId)];
                 setSelectedIds(allProductIds);
             } catch (error) {
@@ -51,11 +51,9 @@ const FrequentlyBoughtTogether = ({ mainProduct }) => {
     const selectedProducts = allProducts.filter(p => selectedIds.includes(p.productId || p.id));
     const totalPrice = selectedProducts.reduce((sum, product) => sum + (product.discountedPrice || 0), 0);
 
-    // --- 2. UPDATED BULK ADD HANDLER ---
     const handleAddSelectedToCart = async () => {
         if (selectedProducts.length === 0) return;
 
-        // Use the Bulk Add function from Context (Single API call)
         const success = await addAllToCart(selectedProducts);
 
         if (success) {
@@ -63,7 +61,44 @@ const FrequentlyBoughtTogether = ({ mainProduct }) => {
         }
     };
 
-    if (loading || pairedProducts.length === 0) {
+    /* ================= 1. SKELETON LOADER STATE ================= */
+    if (loading) {
+        return (
+            <div className="fbt-container">
+                <div className="fbt-skeleton-box fbt-skeleton-title"></div>
+
+                <div className="fbt-top-section">
+                    <div className="fbt-visuals">
+                        <div className="fbt-skeleton-box fbt-skeleton-image"></div>
+                        <span className="fbt-plus-icon">+</span>
+                        <div className="fbt-skeleton-box fbt-skeleton-image"></div>
+                        <span className="fbt-plus-icon">+</span>
+                        <div className="fbt-skeleton-box fbt-skeleton-image"></div>
+                    </div>
+
+                    <div className="fbt-summary-box">
+                        <div className="fbt-skeleton-box fbt-skeleton-price"></div>
+                        <div className="fbt-skeleton-box fbt-skeleton-btn"></div>
+                    </div>
+                </div>
+
+                <ul className="fbt-item-list">
+                    {[1, 2, 3].map((_, index) => (
+                        <li key={index} className="fbt-list-item">
+                            <div className="fbt-skeleton-box fbt-skeleton-checkbox"></div>
+                            <div className="fbt-item-details" style={{ width: '100%' }}>
+                                <div className="fbt-skeleton-box fbt-skeleton-line" style={{ width: index === 0 ? '60%' : '80%' }}></div>
+                                <div className="fbt-skeleton-box fbt-skeleton-line short" style={{ width: '30%', marginTop: '8px' }}></div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+
+    /* ================= 2. EMPTY STATE ================= */
+    if (pairedProducts.length === 0) {
         return null;
     }
 
@@ -74,12 +109,10 @@ const FrequentlyBoughtTogether = ({ mainProduct }) => {
             <div className="fbt-top-section">
                 <div className="fbt-visuals">
                     {allProducts.map((product, index) => {
-                        // Check if this specific item is selected to show/hide image opacity or keeping it (Optional UX)
-                        // For now, we show all visuals as per standard design
                         const imageSrc = product.imageUrl || (product.imageUrls && product.imageUrls[0]) || '/placeholder.png';
                         return (
                             <React.Fragment key={product.productId || product.id}>
-                                <img src={imageSrc} alt={product.name} />
+                                <ImageWithSkeleton src={imageSrc} alt={product.name} />
                                 {index < allProducts.length - 1 && <span className="fbt-plus-icon">+</span>}
                             </React.Fragment>
                         );
