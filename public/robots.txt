@@ -1,7 +1,9 @@
-# 1. Rules for all search engines
+# Content Signals granting permissions for search, AI retrieval, and AI training
 User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=yes,use=full
 
-# Allow indexing of the main site
+# Rules for all crawlers, bots, and AI models
+User-agent: *
 Allow: /
 
 # FORBIDDEN: Protect secure/private routes
@@ -10,5 +12,7 @@ Disallow: /dashboard/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /api/
-Disallow: /*?* # 2. Sitemap location
+Disallow: /*?*
+
+# Sitemap location
 Sitemap: https://api.beautyhaat.com/sitemap.xml
