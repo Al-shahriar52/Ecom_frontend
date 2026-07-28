@@ -13,6 +13,13 @@
     max-width: 1100px;
 }
 
+.order-error {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #e91e63;
+}
+
 /* 1. Success Banner */
 .success-banner {
     background-color: #d1e7dd;
@@ -198,7 +205,6 @@
     transition: all 0.25s ease-in-out;
 }
 
-/* Clear interactive state when hovering */
 .download-invoice-btn:hover:not(:disabled) {
     background-color: #e91e63;
     color: #ffffff;
@@ -206,13 +212,11 @@
     transform: translateY(-1px);
 }
 
-/* Distinct visual state when clicked/pressed */
 .download-invoice-btn:active:not(:disabled) {
     transform: translateY(1px);
     box-shadow: none;
 }
 
-/* What it looks like ONLY when it is actually downloading */
 .download-invoice-btn:disabled {
     background-color: #f5f5f5;
     color: #b5b5b5;
@@ -220,6 +224,115 @@
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
+}
+
+/* Product Name Link */
+.product-name-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.product-name-link:hover {
+    color: #E91E63;
+    text-decoration: underline;
+}
+
+/* Order ID Link */
+.order-id-link {
+    text-decoration: none;
+    cursor: pointer;
+    color: inherit;
+}
+
+.order-id-link:hover .highlight-pink {
+    text-decoration: underline;
+    filter: brightness(0.9);
+}
+
+.col-image a {
+    display: block;
+}
+
+.col-image a:hover img {
+    border-color: #E91E63;
+}
+
+/* ==========================================
+   8. SKELETON LOADING STYLES
+   ========================================== */
+@keyframes order-skeleton-pulse {
+    0% { background-color: #e2e8f0; }
+    50% { background-color: #f1f5f9; }
+    100% { background-color: #e2e8f0; }
+}
+
+.order-skeleton-box {
+    border-radius: 6px;
+    animation: order-skeleton-pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-banner {
+    width: 100%;
+    height: 52px;
+    margin-bottom: 30px;
+}
+
+.skeleton-title-sm {
+    width: 180px;
+    height: 28px;
+}
+
+.skeleton-table-header {
+    width: 100%;
+    height: 42px;
+    margin-bottom: 12px;
+}
+
+.skeleton-table-row {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 10px;
+}
+
+.skeleton-section-title {
+    width: 220px;
+    height: 22px;
+    margin-bottom: 20px;
+}
+
+.skeleton-detail-row {
+    width: 100%;
+    height: 20px;
+    margin-bottom: 14px;
+}
+
+.skeleton-total-bar {
+    width: 100%;
+    height: 60px;
+    margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bottom-split-container {
+        grid-template-columns: 1fr;
+    }
+
+    .order-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .items-section {
+        overflow-x: auto;
+    }
+
+    .order-items-table {
+        min-width: 600px;
+    }
 }
 
 /* Responsive */
