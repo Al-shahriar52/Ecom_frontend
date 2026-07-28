@@ -1,5 +1,3 @@
-// src/components/productDetails/SimilarProducts.jsx
-
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/AxiosInstance';
 import ProductCard from '../ProductCard';
@@ -28,8 +26,7 @@ const SimilarProducts = ({ productId }) => {
         fetchSimilarProducts();
     }, [productId]);
 
-    // This logic handles your requirement:
-    // If loading is done and there are no products, the component returns null.
+    // Return null if loading is complete and no similar products exist
     if (!loading && products.length === 0) {
         return null;
     }
@@ -39,7 +36,17 @@ const SimilarProducts = ({ productId }) => {
             <h2 className="similar-products-title">SIMILAR PRODUCTS</h2>
             <div className="similar-products-list">
                 {loading ? (
-                    <p>Loading...</p>
+                    /* Render 4 Skeleton Product Cards while loading */
+                    Array.from({ length: 4 }).map((_, idx) => (
+                        <div key={idx} className="similar-product-skeleton-card">
+                            <div className="sp-skeleton-box sp-skeleton-image"></div>
+                            <div className="sp-skeleton-content">
+                                <div className="sp-skeleton-box sp-skeleton-brand"></div>
+                                <div className="sp-skeleton-box sp-skeleton-name"></div>
+                                <div className="sp-skeleton-box sp-skeleton-price"></div>
+                            </div>
+                        </div>
+                    ))
                 ) : (
                     products.map(product => (
                         <ProductCard key={product.productId || product.id} product={product} />

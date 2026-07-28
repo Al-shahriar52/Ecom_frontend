@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ProductGallery.css';
+import ImageWithSkeleton from '../ImageWithSkeleton';
 
 const ProductGallery = ({ imageUrls }) => {
     const [selectedImage, setSelectedImage] = useState(imageUrls?.[0] || null);
@@ -16,7 +17,7 @@ const ProductGallery = ({ imageUrls }) => {
         return (
             <div className="gallery-container">
                 <div className="main-image-wrapper">
-                    <img src="/placeholder.png" alt="No Image Available" className="main-product-image" />
+                    <ImageWithSkeleton src="/placeholder.png" alt="No Image Available" className="main-product-image" />
                 </div>
             </div>
         );
@@ -25,7 +26,7 @@ const ProductGallery = ({ imageUrls }) => {
     return (
         <div className="gallery-container">
             <div className="main-image-wrapper">
-                <img src={selectedImage} alt="Main product view" className="main-product-image" />
+                <ImageWithSkeleton src={selectedImage} alt="Main product view" className="main-product-image" />
             </div>
             <div className="thumbnail-wrapper">
                 {imageUrls.map((url, index) => (

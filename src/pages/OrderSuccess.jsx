@@ -1,8 +1,7 @@
-
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
-import { AuthContext } from '../context/AuthContext'; // Check this path matches your folder structure
+import { AuthContext } from '../context/AuthContext';
 import './OrderSuccess.css';
 
 const OrderSuccess = () => {
@@ -24,7 +23,7 @@ const OrderSuccess = () => {
                 setOrder(response.data.data);
             } catch (err) {
                 console.error("Failed to load order", err);
-                setError("Failed to load order details.");
+                setError(err.response.data.message || "Failed to load order details");
             } finally {
                 setLoading(false);
             }
@@ -63,8 +62,56 @@ const OrderSuccess = () => {
         }
     };
 
-    // Wait for BOTH the order details and the auth context to finish loading
-    if (loading || authLoading) return <div className="order-loader">Loading Order Details...</div>;
+    // --- SKELETON LOADING STATE ---
+    if (loading || authLoading) {
+        return (
+            <div className="order-success-page">
+                <div className="order-success-container">
+                    {/* Banner Skeleton */}
+                    <div className="order-skeleton-box skeleton-banner"></div>
+
+                    {/* Header Row Skeleton */}
+                    <div className="order-header-row">
+                        <div className="order-skeleton-box skeleton-title-sm"></div>
+                        <div className="order-skeleton-box skeleton-title-sm"></div>
+                    </div>
+
+                    {/* Table Skeleton */}
+                    <div className="order-section">
+                        <div className="order-skeleton-box skeleton-table-header"></div>
+                        <div className="order-skeleton-box skeleton-table-row"></div>
+                        <div className="order-skeleton-box skeleton-table-row"></div>
+                    </div>
+
+                    {/* Customer & Order Details Skeleton */}
+                    <div className="order-section">
+                        <div className="order-skeleton-box skeleton-section-title"></div>
+                        <div className="order-skeleton-box skeleton-detail-row"></div>
+                        <div className="order-skeleton-box skeleton-detail-row"></div>
+                        <div className="order-skeleton-box skeleton-detail-row"></div>
+                    </div>
+
+                    {/* Split Sections Skeleton */}
+                    <div className="bottom-split-container">
+                        <div className="order-section">
+                            <div className="order-skeleton-box skeleton-section-title"></div>
+                            <div className="order-skeleton-box skeleton-detail-row"></div>
+                            <div className="order-skeleton-box skeleton-detail-row"></div>
+                        </div>
+                        <div className="order-section">
+                            <div className="order-skeleton-box skeleton-section-title"></div>
+                            <div className="order-skeleton-box skeleton-detail-row"></div>
+                            <div className="order-skeleton-box skeleton-detail-row"></div>
+                        </div>
+                    </div>
+
+                    {/* Total Bar Skeleton */}
+                    <div className="order-skeleton-box skeleton-total-bar"></div>
+                </div>
+            </div>
+        );
+    }
+
     if (error || !order) return <div className="order-error">{error || "Order not found"}</div>;
 
     // --- HELPER: FORMAT DATE FROM ARRAY ---

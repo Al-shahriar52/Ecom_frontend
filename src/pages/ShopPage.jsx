@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useMatch } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
@@ -7,6 +8,18 @@ import { toast } from 'react-hot-toast';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import './ShopPage.css';
+
+const SkeletonCard = () => {
+    return (
+        <div className="skeleton-card">
+            <div className="skeleton-image skeleton-animate"></div>
+            <div className="skeleton-text skeleton-animate"></div>
+            <div className="skeleton-text short skeleton-animate"></div>
+            <div className="skeleton-text price skeleton-animate"></div>
+            <div className="skeleton-button skeleton-animate"></div>
+        </div>
+    );
+};
 
 const ShopPage = () => {
     const location = useLocation();
@@ -21,6 +34,9 @@ const ShopPage = () => {
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [filterData, setFilterData] = useState(null);
+
+    // Mobile filter popup state
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
     const [selectedBrandId, setSelectedBrandId] = useState(isBrandPage ? initialState.brandId : null);
     const [selectedBrandName, setSelectedBrandName] = useState(isBrandPage ? initialState.brandName : null);
@@ -46,7 +62,9 @@ const ShopPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [brandSearchQuery, setBrandSearchQuery] = useState('');
     const [showAllBrands, setShowAllBrands] = useState(false);
+
     const debounceTimeout = useRef(null);
+    const observerTarget = useRef(null);
 
     const fetchFilterData = useCallback(async () => {
         try {
@@ -69,12 +87,15 @@ const ShopPage = () => {
                 setPriceRange([0, 0]);
                 setDebouncedPriceRange([0, 0]);
             }
-        } catch (error) { console.error("Error fetching filter data:", error); }
+        } catch (error) {
+            console.error("Error fetching filter data:", error);
+        }
     }, [selectedBrandId, selectedCategoryId, selectedSubCategoryId]);
 
     const fetchProducts = useCallback(async (currentPage) => {
         if (!debouncedPriceRange) return;
         if (loading && currentPage > 0) return;
+
         setLoading(true);
         try {
             const params = {
@@ -93,14 +114,20 @@ const ShopPage = () => {
                 params.sortDir = direction;
             }
             Object.keys(params).forEach(key => (params[key] == null) && delete params[key]);
+
             const response = await axiosInstance.get('/api/v1/product/search', { params });
             const data = response.data.data;
+
             if (currentPage === 0) setProducts(data.content || []);
             else setProducts(prev => [...prev, ...(data.content || [])]);
+
             setHasMore(!data.last);
             setPageNo(currentPage);
-        } catch (error) { toast.error("Could not load products."); }
-        finally { setLoading(false); }
+        } catch (error) {
+            toast.error("Could not load products.");
+        } finally {
+            setLoading(false);
+        }
     }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, sortOption]);
 
     useEffect(() => {
@@ -111,7 +138,6 @@ const ShopPage = () => {
         fetchProducts(0);
     }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, sortOption, fetchProducts]);
 
-    // This effect handles navigation between different category/brand pages
     useEffect(() => {
         const newState = location.state || {};
         const isBrand = location.pathname.startsWith("/brand/");
@@ -202,13 +228,19 @@ const ShopPage = () => {
     };
 
     useEffect(() => {
-        const handleScroll = () => {
-            if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 200 && hasMore && !loading) {
-                fetchProducts(pageNo + 1);
-            }
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loading) {
+                    fetchProducts(pageNo + 1);
+                }
+            },
+            { root: null, rootMargin: '600px', threshold: 0 }
+        );
+
+        const target = observerTarget.current;
+        if (target) observer.observe(target);
+
+        return () => { if (target) observer.unobserve(target); };
     }, [loading, hasMore, pageNo, fetchProducts]);
 
     const displayedProducts = products.filter(product =>
@@ -221,9 +253,21 @@ const ShopPage = () => {
 
     return (
         <div className="shop-page-container">
-            <aside className="sidebar">
+
+            {/* Mobile Filter Backdrop */}
+            {isMobileFilterOpen && (
+                <div className="mobile-filter-overlay" onClick={() => setIsMobileFilterOpen(false)}></div>
+            )}
+
+            {/* Sidebar Filter Drawer / Desktop Sidebar */}
+            <aside className={`sidebar ${isMobileFilterOpen ? 'open' : ''}`}>
+                <div className="sidebar-header-mobile">
+                    <h3>Filters</h3>
+                    <button className="close-filter-btn" onClick={() => setIsMobileFilterOpen(false)}>&times;</button>
+                </div>
+
                 {filterData ? (
-                    <>
+                    <div className="sidebar-scrollable-content">
                         <div className="filter-block">
                             <h4>Filter by Price</h4>
                             <div className="price-slider-wrapper">
@@ -286,40 +330,98 @@ const ShopPage = () => {
                                 {filteredBrands.length > 15 && !showAllBrands && (<button className="show-more-btn" onClick={() => setShowAllBrands(true)}>Show More</button>)}
                             </div>
                         )}
-                    </>
-                ) : <p>Loading filters...</p> }
-            </aside>
-            <main className="main-content">
-                <div className="main-search-bar-wrapper">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" placeholder="Search within these results..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                </div>
-                <div className="page-header">
-                    <div className="active-filters">
-                        {selectedBrandId && (<div className="filter-pill"><span>{selectedBrandName}</span><button onClick={() => removeFilter('brand')}>&times;</button></div>)}
-                        {selectedCategoryId && (<div className="filter-pill"><span>{selectedCategoryName}</span><button onClick={() => removeFilter('category')}>&times;</button></div>)}
-                        {selectedSubCategoryId && (<div className="filter-pill"><span>{selectedSubCategoryName}</span><button onClick={() => removeFilter('subcategory')}>&times;</button></div>)}
-                        {filterData && priceRange && (filterData.minPrice !== null && (priceRange[0] > filterData.minPrice || priceRange[1] < filterData.maxPrice)) && (<div className="filter-pill"><span>Price: ৳{priceRange[0]} - ৳{priceRange[1]}</span><button onClick={() => removeFilter('price')}>&times;</button></div>)}
-                        {selectedTagId && (<div className="filter-pill"><span>{filterData?.availableTags?.find(t => t.tagId === selectedTagId)?.tagName}</span><button onClick={() => removeFilter('tag')}>&times;</button></div>)}
-                        {areFiltersActive && <button className="clear-all-btn" onClick={clearAllFilters}>Clear all</button>}
+
+                        <div className="mobile-filter-footer">
+                            <button className="apply-filters-btn" onClick={() => setIsMobileFilterOpen(false)}>Apply Filters</button>
+                        </div>
                     </div>
-                    <select className="sort-dropdown" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                        <option value="">Default Sorting</option>
-                        <option value="name,asc">Sort by Name (A-Z)</option>
-                        <option value="name,desc">Sort by Name (Z-A)</option>
-                        <option value="quantity,asc">Sort by Stock (Low to High)</option>
-                        <option value="quantity,desc">Sort by Stock (High to Low)</option>
-                        <option value="discountedPrice,asc">Sort by Price (Low to High)</option>
-                        <option value="discountedPrice,desc">Sort by Price (High to Low)</option>
-                    </select>
+                ) : <p className="no-filter-message">Loading filters...</p>}
+            </aside>
+
+            {/* Main Content Section */}
+            <main className="main-content">
+
+                {/* Sticky Controls Header: Search + Filter Toggle + Sorting */}
+                <div className="sticky-top-controls">
+
+                    {/* Search Bar within current results */}
+                    <div className="main-search-bar-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input
+                            type="text"
+                            placeholder="Search within these results..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Filter Toggle + Sorting Dropdown */}
+                    <div className="page-header">
+                        <button className="mobile-filter-toggle" onClick={() => setIsMobileFilterOpen(true)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="4" y1="21" x2="4" y2="14"></line>
+                                <line x1="4" y1="10" x2="4" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12" y2="3"></line>
+                                <line x1="20" y1="21" x2="20" y2="16"></line>
+                                <line x1="20" y1="12" x2="20" y2="3"></line>
+                                <line x1="1" y1="14" x2="7" y2="14"></line>
+                                <line x1="9" y1="8" x2="15" y2="8"></line>
+                                <line x1="17" y1="16" x2="23" y2="16"></line>
+                            </svg>
+                            All Filters
+                        </button>
+
+                        <select className="sort-dropdown" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                            <option value="">Default Sorting</option>
+                            <option value="name,asc">Sort by Name (A-Z)</option>
+                            <option value="name,desc">Sort by Name (Z-A)</option>
+                            <option value="quantity,asc">Sort by Stock (Low to High)</option>
+                            <option value="quantity,desc">Sort by Stock (High to Low)</option>
+                            <option value="discountedPrice,asc">Sort by Price (Low to High)</option>
+                            <option value="discountedPrice,desc">Sort by Price (High to Low)</option>
+                        </select>
+                    </div>
+
+                    {/* Active Filters */}
+                    {areFiltersActive && (
+                        <div className="active-filters">
+                            {selectedBrandId && (<div className="filter-pill"><span>{selectedBrandName}</span><button onClick={() => removeFilter('brand')}>&times;</button></div>)}
+                            {selectedCategoryId && (<div className="filter-pill"><span>{selectedCategoryName}</span><button onClick={() => removeFilter('category')}>&times;</button></div>)}
+                            {selectedSubCategoryId && (<div className="filter-pill"><span>{selectedSubCategoryName}</span><button onClick={() => removeFilter('subcategory')}>&times;</button></div>)}
+                            {filterData && priceRange && (filterData.minPrice !== null && (priceRange[0] > filterData.minPrice || priceRange[1] < filterData.maxPrice)) && (<div className="filter-pill"><span>Price: ৳{priceRange[0]} - ৳{priceRange[1]}</span><button onClick={() => removeFilter('price')}>&times;</button></div>)}
+                            {selectedTagId && (<div className="filter-pill"><span>{filterData?.availableTags?.find(t => t.tagId === selectedTagId)?.tagName}</span><button onClick={() => removeFilter('tag')}>&times;</button></div>)}
+                            <button className="clear-all-btn" onClick={clearAllFilters}>Clear all</button>
+                        </div>
+                    )}
                 </div>
+
+                {/* Product Grid & Loading Skeletons */}
                 <div className="product-grid-brand">
-                    {displayedProducts.map(product => <ProductCard key={product.productId} product={product} />)}
+                    {/* Render actual products */}
+                    {displayedProducts.map(product => (
+                        <ProductCard key={product.productId} product={product} />
+                    ))}
+
+                    {/* Render Skeleton Cards when loading */}
+                    {loading && [...Array(products.length === 0 ? 12 : 4)].map((_, index) => (
+                        <SkeletonCard key={`skeleton-${index}`} />
+                    ))}
                 </div>
-                {loading && <p className="loading-indicator">Loading...</p>}
-                {!loading && products.length === 0 && <p className="end-of-results">No products found for your selection.</p>}
-                {!loading && products.length > 0 && displayedProducts.length === 0 && <p className="end-of-results">No products match your search.</p>}
-                {!loading && !hasMore && displayedProducts.length > 0 && <p className="end-of-results">You've reached the end of the list.</p>}
+
+                {/* Scroll Observer Target */}
+                <div ref={observerTarget} style={{ height: '10px' }}></div>
+
+                {/* State Messages */}
+                {!loading && products.length === 0 && (
+                    <p className="end-of-results">No products found for your selection.</p>
+                )}
+                {!loading && products.length > 0 && displayedProducts.length === 0 && (
+                    <p className="end-of-results">No products match your search.</p>
+                )}
+                {!loading && !hasMore && displayedProducts.length > 0 && (
+                    <p className="end-of-results">You've reached the end of the list.</p>
+                )}
             </main>
         </div>
     );

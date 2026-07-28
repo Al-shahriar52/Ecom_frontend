@@ -525,6 +525,100 @@
     font-size: 12px;
     font-weight: 700;
 }
+
+/* ======================================== */
+/* SKELETON LOADERS                         */
+/* ======================================== */
+
+@keyframes skeleton-pulse {
+    0% { background-color: #e0e0e0; }
+    50% { background-color: #f2f2f2; }
+    100% { background-color: #e0e0e0; }
+}
+
+/* Base Skeleton Classes */
+.skeleton-icon-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
+.skeleton-text-line {
+    height: 14px;
+    width: 70%;
+    border-radius: 4px;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
+.skeleton-text-line.short { width: 50%; margin-bottom: 5px; }
+.skeleton-text-line.shorter { width: 30%; }
+.skeleton-title {
+    height: 18px;
+    width: 120px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
+
+/* Desktop Category Nav Skeleton */
+.skeleton-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    gap: 8px;
+    padding: 8px 2px;
+}
+.skeleton-text-block {
+    width: 60px;
+    height: 10px;
+    border-radius: 4px;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
+
+/* Mobile Sidenav Skeleton */
+.skeleton-mobile-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+}
+
+/* Search Dropdown Skeleton */
+.skeleton-search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+}
+.skeleton-image-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
+.skeleton-search-text {
+    flex-grow: 1;
+}
+
+/* Brands Dropdown Skeleton */
+.skeleton-brands-wrapper {
+    padding: 2rem;
+    gap: 40px;
+}
+.skeleton-brands-wrapper ul {
+    list-style: none;
+    padding: 0;
+}
+.skeleton-brands-wrapper li {
+    margin-bottom: 15px;
+}
+.skeleton-logo-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    animation: skeleton-pulse 1.5s infinite ease-in-out;
+}
 /* ======================================== */
 /* --- FINAL RESPONSIVE QUERIES --- */
 /* ======================================== */

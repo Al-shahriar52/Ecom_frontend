@@ -1,4 +1,3 @@
-
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
@@ -27,8 +26,51 @@ const Cart = () => {
         item.stockQuantity === 0 || item.quantity > item.stockQuantity
     );
 
-    if (loading) return <div className="cart-loader">Loading...</div>;
+    /* ================= 1. SKELETON LOADER STATE ================= */
+    if (loading) {
+        return (
+            <div className="cart-overlay">
+                <div className="cart-drawer">
+                    <div className="drawer-header">
+                        <button className="close-drawer-btn" onClick={() => navigate('/')}>✕</button>
+                        <h2>CART</h2>
+                        <div className="header-spacer"></div>
+                    </div>
 
+                    <div className="drawer-items-scroll">
+                        {[1, 2, 3].map((_, index) => (
+                            <div key={index} className="drawer-item-card cart-skeleton-card">
+                                <div className="card-left">
+                                    <div className="cart-skeleton-box cart-skeleton-image"></div>
+                                </div>
+
+                                <div className="card-middle">
+                                    <div className="cart-skeleton-box cart-skeleton-title"></div>
+                                    <div className="cart-skeleton-box cart-skeleton-price"></div>
+                                    <div className="cart-skeleton-box cart-skeleton-qty"></div>
+                                </div>
+
+                                <div className="card-right">
+                                    <div className="cart-skeleton-box cart-skeleton-delete"></div>
+                                    <div className="cart-skeleton-box cart-skeleton-total"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="drawer-footer">
+                        <div className="footer-row">
+                            <div className="cart-skeleton-box cart-skeleton-label"></div>
+                            <div className="cart-skeleton-box cart-skeleton-price-total"></div>
+                        </div>
+                        <div className="cart-skeleton-box cart-skeleton-btn"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /* ================= 2. EMPTY STATE ================= */
     if (safeCart.length === 0) {
         return (
             <div className="cart-overlay">
@@ -52,6 +94,7 @@ const Cart = () => {
         );
     }
 
+    /* ================= 3. POPULATED CART STATE ================= */
     return (
         <div className="cart-overlay">
             <div className="cart-drawer">
@@ -105,14 +148,13 @@ const Cart = () => {
                                     <div className="qty-selector">
                                         <button
                                             onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
-                                            disabled={item.quantity <= 1 || isUpdating || isOutOfStock} // Disable minus if OOS
+                                            disabled={item.quantity <= 1 || isUpdating || isOutOfStock}
                                         >-</button>
 
                                         <span>{isUpdating ? '...' : item.quantity}</span>
 
                                         <button
                                             onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
-                                            // Disable plus if updating, OOS, or hitting limit
                                             disabled={isUpdating || isOutOfStock || item.quantity >= item.stockQuantity}
                                         >+</button>
                                     </div>
@@ -122,7 +164,7 @@ const Cart = () => {
                                         className="delete-btn"
                                         onClick={() => removeFromCart(item.cartItemId)}
                                         disabled={isUpdating}
-                                        style={{ cursor: isUpdating ? 'not-allowed' : 'pointer', pointerEvents: 'auto' }} // Ensure delete is clickable
+                                        style={{ cursor: isUpdating ? 'not-allowed' : 'pointer', pointerEvents: 'auto' }}
                                     >
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" strokeWidth="2">
                                             <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
@@ -137,7 +179,6 @@ const Cart = () => {
                 </div>
 
                 <div className="drawer-footer">
-                    {/* Optional: Warning Message */}
                     {hasStockIssues && (
                         <div className="cart-warning-box">
                             Please remove out-of-stock items to proceed.
@@ -152,7 +193,7 @@ const Cart = () => {
                     <button
                         className={`proceed-checkout-btn ${hasStockIssues ? 'btn-disabled' : ''}`}
                         onClick={() => navigate('/checkout')}
-                        disabled={hasStockIssues} // Lock the button
+                        disabled={hasStockIssues}
                     >
                         {hasStockIssues ? 'UPDATE CART TO PROCEED' : 'PROCEED >'}
                     </button>
