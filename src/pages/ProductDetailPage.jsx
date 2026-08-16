@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
@@ -20,6 +18,7 @@ const ProductDetailPage = () => {
     const [error, setError] = useState(null);
     const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
 
+    // 1. Fetch Product Details
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
@@ -36,6 +35,20 @@ const ProductDetailPage = () => {
 
         fetchProductDetails();
     }, [productId]);
+
+    // 2. --- META PIXEL: VIEW CONTENT EVENT ---
+    useEffect(() => {
+        if (product && window.fbq) {
+            window.fbq('track', 'ViewContent', {
+                content_ids: [product.productId || productId],
+                content_name: product.name,
+                content_type: 'product',
+                value: product.discountedPrice || product.originalPrice || 0,
+                currency: 'BDT' // Change to 'USD' if necessary
+            });
+        }
+    }, [product, productId]);
+    // ------------------------------------------
 
     /* ================= SKELETON LOADER STATE ================= */
     if (loading) {

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
 // --- Core Components ---
@@ -23,6 +23,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { Toaster } from 'react-hot-toast';
+import { PermissionProvider } from "./context/PermissionContext";
 
 // --- Main Pages ---
 import Home from './pages/Home';
@@ -51,6 +52,21 @@ import AddProduct from './pages/admin/AddProduct';
 import EditProductPage from './pages/admin/EditProductPage';
 import Wishlist from './pages/Wishlist';
 import OrderSuccess from './pages/OrderSuccess';
+import RoleManagement from './components/admin/user/RolesPanel';
+
+// --- Helper Component to Handle Meta Pixel Tracking ---
+const PixelTracker = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+        // Fire a Meta Pixel PageView event every time the URL changes
+        if (window.fbq) {
+            window.fbq('track', 'PageView');
+        }
+    }, [location]);
+
+    return null; // This component doesn't render anything
+};
 
 // --- Helper Component to Hide Cart on Specific Routes ---
 const ConditionalFloatingCart = () => {
@@ -66,73 +82,101 @@ const ConditionalFloatingCart = () => {
 
     return <FloatingCartButton />;
 };
+
+// --- Layout for Public & User Dashboard Pages ---
+const PublicLayout = () => {
+    return (
+        <>
+            <Header />
+            <ConditionalFloatingCart />
+            <main>
+                <Outlet />
+            </main>
+            <Footer />
+        </>
+    );
+};
 function App() {
     return (
+        <PermissionProvider>
         <HelmetProvider>
-        <Router>
-            <ScrollToTop />
-            <AuthProvider>
-                <CartProvider>
-                    <WishlistProvider>
-                    <Toaster position="top-center" reverseOrder={false} />
-                    <Header />
-                        <ConditionalFloatingCart />
-                    <main>
-                        <Routes>
-                            {/* --- Public Routes --- */}
-                            <Route path="/" element={<Home />} />
-                            <Route path="/shop" element={<Shop />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/shipping-delivery" element={<Shipping />} />
-                            <Route path="/refund-policy" element={<RefundPolicy />} />
-                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                            <Route path="/about" element={<AboutUs />} />
-                            <Route path="/cart" element={<Cart />} />
-                            <Route path="/login" element={<AuthPage />} />
-                            <Route path="/brand/:slug" element={<ShopPage />} />
-                            <Route path="/category/:slug" element={<ShopPage />} />
-                            <Route path="/subcategory/:slug" element={<ShopPage />} />
-                            <Route path="/product/:productId" element={<ProductDetailPage />} />
-                            <Route path="/checkout" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
-                            <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Wishlist /></ProtectedRoute>}/>
-                            <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />
+            <Router>
+                <PixelTracker />
+                <ScrollToTop />
+                <AuthProvider>
+                    <CartProvider>
+                        <WishlistProvider>
+                            <Toaster position="top-center" reverseOrder={false} />
 
-                            {/* --- User Dashboard Routes --- */}
-                            {/* Wrap the entire dashboard layout to block guests. Only logged-in users/admins allowed. */}
-                            <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']} />}>
-                                <Route path="/dashboard" element={<DashboardLayout />}>
-                                    <Route index element={<DashboardHome />} />
-                                    <Route path="orders" element={<Orders />} />
-                                    <Route path="orders/:orderId" element={<OrderDetail />} />
-                                    <Route path="address" element={<Address />} />
-                                    <Route path="account-details" element={<AccountDetails />} />
+                            {/* REMOVED Header, Footer, and Main wrappers from here */}
+
+                            <Routes>
+                                {/* ========================================== */}
+                                {/* --- PUBLIC & USER ROUTES (Has Header) --- */}
+                                {/* ========================================== */}
+                                <Route element={<PublicLayout />}>
+
+                                    {/* --- Public Routes --- */}
+                                    <Route path="/" element={<Home />} />
+                                    <Route path="/shop" element={<Shop />} />
+                                    <Route path="/contact" element={<Contact />} />
+                                    <Route path="/shipping-delivery" element={<Shipping />} />
+                                    <Route path="/refund-policy" element={<RefundPolicy />} />
+                                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                                    <Route path="/about" element={<AboutUs />} />
+                                    <Route path="/cart" element={<Cart />} />
+                                    <Route path="/login" element={<AuthPage />} />
+                                    <Route path="/brand/:slug" element={<ShopPage />} />
+                                    <Route path="/category/:slug" element={<ShopPage />} />
+                                    <Route path="/subcategory/:slug" element={<ShopPage />} />
+                                    <Route path="/product/:productId" element={<ProductDetailPage />} />
+                                    <Route path="/checkout" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
+                                    <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Wishlist /></ProtectedRoute>}/>
+                                    <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />
+
+                                    {/* --- User Dashboard Routes --- */}
+                                    <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']} />}>
+                                        <Route path="/dashboard" element={<DashboardLayout />}>
+                                            <Route index element={<DashboardHome />} />
+                                            <Route path="orders" element={<Orders />} />
+                                            <Route path="orders/:orderId" element={<OrderDetail />} />
+                                            <Route path="address" element={<Address />} />
+                                            <Route path="account-details" element={<AccountDetails />} />
+                                        </Route>
+                                    </Route>
+
+                                </Route> {/* End of PublicLayout */}
+
+
+                                {/* ========================================== */}
+                                {/* --- ADMIN ROUTES (No Global Header) --- */}
+                                {/* ========================================== */}
+                                <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+                                    <Route path="/admin" element={<AdminDashboardLayout />}>
+                                        <Route index element={<AdminHome />} />
+                                        <Route path="products" element={<ProductManagement />} />
+
+                                        {/* NEW: Roles route added here */}
+                                        <Route path="users" element={<UserManagement />} />
+                                        <Route path="roles" element={<RoleManagement />} />
+
+                                        <Route path="coupons" element={<CouponManagement />} />
+                                        <Route path="orders" element={<AdminOrders />} />
+                                        <Route path="orders/:orderId" element={<OrderDetail />} />
+                                        <Route path="accounting" element={<Accounting />} />
+                                        <Route path="products/add" element={<AddProduct />} />
+                                        <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
+                                        <Route path="frequently-bought-together" element={<FbtManagementPage />} />
+                                    </Route>
                                 </Route>
-                            </Route>
 
-                            {/* --- Protected Admin Routes --- */}
-                            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
-                                <Route path="/admin" element={<AdminDashboardLayout />}>
-                                    <Route index element={<AdminHome />} />
-                                    <Route path="products" element={<ProductManagement />} />
-                                    <Route path="users" element={<UserManagement />} />
-                                    <Route path="coupons" element={<CouponManagement />} />
-                                    <Route path="orders" element={<AdminOrders />} />
-                                    <Route path="orders/:orderId" element={<AdminOrderDetails />} />
-                                    <Route path="accounting" element={<Accounting />} />
-                                    <Route path="products/add" element={<AddProduct />} />
-                                    <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
-                                    <Route path="frequently-bought-together" element={<FbtManagementPage />} />
-                                </Route>
-                            </Route>
-
-                        </Routes>
-                    </main>
-                    <Footer />
-                    </WishlistProvider>
-                </CartProvider>
-            </AuthProvider>
-        </Router>
+                            </Routes>
+                        </WishlistProvider>
+                    </CartProvider>
+                </AuthProvider>
+            </Router>
         </HelmetProvider>
+        </PermissionProvider>
     );
 }
 

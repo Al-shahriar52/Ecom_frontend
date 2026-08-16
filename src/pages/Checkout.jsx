@@ -28,7 +28,7 @@ const Checkout = () => {
     });
 
     const [errors, setErrors] = useState({});
-    const [lockedField, setLockedField] = useState(null);
+    const [lockedFields, setLockedFields] = useState({ email: false, phone: false });
     const [cities, setCities] = useState([]);
     const [areas, setAreas] = useState([]);
     const [loadingCities, setLoadingCities] = useState(true);
@@ -40,30 +40,72 @@ const Checkout = () => {
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const grandTotal = cartTotal + shippingCost;
 
+    // --- META PIXEL: INITIATE CHECKOUT ---
+    useEffect(() => {
+        if (cartTotal > 0 && window.fbq) {
+            window.fbq('track', 'InitiateCheckout', {
+                value: cartTotal,
+                currency: 'BDT', // Adjust currency code if needed
+                num_items: cart.reduce((total, item) => total + item.quantity, 0),
+                content_ids: cart.map(item => item.productId || item.id),
+                content_type: 'product'
+            });
+        }
+    }, [cartTotal, cart]);
+
     // --- INITIALIZE USER DATA ---
     useEffect(() => {
-        if (user && !isGuest) {
-            const loginIdentifier = String(user.username || user.name || '').trim();
-            const extractedEmail = user.email || (EMAIL_REGEX.test(loginIdentifier) ? loginIdentifier : '');
-            const rawPhone = user.phone || user.phoneNumber || (!EMAIL_REGEX.test(loginIdentifier) ? loginIdentifier : '');
-            const extractedPhone = rawPhone ? rawPhone.replace(/[\s-]/g, '') : '';
+        const fetchUserProfile = async () => {
+            if (user && !isGuest) {
+                try {
+                    // 1. Context Fallback
+                    let tempEmail = '';
+                    if (EMAIL_REGEX.test(user.name)) {
+                        tempEmail = user.name;
+                    }
 
-            setFormData(prev => ({
-                ...prev,
-                email: extractedEmail,
-                phone: extractedPhone,
-                name: user.realName || user.name || prev.name
-            }));
+                    setFormData(prev => ({
+                        ...prev,
+                        email: tempEmail || prev.email
+                    }));
 
-            if (EMAIL_REGEX.test(loginIdentifier)) {
-                setLockedField('email');
-            } else if (PHONE_REGEX.test(loginIdentifier.replace(/[\s-]/g, ''))) {
-                setLockedField('phone');
+                    if (tempEmail) {
+                        setLockedFields(prev => ({ ...prev, email: true }));
+                    }
+
+                    // 2. Fetch full profile from API
+                    const response = await axiosInstance.get('/api/v1/user/get');
+                    const userProfile = response.data?.data || response.data;
+
+                    if (userProfile) {
+                        const finalName = userProfile.name || '';
+                        const finalEmail = userProfile.email || tempEmail;
+                        const finalPhone = userProfile.phone ? userProfile.phone.replace(/[\s-]/g, '') : '';
+
+                        setFormData(prev => ({
+                            ...prev,
+                            name: finalName || prev.name,
+                            email: finalEmail || prev.email,
+                            phone: finalPhone || prev.phone
+                        }));
+
+                        // 3. Lock fields permanently if they exist in the database
+                        setLockedFields({
+                            email: Boolean(finalEmail),
+                            phone: Boolean(finalPhone)
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error fetching full user profile:", error);
+                }
+            } else {
+                // Reset if guest
+                setFormData(prev => ({ ...prev, name: '', phone: '', email: '' }));
+                setLockedFields({ email: false, phone: false });
             }
-        } else {
-            setFormData(prev => ({ ...prev, name: '', phone: '', email: '' }));
-            setLockedField(null);
-        }
+        };
+
+        fetchUserProfile();
     }, [user, isGuest]);
 
     // --- FETCH CITIES ---
@@ -212,6 +254,19 @@ const Checkout = () => {
 
             if (response.status === 201 || response.status === 200 || response.data.status === 201) {
                 const orderId = response.data.data;
+
+                // --- META PIXEL: PURCHASE ---
+                if (window.fbq) {
+                    window.fbq('track', 'Purchase', {
+                        value: grandTotal,
+                        currency: 'BDT',
+                        content_ids: cart.map(item => item.productId || item.id),
+                        content_type: 'product',
+                        num_items: cart.reduce((total, item) => total + item.quantity, 0),
+                        order_id: orderId // Optional: pass order ID for deduplication
+                    });
+                }
+
                 toast.success("Order placed successfully!");
                 fetchCart(true);
                 navigate(`/order-success/${orderId}`);
@@ -295,8 +350,8 @@ const Checkout = () => {
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
-                                className={`form-input ${errors.phone ? 'input-error' : ''} ${lockedField === 'phone' ? 'input-locked' : ''}`}
-                                readOnly={lockedField === 'phone'}
+                                className={`form-input ${errors.phone ? 'input-error' : ''} ${lockedFields.phone ? 'input-locked' : ''}`}
+                                readOnly={lockedFields.phone}
                             />
                             {errors.phone && <span className="field-error-text">{errors.phone}</span>}
                         </div>
@@ -309,8 +364,8 @@ const Checkout = () => {
                                 value={formData.email}
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
-                                className={`form-input ${errors.email ? 'input-error' : ''} ${lockedField === 'email' ? 'input-locked' : ''}`}
-                                readOnly={lockedField === 'email'}
+                                className={`form-input ${errors.email ? 'input-error' : ''} ${lockedFields.email ? 'input-locked' : ''}`}
+                                readOnly={lockedFields.email}
                             />
                             {errors.email && <span className="field-error-text">{errors.email}</span>}
                         </div>
