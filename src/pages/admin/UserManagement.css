@@ -748,6 +748,44 @@
     margin-bottom: 24px;
     flex-wrap: wrap;
 }
+
+/* Stat Icon Variant Backgrounds & Colors */
+.um-stat-icon--indigo {
+    background-color: #EEF2FF;
+    color: #4F46E5;
+}
+
+.um-stat-icon--teal {
+    background-color: #E6FFFA;
+    color: #0D9488;
+}
+
+.um-stat-icon--amber {
+    background-color: #FEF3C7;
+    color: #D97706;
+}
+
+.um-stat-icon--red {
+    background-color: #FEE2E2;
+    color: #E11D48;
+}
+
+/* Sparkline Bar Variant Colors */
+.um-sparkline-bar--indigo {
+    background-color: #C7D2FE;
+}
+
+.um-sparkline-bar--teal {
+    background-color: #99F6E4;
+}
+
+.um-sparkline-bar--amber {
+    background-color: #FDE68A;
+}
+
+.um-sparkline-bar--red {
+    background-color: #FECDD3;
+}
 /* 3. Mobile & Tablet Breakpoints (< 768px) */
 @media (max-width: 768px) {
     /* Stack Sidebar & Main Content vertically */

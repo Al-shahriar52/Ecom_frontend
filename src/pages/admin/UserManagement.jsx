@@ -472,13 +472,13 @@ export default UserManagement;*/
 import React, { useState, useEffect, useCallback } from "react";
 import {
     Trash2, CheckCircle2, Ban, X, Search, ChevronLeft, ChevronRight, UserPlus,
-    ArrowUpDown, Download, Loader2
+    ArrowUpDown, Download, Loader2, Users, UserCheck, Clock, UserX
 } from "lucide-react";
 import { useLocation } from 'react-router-dom';
 import "./UserManagement.css";
 
-import axiosInstance from "../../api/AxiosInstance"; // Adjust path to match your file structure
-import { STATS, SPARK } from "../../data/mockData";
+import axiosInstance from "../../api/AxiosInstance";
+import { SPARK } from "../../data/mockData";
 import { ROLE_META } from "../../data/constants";
 import { usePermissions } from "../../context/PermissionContext";
 import { RoleBadge, StatusBadge, Avatar, formatDate } from "../../components/admin/user/Shared";
@@ -496,6 +496,10 @@ const UserManagement = () => {
     const [error, setError] = useState(null);
     const [totalUsers, setTotalUsers] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Stats State
+    const [stats, setStats] = useState(null);
+    const [loadingStats, setLoadingStats] = useState(false);
 
     // Filter & Pagination States
     const [query, setQuery] = useState("");
@@ -521,7 +525,27 @@ const UserManagement = () => {
     const canManage = hasPermission(currentRole, 1);
     const canDelete = currentRole === "admin";
 
-    // --- API Fetch Handler ---
+    // --- Fetch User Stats API ---
+    const fetchStats = useCallback(async () => {
+        setLoadingStats(true);
+        try {
+            const response = await axiosInstance.get("/api/v1/admin/users/stats");
+            const payload = response.data?.data;
+            if (payload) {
+                setStats(payload);
+            }
+        } catch (err) {
+            console.error("Failed to load user stats", err);
+        } finally {
+            setLoadingStats(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
+    // --- API Fetch Handler for Users Table ---
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -538,7 +562,6 @@ const UserManagement = () => {
 
             const response = await axiosInstance.get("/api/v1/admin/users", { params });
 
-            // Unwrap response: GenericResponseDto -> data -> { data: [...], meta: {...} }
             const payload = response.data?.data;
             if (payload) {
                 setUsers(payload.data || []);
@@ -555,6 +578,42 @@ const UserManagement = () => {
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
+
+    // Dynamic configuration for summary cards using live API data
+    const statCards = [
+        {
+            icon: Users,
+            variant: "indigo",
+            value: stats?.totalUsers ?? 0,
+            label: "Total Users",
+            delta: `+${stats?.newThisMonth ?? 0} this month`,
+            up: true
+        },
+        {
+            icon: UserCheck,
+            variant: "teal",
+            value: stats?.activeUsers ?? 0,
+            label: "Active Accounts",
+            delta: `${stats?.activePercentage ?? 0}% of total`,
+            up: true
+        },
+        {
+            icon: Clock,
+            variant: "amber",
+            value: stats?.unverifiedUsers ?? 0,
+            label: "Unverified Users",
+            delta: "Needs review",
+            up: false
+        },
+        {
+            icon: UserX,
+            variant: "red",
+            value: stats?.suspendedUsers ?? 0,
+            label: "Suspended Accounts",
+            delta: `${stats?.suspendedPercentage ?? 0}% of total`,
+            up: false
+        }
+    ];
 
     // Sorting Handler
     const toggleSort = (key) => {
@@ -652,8 +711,9 @@ const UserManagement = () => {
                 </div>
             </div>
 
+            {/* --- Stats Cards Grid --- */}
             <div className="um-stats-grid">
-                {STATS.map((s, idx) => {
+                {statCards.map((s, idx) => {
                     const Icon = s.icon;
                     return (
                         <div key={idx} className="um-card um-stat-card">
@@ -671,10 +731,12 @@ const UserManagement = () => {
                                     ))}
                                 </div>
                             </div>
-                            <p className="um-stat-value um-text-ink um-font-display">{s.value}</p>
+                            <p className="um-stat-value um-text-ink um-font-display">
+                                {loadingStats ? <Loader2 size={18} className="animate-spin inline" /> : s.value}
+                            </p>
                             <p className="um-stat-label um-text-muted">
                                 <span className={s.up ? "um-text-tint--teal" : "um-text-tint--red"}>{s.delta}</span>
-                                <span>• {s.label}</span>
+                                <span> • {s.label}</span>
                             </p>
                         </div>
                     );
