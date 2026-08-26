@@ -716,3 +716,91 @@
     color: #111827; /* Darkens on hover */
     transform: translateX(3px);
 }
+
+/* ---------------------------------------------------------------
+   Responsive Admin Layout Adjustments
+--------------------------------------------------------------- */
+
+/* 1. Responsive Top Metrics / Stats Cards */
+.um-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+/* 2. Scrollable Data Table Container */
+.um-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Maintain readable widths inside the table when scrolling horizontally */
+.um-table {
+    min-width: 800px; /* Prevents table from crushing columns on narrow screens */
+}
+
+.um-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+/* 3. Mobile & Tablet Breakpoints (< 768px) */
+@media (max-width: 768px) {
+    /* Stack Sidebar & Main Content vertically */
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    /* Stack Search, Select Filters, and Item Count */
+    .um-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .um-search {
+        max-width: 100%;
+    }
+
+    .um-select {
+        width: 100%;
+    }
+
+    .um-toolbar-count {
+        margin-left: 0;
+        text-align: right;
+    }
+
+    /* Stack Bulk Action Bar Buttons */
+    .um-bulk-bar {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .um-bulk-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .um-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .um-header-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -349,3 +349,54 @@
     opacity: 1;
     visibility: visible;
 }
+
+/* ================================================= */
+/* --- RESPONSIVE MOBILE & TABLET LAYOUT --- */
+/* ================================================= */
+@media (max-width: 992px) {
+    /* Stack Sidebar above Content */
+    .admin-dashboard-layout {
+        flex-direction: column;
+    }
+
+    /* Expand main content container to 100% width and reduce desktop padding */
+    .admin-dashboard-content {
+        padding: 20px 16px;
+        width: 100%;
+    }
+
+    /* Full-width sidebar navigation on mobile */
+    .modern-sidebar {
+        width: 100% !important;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Top bar state when collapsed on mobile */
+    .modern-sidebar.collapsed {
+        width: 100% !important;
+        padding-bottom: 0;
+    }
+
+    .modern-sidebar.collapsed .sidebar-header {
+        justify-content: space-between;
+        padding: 12px 20px;
+        margin-bottom: 0;
+    }
+
+    /* Add Brand Title on mobile header when collapsed */
+    .modern-sidebar.collapsed .sidebar-header::before {
+        content: "ADMIN PANEL";
+        font-size: 14px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: 0.5px;
+    }
+
+    /* Hide drawer items when collapsed in mobile top-bar view */
+    .modern-sidebar.collapsed .sidebar-profile,
+    .modern-sidebar.collapsed .sidebar-section-title,
+    .modern-sidebar.collapsed .sidebar-links {
+        display: none !important;
+    }
+}
