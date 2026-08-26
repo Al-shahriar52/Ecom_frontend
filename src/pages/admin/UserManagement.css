@@ -158,14 +158,36 @@
 .um-dot--red    { background: var(--um-red); }
 .um-dot--slate  { background: var(--um-slate); }
 
-.um-avatar { border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 600; flex-shrink: 0; }
+.um-avatar {
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    aspect-ratio: 1 / 1;
+}
+
+/* Avatar Sizes */
+.um-avatar--sm { width: 28px; height: 28px; font-size: 11px; }
+.um-avatar--md { width: 36px; height: 36px; font-size: 12px; }
+.um-avatar--lg { width: 56px; height: 56px; font-size: 16px; border-radius: 16px; }
+
+/* Original Presets */
 .um-avatar--brand  { background: linear-gradient(135deg, var(--um-brand), #3752A6CC); }
 .um-avatar--teal   { background: linear-gradient(135deg, var(--um-teal), #1F8A73CC); }
 .um-avatar--bronze { background: linear-gradient(135deg, var(--um-bronze), #B8813ACC); }
 .um-avatar--slate  { background: linear-gradient(135deg, var(--um-slate), #6B7280CC); }
-.um-avatar--sm { width: 28px; height: 28px; font-size: 11px; }
-.um-avatar--md { width: 36px; height: 36px; font-size: 12px; }
-.um-avatar--lg { width: 56px; height: 56px; font-size: 16px; border-radius: 16px; }
+
+/* Backend Assigned Variants */
+.um-avatar--emerald { background: linear-gradient(135deg, #10B981, #059669); }
+.um-avatar--indigo  { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+.um-avatar--coral   { background: linear-gradient(135deg, #F43F5E, #E11D48); }
+.um-avatar--amber   { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.um-avatar--violet  { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
 
 /* ---------------------------------------------------------------
    Toolbar / table / pagination
@@ -181,17 +203,48 @@
 .um-bulk-actions { display: flex; gap: 8px; }
 .um-bulk-btn { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: #fff; border: 1px solid var(--um-border); cursor: pointer; }
 
-.um-table-wrap { overflow: hidden; }
-.um-table { width: 100%; font-size: 14px; border-collapse: collapse; }
+.um-table-wrap { overflow-x: auto; width: 100%; }
+.um-table { width: 100%; font-size: 14px; border-collapse: collapse; table-layout: fixed; }
+
+/* Precise Column Width Ratios */
+.um-table th:nth-child(1), .um-table td:nth-child(1) { width: 44px; text-align: center; } /* Checkbox */
+.um-table th:nth-child(2), .um-table td:nth-child(2) { width: 36%; }                      /* User (Gives max space) */
+.um-table th:nth-child(3), .um-table td:nth-child(3) { width: 100px; }                     /* Role */
+.um-table th:nth-child(4), .um-table td:nth-child(4) { width: 110px; }                     /* Status */
+.um-table th:nth-child(5), .um-table td:nth-child(5) { width: 180px; }                     /* Joined */
+.um-table th:nth-child(6), .um-table td:nth-child(6) { width: 80px; }                      /* Orders */
+.um-table th:nth-child(7), .um-table td:nth-child(7) { width: 64px; text-align: right; }  /* Actions */
+
 .um-thead-row { border-bottom: 1px solid var(--um-border); }
-.um-th { text-align: left; padding: 12px 24px; font-weight: 600; cursor: pointer; user-select: none; }
-.um-th--checkbox { width: 40px; cursor: default; }
+.um-th { text-align: left; padding: 12px 10px; font-weight: 600; cursor: pointer; user-select: none; }
+.um-th--checkbox { cursor: default; }
 .um-th-content { display: flex; align-items: center; gap: 4px; }
 .um-table-row { border-top: 1px solid var(--um-border-soft); cursor: pointer; transition: background-color .12s ease; }
 .um-table-row:hover { background: #FAFAFB; }
-.um-td { padding: 12px 24px; }
+.um-td { padding: 12px 10px; }
 .um-td--right { text-align: right; }
-.um-user-cell { display: flex; align-items: center; gap: 12px; }
+
+/* --- User Column Flex & Truncation --- */
+.um-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Apply flex expansion ONLY to text wrapper, not the avatar */
+.um-user-cell > div:not(.um-avatar) {
+    min-width: 0;
+    flex: 1;
+}
+
+.um-user-name,
+.um-user-email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
 .um-user-name { font-weight: 600; margin: 0; }
 .um-user-email { font-size: 12px; margin: 0; }
 
