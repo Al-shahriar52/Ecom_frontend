@@ -62,24 +62,32 @@ import React from "react";
 import { ROLE_META, STATUS_META } from "../../../data/constants";
 
 // --- Date Formatter Helper ---
-export function formatDate(dateString) {
-    if (!dateString) return "-";
-    // Standardize SQL format "2026-04-09 23:58:59.636562" for Date parser
-    const isoString = dateString.includes("T") ? dateString : dateString.replace(" ", "T");
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return dateString;
+export const formatDate = (dateVal) => {
+    if (!dateVal) return "N/A";
 
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
+    let date;
 
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12;
+    // 1. Handle Spring Boot Jackson array format: [year, month, day, hour, minute, second]
+    if (Array.isArray(dateVal)) {
+        const [year, month, day, hour = 0, minute = 0, second = 0] = dateVal;
+        // JavaScript months are 0-indexed (January is 0, April is 3)
+        date = new Date(year, month - 1, day, hour, minute, second);
+    }
+    // 2. Handle ISO strings, JS Date objects, or numeric timestamps
+    else {
+        date = new Date(dateVal);
+    }
 
-    return `${yyyy}-${mm}-${dd} · ${hours}:${minutes} ${ampm}`;
-}
+    // Validate date
+    if (isNaN(date.getTime())) return "Invalid Date";
+
+    // Format output (e.g., "Apr 9, 2026")
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
+};
 
 export const RoleBadge = ({ role }) => {
     // 1. Extract string if role is an array or object from backend
