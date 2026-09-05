@@ -6,10 +6,20 @@ import './Dashboard.css';
 
 // Renders a single saved address card
 const AddressCard = ({ address, onEdit }) => {
+    // Force the text to uppercase
+    const displayType = address.addressType ? address.addressType.toUpperCase() : '';
+
     return (
         <article className="address-card">
             <header className="address-card-header">
-                <h3>{address.addressType}</h3>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: '600' }}>
+                    {displayType}
+                    {address.isDefault && (
+                        <span style={{ fontSize: '11px', marginLeft: '10px', color: '#4ade80', fontWeight: '600', textTransform: 'none' }}>
+                            (Default)
+                        </span>
+                    )}
+                </h3>
                 <button className="edit-link" onClick={() => onEdit(address)}>Edit</button>
             </header>
             <div className="address-card-body">
@@ -24,8 +34,9 @@ const AddressCard = ({ address, onEdit }) => {
 // Renders the form for adding or editing an address
 const AddressForm = ({ onSave, onCancel, initialData }) => {
     // State for user-typed form fields
-    const [name, setName] = useState('');
+    const [addressType, setAddressType] = useState('HOME');
     const [address, setAddress] = useState('');
+    const [isDefault, setIsDefault] = useState(false);
 
     // State to hold data fetched from the API
     const [cities, setCities] = useState([]);
@@ -38,16 +49,16 @@ const AddressForm = ({ onSave, onCancel, initialData }) => {
     // Pre-fills the form when in "edit" mode
     useEffect(() => {
         if (initialData) {
-            setName(initialData.addressType || '');
+            setAddressType(initialData.addressType || 'HOME');
             setAddress(initialData.address || '');
-            // Note: For simplicity, we don't auto-select the dropdowns in edit mode.
-            // A more advanced version would find the matching city/area IDs.
+            setIsDefault(initialData.isDefault || false);
+            // Note: For simplicity, we don't auto-select the dropdowns in edit mode here.
             setSelectedCityId('');
             setSelectedArea('');
         } else {
-            // Clear form when switching from edit to add mode
-            setName('');
+            setAddressType('HOME');
             setAddress('');
+            setIsDefault(false);
             setSelectedCityId('');
             setSelectedArea('');
         }
@@ -69,8 +80,8 @@ const AddressForm = ({ onSave, onCancel, initialData }) => {
     // Fetch areas whenever the selected city changes
     useEffect(() => {
         if (selectedCityId) {
-            setAreas([]); // Clear previous areas
-            setSelectedArea(''); // Reset selected area
+            setAreas([]);
+            setSelectedArea('');
             const fetchAreas = async () => {
                 try {
                     const response = await axiosInstance.get(`/api/v1/location/areas?city_id=${selectedCityId}`);
@@ -81,20 +92,21 @@ const AddressForm = ({ onSave, onCancel, initialData }) => {
             };
             fetchAreas();
         } else {
-            setAreas([]); // Clear areas if no city is selected
+            setAreas([]);
         }
     }, [selectedCityId]);
 
     const handleSave = (e) => {
         e.preventDefault();
-        // Find the full name of the city from the selected ID
         const cityName = cities.find(c => c.id === parseInt(selectedCityId))?.name;
 
         const formData = {
-            addressType: name,
+            addressType: addressType,
             city: cityName,
             area: selectedArea,
-            address
+            address: address,
+            isDefault: isDefault,
+            is_default: isDefault
         };
         onSave(formData);
     };
@@ -102,7 +114,12 @@ const AddressForm = ({ onSave, onCancel, initialData }) => {
     return (
         <form className="address-form" onSubmit={handleSave}>
             <div className="form-group">
-                <input type="text" placeholder="Name: e.g., Home, Office" value={name} onChange={e => setName(e.target.value)} required />
+                <select value={addressType} onChange={e => setAddressType(e.target.value)} required className="form-input">
+                    <option value="HOME">Home</option>
+                    <option value="WORK">Work</option>
+                    <option value="BILLING">Billing</option>
+                    <option value="OTHER">Other</option>
+                </select>
             </div>
             <div className="form-row">
                 <div className="form-group">
@@ -121,6 +138,18 @@ const AddressForm = ({ onSave, onCancel, initialData }) => {
             <div className="form-group">
                 <textarea placeholder="Address" rows="3" value={address} onChange={e => setAddress(e.target.value)} required></textarea>
             </div>
+
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
+                <input
+                    type="checkbox"
+                    id="isDefault"
+                    checked={isDefault}
+                    onChange={e => setIsDefault(e.target.checked)}
+                    style={{ width: 'auto' }}
+                />
+                <label htmlFor="isDefault" style={{ margin: 0, cursor: 'pointer' }}>Set as default address</label>
+            </div>
+
             <div className="form-actions">
                 <button type="button" className="btn-close" onClick={onCancel}>Close</button>
                 <button type="submit" className="btn-save">{initialData ? 'Save Changes' : 'Save Address'}</button>
@@ -129,7 +158,6 @@ const AddressForm = ({ onSave, onCancel, initialData }) => {
     );
 };
 
-// Main Address Page Component with full Add/Edit/Fetch logic
 const Address = () => {
     const [addresses, setAddresses] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
@@ -175,7 +203,10 @@ const Address = () => {
         try {
             const response = await axiosInstance.post('/api/v1/address/add', newAddressData);
             toast.success(response.data.message);
-            setAddresses(prevAddresses => [...prevAddresses, response.data.data]);
+
+            // If the user set this as default, we should probably refetch to sync backend rules
+            // (e.g., if backend removed 'default' from other addresses).
+            fetchAddresses();
             setIsFormVisible(false);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to add address.");
@@ -186,15 +217,7 @@ const Address = () => {
         try {
             const response = await axiosInstance.put('/api/v1/address/update', updatedAddressData);
             toast.success(response.data.message);
-
-            const updatedAddressFromServer = { ...response.data.data, id: updatedAddressData.id };
-
-            setAddresses(prevAddresses =>
-                prevAddresses.map(addr =>
-                    addr.id === updatedAddressData.id ? updatedAddressFromServer : addr
-                )
-            );
-
+            fetchAddresses(); // Refetch to ensure default states are synced
             setIsFormVisible(false);
             setEditingAddress(null);
         } catch (error) {
