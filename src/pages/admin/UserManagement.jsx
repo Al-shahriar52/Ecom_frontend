@@ -470,6 +470,7 @@ const UserManagement = () => {
                                             onView={() => { setSelectedUser(u); setOpenMenuId(null); }}
                                             onEdit={() => { setEditUser(u); setOpenMenuId(null); }}
                                             onDelete={() => { setDeleteUser(u); setOpenMenuId(null); }}
+                                            onSuccess={handleModalSuccess} // <-- Pass refresh handler here
                                         />
                                     </td>
                                 </tr>
@@ -555,7 +556,13 @@ const UserManagement = () => {
                     onSuccess={handleModalSuccess}
                 />
             )}
-            {deleteUser && <DeleteConfirmModal user={deleteUser} onClose={() => setDeleteUser(null)}/>}
+            {deleteUser && (
+                <DeleteConfirmModal
+                    user={deleteUser}
+                    onClose={() => setDeleteUser(null)}
+                    onSuccess={handleModalSuccess}
+                />
+            )}
             {selectedUser && (
                 <UserDetailsModal isOpen={!!selectedUser} user={selectedUser} onClose={() => setSelectedUser(null)}/>
             )}
