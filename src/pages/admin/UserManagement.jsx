@@ -16,6 +16,7 @@ import RowMenu from "../../components/admin/user/RowMenu";
 import UserFormModal from "../../components/admin/user/UserFormModal";
 import DeleteConfirmModal from "../../components/admin/user/DeleteConfirmModal";
 import UserDetailsModal from "../../components/admin/user/UserDetailsModal";
+import { toast } from "react-hot-toast";
 
 const UserManagement = () => {
     const { hasPermission } = usePermissions();
@@ -190,39 +191,54 @@ const UserManagement = () => {
         return range;
     };
 
-    const handleBulkAction = (actionType) => {
+// --- Integrated API Bulk Action Handler ---
+    const handleBulkAction = async (actionType) => {
         if (selected.length === 0) return;
-        if (actionType === "delete") {
-            if (window.confirm(`Are you sure you want to delete ${selected.length} user(s)?`)) {
-                console.log("BULK DELETE IDs:", selected);
-                setSelected([]);
-            }
-        } else {
-            console.log(`BULK ${actionType.toUpperCase()} IDs:`, selected);
-            setSelected([]);
+
+        if (actionType === "delete" && !window.confirm(`Are you sure you want to scrub PII and deactivate ${selected.length} selected user(s)?`)) {
+            return;
+        }
+
+        try {
+            // Calls POST /api/v1/admin/users/bulk-action
+            await axiosInstance.post("/api/v1/admin/users/bulk-action", {
+                action: actionType, // "activate" | "suspend" | "delete"
+                userIds: selected
+            });
+
+            toast.success(`Bulk ${actionType} applied successfully!`);
+            setSelected([]); // Reset selected table row IDs
+            handleModalSuccess(); // Refresh live user list and stats counter
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || err.message || `Failed to apply bulk ${actionType}`;
+            toast.error(errorMessage);
         }
     };
 
-    const handleExportCSV = () => {
-        const headers = ["User ID", "Name", "Email", "Role", "Status", "Created At"];
-        const rows = users.map((u) => [
-            u.id,
-            `"${u.name || ''}"`,
-            `"${u.email || ''}"`,
-            u.role || (u.roles ? u.roles.join(', ') : ''),
-            u.accountState || u.status || 'active',
-            `"${u.createdAt || ''}"`
-        ]);
+// --- Integrated Backend CSV Export Handler ---
+    const handleExportCSV = async () => {
+        try {
+            // Calls POST /api/v1/admin/users/export-csv
+            const response = await axiosInstance.post(
+                "/api/v1/admin/users/export-csv",
+                { userIds: selected.length > 0 ? selected : null }, // Exports selected rows or falls back to all
+                { responseType: "blob" } // Binary response handling for file downloads
+            );
 
-        const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `user_list_${new Date().toISOString().slice(0, 10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            // Trigger native file download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `users_export_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("CSV exported successfully!");
+        } catch (err) {
+            toast.error("Failed to export user CSV file");
+        }
     };
 
     useEffect(() => {
