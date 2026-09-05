@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
     Trash2, CheckCircle2, Ban, X, Search, ChevronLeft, ChevronRight, UserPlus,
-    ArrowUpDown, Download, Loader2, Users, UserCheck, Clock, UserX
+    ArrowUpDown, Download, Loader2, Users, UserCheck, Clock, UserX, RotateCcw
 } from "lucide-react";
 import { useLocation } from 'react-router-dom';
 import "./UserManagement.css";
@@ -36,7 +36,7 @@ const UserManagement = () => {
     const [roleFilter, setRoleFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [sortKey, setSortKey] = useState("id");
-    const [sortDir, setSortDir] = useState("asc");
+    const [sortDir, setSortDir] = useState("desc");
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [selected, setSelected] = useState([]);
@@ -108,6 +108,16 @@ const UserManagement = () => {
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
+
+    // --- Clear Filters Handler ---
+    const handleClearFilters = () => {
+        setQuery("");
+        setRoleFilter("all");
+        setStatusFilter("all");
+        setPage(1);
+    };
+
+    const hasActiveFilters = query.trim() !== "" || roleFilter !== "all" || statusFilter !== "all";
 
     // Dynamic configuration for summary cards using live API data
     const statCards = [
@@ -279,7 +289,7 @@ const UserManagement = () => {
             </div>
 
             <div className="um-card">
-                <div className="um-toolbar" style={{padding: '16px 20px 0'}}>
+                <div className="um-toolbar" style={{padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
                     <div className="um-search">
                         <Search size={16} className="um-search-icon um-text-muted"/>
                         <input
@@ -319,7 +329,31 @@ const UserManagement = () => {
                         <option value="unverified">Unverified</option>
                         <option value="suspended">Suspended</option>
                     </select>
-                    <span className="um-toolbar-count um-text-muted">
+
+                    {hasActiveFilters && (
+                        <button
+                            onClick={handleClearFilters}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: '#FEE2E2',
+                                color: '#991B1B',
+                                border: '1px solid #FCA5A5',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'background 0.15s ease'
+                            }}
+                            title="Clear all filters"
+                        >
+                            <RotateCcw size={14} /> Clear filters
+                        </button>
+                    )}
+
+                    <span className="um-toolbar-count um-text-muted" style={{ marginLeft: 'auto' }}>
                         {totalUsers} users
                     </span>
                 </div>

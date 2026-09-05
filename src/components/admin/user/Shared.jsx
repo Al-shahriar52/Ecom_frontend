@@ -1,62 +1,3 @@
-/*
-import React from "react";
-import { ROLE_META, STATUS_META } from "../../../data/constants";
-
-export const RoleBadge = ({ role }) => {
-    // 1. Normalize input (remove 'ROLE_' prefix & uppercase)
-    const normalizedRole = typeof role === "string"
-        ? role.replace(/^ROLE_/, "").toUpperCase()
-        : "USER";
-
-    const meta = ROLE_META[normalizedRole] ||
-        ROLE_META[role] ||
-        { label: role || "User", variant: "gray" };
-
-    return (
-        <span className={`um-badge um-badge--${meta.variant}`}>
-            {meta.label}
-        </span>
-    );
-}
-
-export function StatusBadge({ status }) {
-    const m = STATUS_META[status] || { variant: "neutral", label: status || "Unknown" };
-
-    return (
-        <span className={`um-badge um-badge--${m.variant}`}>
-            <span className={`um-dot um-dot--${m.variant}`} />{m.label}
-        </span>
-    );
-}
-
-export function Avatar({ name, variant, size = "md" }) {
-    const initials = name.split(" ").map(w => w[0]).slice(0, 2).join("");
-    return <div className={`um-avatar um-avatar--${variant} um-avatar--${size}`}>{initials}</div>;
-}
-
-export function EmptyState({ text }) {
-    return <p className="um-empty um-text-muted">{text}</p>;
-}
-
-export function InfoRow({ label, value, icon: Icon }) {
-    return (
-        <div className="um-info-row">
-            <p className="um-info-row-label">{Icon && <Icon size={12} />}{label}</p>
-            <p className="um-info-row-value">{value}</p>
-        </div>
-    );
-}
-
-export function ModalShell({ children, onClose, size = "md" }) {
-    return (
-        <div className="um-modal-overlay" onClick={onClose}>
-            <div className={`um-modal-shell um-modal-shell--${size}`} onClick={e => e.stopPropagation()}>
-                {children}
-            </div>
-        </div>
-    );
-}*/
-
 
 import React from "react";
 import { ROLE_META, STATUS_META } from "../../../data/constants";
@@ -81,12 +22,20 @@ export const formatDate = (dateVal) => {
     // Validate date
     if (isNaN(date.getTime())) return "Invalid Date";
 
-    // Format output (e.g., "Apr 9, 2026")
-    return date.toLocaleDateString("en-US", {
+    // Format output matching reference style (e.g., "2026-02-18 · 5:56 PM")
+    const formattedDate = date.toLocaleDateString("en-CA", { // "en-CA" gives YYYY-MM-DD format
         year: "numeric",
-        month: "short",
-        day: "numeric"
+        month: "2-digit",
+        day: "2-digit"
     });
+
+    const formattedTime = date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+
+    return `${formattedDate} · ${formattedTime}`;
 };
 
 export const RoleBadge = ({ role }) => {
