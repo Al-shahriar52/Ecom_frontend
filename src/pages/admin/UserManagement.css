@@ -786,6 +786,28 @@
 .um-sparkline-bar--red {
     background-color: #FECDD3;
 }
+
+/* --- CONFIRMED ORDER STAT CARD VARIANT --- */
+.um-order-stat-card--blue {
+    background-color: rgba(2, 132, 199, 0.06);
+    border: 1px solid rgba(2, 132, 199, 0.15);
+}
+
+.um-text-tint--blue {
+    color: #0369a1;
+}
+
+.um-stat-cards-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .um-stat-cards-5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 /* 3. Mobile & Tablet Breakpoints (< 768px) */
 @media (max-width: 768px) {
     /* Stack Sidebar & Main Content vertically */

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { X, Mail, Phone, ShoppingBag, Clock, ShieldCheck, MapPin, Home, Briefcase, ChevronRight } from "lucide-react";
 import { ModalShell, RoleBadge, StatusBadge, Avatar } from "./Shared";
@@ -15,26 +14,16 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
     const [error, setError] = useState(null);
 
     // --- Fetch Data Effect ---
-    // --- Fetch Data Effect ---
     useEffect(() => {
-        // Only fetch if the modal is open and we have a basic user ID
         if (isOpen && user?.id) {
             const fetchUserDetails = async () => {
                 setIsLoading(true);
                 setError(null);
 
                 try {
-                    // Axios automatically throws an error for 4xx and 5xx status codes,
-                    // so we don't need to manually check response.ok anymore!
                     const response = await axiosInstance.get(`/api/v1/admin/users/${user.id}`);
-
-                    // Axios automatically parses the JSON.
-                    // 'response.data' gives us your GenericResponseDto.
-                    // 'response.data.data' gives us the actual UserDetailsResponseDto.
                     setDetailedUser(response.data.data);
-
                 } catch (err) {
-                    // Axios puts the backend error response in err.response.data
                     const errorMessage = err.response?.data?.message || err.message || "Failed to fetch user details";
                     setError(errorMessage);
                 } finally {
@@ -44,7 +33,6 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
 
             fetchUserDetails();
         } else {
-            // Reset state when the modal closes
             setDetailedUser(null);
             setTab("overview");
         }
@@ -52,10 +40,18 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
 
     if (!isOpen || !user) return null;
 
-    // Use detailedUser if available, otherwise fallback to the basic user prop
     const displayUser = detailedUser || user;
 
-    // Helper to render the correct icon based on address type
+    // Fallback calculation for total spent if backend returns 0
+    const calculateTotalSpent = () => {
+        if (displayUser.orderStats?.totalSpent) return displayUser.orderStats.totalSpent;
+        if (!displayUser.orderHistory) return 0;
+
+        return displayUser.orderHistory
+            .filter(ord => ["DELIVERED", "Delivered", "CONFIRMED", "Confirmed"].includes(ord.status))
+            .reduce((sum, ord) => sum + (Number(ord.amount) || 0), 0);
+    };
+
     const getAddressIcon = (type = "") => {
         const lowerType = type.toLowerCase();
         if (lowerType === "home") return <Home size={14} />;
@@ -68,6 +64,9 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
             case "DELIVERED":
             case "Delivered":
                 return "success";
+            case "CONFIRMED":
+            case "Confirmed":
+                return "primary"; // Added Confirmed Status
             case "CANCELLED":
             case "Cancelled":
                 return "danger";
@@ -93,10 +92,10 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
                             <div className="um-details-name-row">
                                 <h3 className="um-details-name um-font-display um-text-ink">{displayUser.name}</h3>
                                 <RoleBadge role={displayUser.role} />
-                                {/* Handle boolean status mapping back to your UI needs if required */}
                                 <StatusBadge status={displayUser.status ? "Active" : "Inactive"} />
                             </div>
-                            <p className="um-details-id um-text-muted um-font-mono">{displayUser.id}</p>
+                            {/* ADDED PREFIX USR- */}
+                            <p className="um-details-id um-text-muted um-font-mono">USR-{displayUser.id}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="um-close-btn"><X size={18} /></button>
@@ -136,7 +135,6 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
             </div>
 
             <div className="um-details-body um-scroll">
-                {/* --- API Loading & Error States --- */}
                 {isLoading && (
                     <div className="um-empty um-text-muted">
                         <p>Loading user details...</p>
@@ -150,17 +148,24 @@ export default function UserDetailsModal({ isOpen, user, onClose }) {
                     </div>
                 )}
 
-                {/* --- Main Content Rendered when NOT loading --- */}
                 {!isLoading && !error && detailedUser && (
                     <>
                         {tab === "overview" && (
                             <div className="um-section-stack">
                                 <div>
                                     <p className="um-section-title um-text-muted">Order Statistics</p>
-                                    <div className="um-stat-cards-4">
+                                    {/* Changed class or style appropriately for 5 cards if needed. Added Confirmed Card. */}
+                                    <div className="um-stat-cards-4" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
                                         <div className="um-order-stat-card um-order-stat-card--brand">
-                                            <p className="um-order-stat-value um-font-display um-text-tint--brand">৳{displayUser.orderStats?.totalSpent || 0}</p>
+                                            <p className="um-order-stat-value um-font-display um-text-tint--brand">
+                                                ৳{calculateTotalSpent()}
+                                            </p>
                                             <p className="um-order-stat-label um-text-tint--brand">Total Spent</p>
+                                        </div>
+                                        {/* ADDED CONFIRMED CARD */}
+                                        <div className="um-order-stat-card um-order-stat-card--blue">
+                                            <p className="um-order-stat-value um-font-display um-text-tint--blue">{displayUser.orderStats?.confirmed || 0}</p>
+                                            <p className="um-order-stat-label um-text-tint--blue">Confirmed</p>
                                         </div>
                                         <div className="um-order-stat-card um-order-stat-card--teal">
                                             <p className="um-order-stat-value um-font-display um-text-tint--teal">{displayUser.orderStats?.delivered || 0}</p>
