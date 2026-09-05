@@ -170,6 +170,22 @@ function App() {
                                     </Route>
                                 </Route>
 
+                                {/* ========================================== */}
+                                {/* --- MANAGER ROUTES (No Global Header) --- */}
+                                {/* ========================================== */}
+                                <Route element={<ProtectedRoute allowedRoles={['MANAGER', 'ROLE_MANAGER']} />}>
+                                    <Route path="/admin" element={<AdminDashboardLayout />}>
+                                        <Route index element={<AdminHome />} />
+                                        <Route path="products" element={<ProductManagement />} />
+                                        <Route path="users" element={<UserManagement />} />
+                                        <Route path="orders" element={<AdminOrders />} />
+                                        <Route path="orders/:orderId" element={<OrderDetail />} />
+                                        <Route path="products/add" element={<AddProduct />} />
+                                        <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
+                                        <Route path="frequently-bought-together" element={<FbtManagementPage />} />
+                                    </Route>
+                                </Route>
+
                             </Routes>
                         </WishlistProvider>
                     </CartProvider>
