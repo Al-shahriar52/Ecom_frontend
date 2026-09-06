@@ -122,10 +122,20 @@ const LoginForm = ({ onForgotClick, onUnverified }) => {
             setIsLoading(false);
 
             if (result.success) {
-                const from = location.state?.from?.pathname || (result.role === 'ADMIN' ? '/admin' : '/dashboard');
-                navigate(from, { replace: true });
+                // 1. Clean the role string (remove ROLE_ prefix and ensure uppercase)
+                const cleanRole = result.role ? String(result.role).toUpperCase().replace(/^ROLE_/, '') : '';
+
+                // 2. Check if they are Staff
+                const isStaff = cleanRole === 'ADMIN' || cleanRole === 'MANAGER';
+
+                // 3. HARD REDIRECT: Staff always go to /admin. Users go to their requested page or /dashboard.
+                if (isStaff) {
+                    navigate('/admin', { replace: true });
+                } else {
+                    const from = location.state?.from?.pathname || '/dashboard';
+                    navigate(from, { replace: true });
+                }
             } else if (result.unverified) {
-                // Pass both credentials to the redirect handler
                 onUnverified({ emailOrPhone: result.emailOrPhone, password: result.password });
             }
         }
@@ -231,7 +241,6 @@ const RegisterForm = ({ initialData }) => {
 
     const handleVerifySubmit = async (e) => {
         e.preventDefault();
-        // Prevent verification if we are currently sending an OTP
         if (isRegistering) return;
 
         const finalOtp = otp.join('');
@@ -242,9 +251,20 @@ const RegisterForm = ({ initialData }) => {
         setIsVerifying(true);
         const result = await verifyRegistrationOtp(formData.emailOrPhone, finalOtp, formData.password);
         setIsVerifying(false);
+
         if (result && result.success) {
-            const from = location.state?.from?.pathname || (result.role === 'ADMIN' ? '/admin' : '/dashboard');
-            navigate(from, { replace: true });
+            const cleanRole = result.role ? result.role.replace(/^ROLE_/, '') : '';
+            const isStaff = ['ADMIN', 'MANAGER'].includes(cleanRole);
+
+            let targetRoute = location.state?.from?.pathname;
+
+            if (isStaff && (!targetRoute || targetRoute.startsWith('/dashboard') || targetRoute === '/')) {
+                targetRoute = '/admin';
+            } else if (!isStaff && (!targetRoute || targetRoute.startsWith('/admin'))) {
+                targetRoute = '/dashboard';
+            }
+
+            navigate(targetRoute, { replace: true });
         }
     };
 

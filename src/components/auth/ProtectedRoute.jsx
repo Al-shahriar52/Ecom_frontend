@@ -3,36 +3,36 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-    // 1. EXTRACT isGuest FROM YOUR AUTH CONTEXT
     const { user, isAuthenticated, loading, isGuest } = useContext(AuthContext);
     const location = useLocation();
 
-    // 1. Loading State: Wait for Auth check to finish
     if (loading) {
         return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>Loading...</div>;
     }
 
-    // 2. Not Authenticated & Not a Guest: Redirect to Login
-    // This allows guest users to bypass the login screen wall
     if (!isAuthenticated && !isGuest) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // 3. Role Authorization
-    // If allowedRoles is defined, ensure the user has permission
     if (allowedRoles) {
-        const userRole = user?.role || (isGuest ? 'GUEST' : '');
+        // Extract raw role or default guest
+        const rawRole = user?.role || (isGuest ? 'GUEST' : '');
 
-        // Guests are allowed to access routes designated for 'CUSTOMER' (like Checkout)
-        const hasAccess = allowedRoles.includes(userRole) || (isGuest && allowedRoles.includes('CUSTOMER'));
+        // Strip 'ROLE_' prefix if present (e.g. ROLE_MANAGER -> MANAGER)
+        const userRole = rawRole.replace(/^ROLE_/, '');
+
+        // Normalize allowedRoles list
+        const normalizedAllowedRoles = allowedRoles.map(r => r.replace(/^ROLE_/, ''));
+
+        const hasAccess = normalizedAllowedRoles.includes(userRole) ||
+            (isGuest && normalizedAllowedRoles.includes('CUSTOMER'));
 
         if (!hasAccess) {
-            console.warn(`Access Denied: User role '${userRole}' is not authorized.`);
+            console.warn(`Access Denied: User role '${userRole}' is not authorized for allowed roles:`, allowedRoles);
             return <Navigate to="/" replace />;
         }
     }
 
-    // 4. Render the Component
     return children ? children : <Outlet />;
 };
 
