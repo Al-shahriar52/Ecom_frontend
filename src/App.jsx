@@ -80,16 +80,28 @@ const ConditionalFloatingCart = () => {
 };
 
 // --- STAFF DASHBOARD REDIRECT INTERCEPTOR ---
-// This guarantees that if a Manager/Admin clicks a hardcoded "/dashboard" link in the header,
-// they are instantly bounced to "/admin" instead of seeing the customer dashboard.
 const StaffDashboardRedirect = () => {
     const { user } = useContext(AuthContext);
 
-    // Clean role string
-    const role = user?.role ? String(user.role).toUpperCase().replace(/^ROLE_/, '') : '';
+    // Extract roles safely whether backend sends an array, Set, or single string
+    let userRoles = [];
+    if (user) {
+        if (Array.isArray(user.roles)) {
+            userRoles = user.roles;
+        } else if (user.roles instanceof Set) {
+            userRoles = Array.from(user.roles);
+        } else if (user.role) {
+            userRoles = [user.role];
+        }
+    }
 
-    // If user is Staff, redirect to Admin panel
-    if (role === 'ADMIN' || role === 'MANAGER') {
+    const normalizedRoles = userRoles.map(r => {
+        const roleStr = typeof r === 'string' ? r : r.name || '';
+        return roleStr.replace(/^ROLE_/, '').toUpperCase();
+    });
+
+    // If user is Admin, Manager, or Staff, bounce them to /admin panel
+    if (normalizedRoles.includes('ADMIN') || normalizedRoles.includes('MANAGER') || normalizedRoles.includes('STAFF')) {
         return <Navigate to="/admin" replace />;
     }
 
@@ -113,12 +125,12 @@ const PublicLayout = () => {
 
 function App() {
     return (
-        <PermissionProvider>
-            <HelmetProvider>
-                <Router>
-                    <PixelTracker />
-                    <ScrollToTop />
-                    <AuthProvider>
+        <HelmetProvider>
+            <Router>
+                <PixelTracker />
+                <ScrollToTop />
+                <AuthProvider>
+                    <PermissionProvider>
                         <CartProvider>
                             <WishlistProvider>
                                 <Toaster position="top-center" reverseOrder={false} />
@@ -148,8 +160,7 @@ function App() {
                                         <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />
 
                                         {/* --- User Dashboard Routes --- */}
-                                        <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'MANAGER', 'ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER']} />}>
-                                            {/* CHANGED HERE: We now use StaffDashboardRedirect instead of DashboardLayout directly */}
+                                        <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'MANAGER', 'STAFF', 'ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STAFF']} />}>
                                             <Route path="/dashboard" element={<StaffDashboardRedirect />}>
                                                 <Route index element={<DashboardHome />} />
                                                 <Route path="orders" element={<Orders />} />
@@ -163,12 +174,12 @@ function App() {
 
 
                                     {/* ========================================== */}
-                                    {/* --- ADMIN & MANAGER ROUTES --- */}
+                                    {/* --- ADMIN, MANAGER & STAFF ROUTES --- */}
                                     {/* ========================================== */}
-                                    <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN', 'MANAGER', 'ROLE_MANAGER']} />}>
+                                    <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN', 'MANAGER', 'ROLE_MANAGER', 'STAFF', 'ROLE_STAFF']} />}>
                                         <Route path="/admin" element={<AdminDashboardLayout />}>
 
-                                            {/* === Pages both Admin & Manager can see === */}
+                                            {/* === Pages Admin, Manager & Staff can access based on matrix permissions === */}
                                             <Route index element={<AdminHome />} />
                                             <Route path="products" element={<ProductManagement />} />
                                             <Route path="users" element={<UserManagement />} />
@@ -191,10 +202,10 @@ function App() {
                                 </Routes>
                             </WishlistProvider>
                         </CartProvider>
-                    </AuthProvider>
-                </Router>
-            </HelmetProvider>
-        </PermissionProvider>
+                    </PermissionProvider>
+                </AuthProvider>
+            </Router>
+        </HelmetProvider>
     );
 }
 

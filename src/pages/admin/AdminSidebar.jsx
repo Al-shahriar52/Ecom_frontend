@@ -2,12 +2,37 @@
 import React, { useState, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { usePermissions } from '../../context/PermissionContext';
 import './AdminDashboard.css';
 
 const AdminSidebar = () => {
     const { logout, user } = useContext(AuthContext);
+    const { hasPermission, loading } = usePermissions();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+    const userRoles = user?.roles ? (Array.isArray(user.roles) ? user.roles : Array.from(user.roles)) : (user?.role ? [user.role] : []);
+    const isAdmin = userRoles.some(r => String(r).replace(/^ROLE_/, '').toUpperCase() === 'ADMIN');
+    const primaryRoleDisplay = userRoles.length > 0 ? String(userRoles[0]).replace(/^ROLE_/, '') : 'USER';
+
+    // Permission matrix index mapping (11-permission schema):
+    // 0 = View dashboard
+    // 1 = Manage users
+    // 2 = Create users
+    // 3 = Edit permissions
+    // 4 = View orders
+    // 5 = Refund orders
+    // 6 = Export data
+    // 7 = Manage settings
+    // 8 = Manage Coupons
+    // 9 = Manage Accounting
+    // 10 = Manage FBT
+    const canViewDashboard = !loading && hasPermission(user, 0);
+    const canManageUsers = !loading && (hasPermission(user, 1) || hasPermission(user, 2));
+    const canManageOrders = !loading && hasPermission(user, 4);
+    const canManageCoupons = !loading && hasPermission(user, 8);
+    const canManageAccounting = !loading && hasPermission(user, 9);
+    const canManageFbt = !loading && hasPermission(user, 10);
 
     const Icons = {
         MenuToggle: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>,
@@ -25,7 +50,6 @@ const AdminSidebar = () => {
 
     return (
         <nav className={`modern-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-
             <div className="sidebar-header">
                 {!isCollapsed && <span className="brand-text">Admin Panel</span>}
                 <button className="collapse-toggle" onClick={() => setIsCollapsed(!isCollapsed)}>
@@ -41,7 +65,7 @@ const AdminSidebar = () => {
                 />
                 {!isCollapsed && (
                     <div className="profile-info">
-                        <span className="profile-role">PRODUCT MANAGER</span>
+                        <span className="profile-role">{primaryRoleDisplay}</span>
                         <span className="profile-name" title={user?.name || "Andrew Smith"}>
                             {user?.name || "Andrew Smith"}
                         </span>
@@ -54,63 +78,69 @@ const AdminSidebar = () => {
             </div>
 
             <div className="sidebar-links">
-                <NavLink to="/admin" end className="sidebar-link" data-tooltip="Dashboard">
-                    <span className="icon"><Icons.Dashboard /></span>
-                    <span className="text">Dashboard</span>
-                </NavLink>
+                {canViewDashboard && (
+                    <NavLink to="/admin" end className="sidebar-link" data-tooltip="Dashboard">
+                        <span className="icon"><Icons.Dashboard /></span>
+                        <span className="text">Dashboard</span>
+                    </NavLink>
+                )}
 
-                <NavLink to="/admin/products" className="sidebar-link" data-tooltip="Products">
-                    <span className="icon"><Icons.Products /></span>
-                    <span className="text">Products</span>
-                </NavLink>
+                {canManageUsers && (
+                    <div className={`sidebar-item-group ${isUserMenuOpen ? 'open' : ''}`}>
+                        <button
+                            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                            className="sidebar-link dropdown-toggle"
+                            data-tooltip="User Management"
+                        >
+                            <span className="icon"><Icons.Users /></span>
+                            <span className="text">User Management</span>
 
-                <div className={`sidebar-item-group ${isUserMenuOpen ? 'open' : ''}`}>
-                    <button
-                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                        className="sidebar-link dropdown-toggle"
-                        data-tooltip="User Management"
-                    >
-                        {/* DOM Structure flattened for perfect flexbox alignment */}
-                        <span className="icon"><Icons.Users /></span>
-                        <span className="text">User Management</span>
+                            {!isCollapsed && (
+                                <span className="arrow">
+                                    {isUserMenuOpen ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                                </span>
+                            )}
+                        </button>
 
-                        {!isCollapsed && (
-                            <span className="arrow">
-                                {isUserMenuOpen ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
-                            </span>
+                        {isUserMenuOpen && !isCollapsed && (
+                            <ul className="sidebar-submenu-tree">
+                                <li>
+                                    <NavLink to="/admin/users" end className="tree-link">
+                                        Users
+                                    </NavLink>
+                                </li>
+                                {isAdmin && (
+                                    <li>
+                                        <NavLink to="/admin/roles" className="tree-link">
+                                            Roles & Permissions
+                                        </NavLink>
+                                    </li>
+                                )}
+                            </ul>
                         )}
-                    </button>
+                    </div>
+                )}
 
-                    {isUserMenuOpen && !isCollapsed && (
-                        <ul className="sidebar-submenu-tree">
-                            <li>
-                                <NavLink to="/admin/users" end className="tree-link">
-                                    Users
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/admin/roles" className="tree-link">
-                                    Roles & Permissions
-                                </NavLink>
-                            </li>
-                        </ul>
-                    )}
-                </div>
+                {canManageFbt && (
+                    <NavLink to="/admin/frequently-bought-together" className="sidebar-link" data-tooltip="FBT Management">
+                        <span className="icon"><Icons.FBT /></span>
+                        <span className="text">FBT Management</span>
+                    </NavLink>
+                )}
 
-                <NavLink to="/admin/frequently-bought-together" className="sidebar-link" data-tooltip="FBT Management">
-                    <span className="icon"><Icons.FBT /></span>
-                    <span className="text">FBT Management</span>
-                </NavLink>
+                {canManageCoupons && (
+                    <NavLink to="/admin/coupons" className="sidebar-link" data-tooltip="Coupons">
+                        <span className="icon"><Icons.Coupons /></span>
+                        <span className="text">Coupons</span>
+                    </NavLink>
+                )}
 
-                <NavLink to="/admin/coupons" className="sidebar-link" data-tooltip="Coupons">
-                    <span className="icon"><Icons.Coupons /></span>
-                    <span className="text">Coupons</span>
-                </NavLink>
-
-                <NavLink to="/admin/orders" className="sidebar-link" data-tooltip="Orders">
-                    <span className="icon"><Icons.Orders /></span>
-                    <span className="text">Orders</span>
-                </NavLink>
+                {canManageOrders && (
+                    <NavLink to="/admin/orders" className="sidebar-link" data-tooltip="Orders">
+                        <span className="icon"><Icons.Orders /></span>
+                        <span className="text">Orders</span>
+                    </NavLink>
+                )}
             </div>
 
             <div className="sidebar-section-title" style={{ marginTop: '30px' }}>
@@ -118,10 +148,12 @@ const AdminSidebar = () => {
             </div>
 
             <div className="sidebar-links">
-                <NavLink to="/admin/accounting" className="sidebar-link" data-tooltip="Accounting">
-                    <span className="icon"><Icons.Accounting /></span>
-                    <span className="text">Accounting</span>
-                </NavLink>
+                {canManageAccounting && (
+                    <NavLink to="/admin/accounting" className="sidebar-link" data-tooltip="Accounting">
+                        <span className="icon"><Icons.Accounting /></span>
+                        <span className="text">Accounting</span>
+                    </NavLink>
+                )}
 
                 <button onClick={logout} className="sidebar-link logout-btn" data-tooltip="Logout">
                     <span className="icon"><Icons.Logout /></span>

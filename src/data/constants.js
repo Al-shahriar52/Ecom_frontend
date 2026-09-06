@@ -1,9 +1,3 @@
-export const ROLE_META = {
-    admin:   { label: "Admin",   variant: "brand" },
-    manager: { label: "Manager", variant: "teal" },
-    user:    { label: "User",    variant: "slate" },
-    guest:   { label: "Guest",   variant: "bronze" },
-};
 
 export const STATUS_META = {
     // Existing User Statuses (adjust variant names to match your CSS)
@@ -34,13 +28,29 @@ export function orderStatusVariant(status) {
 }
 
 export const PERMISSIONS = [
-    "View dashboard", "Manage users", "Create users", "Edit permissions",
-    "View orders", "Refund orders", "Export data", "Manage settings",
+    "View dashboard",     // Index 0
+    "Manage users",       // Index 1
+    "Create users",       // Index 2
+    "Edit permissions",   // Index 3
+    "View orders",        // Index 4
+    "Refund orders",      // Index 5
+    "Export data",        // Index 6
+    "Manage settings",    // Index 7
+    "Manage Coupons",     // Index 8
+    "Manage Accounting",  // Index 9
+    "Manage FBT"          // Index 10
 ];
 
+export const ROLE_META = {
+    admin: { label: "Administrator", variant: "purple" },
+    manager: { label: "Manager", variant: "blue" },
+    user: { label: "User", variant: "emerald" },
+    guest: { label: "Guest", variant: "amber" }
+};
+
 export const ROLE_PERMISSION_MATRIX = {
-    admin:   [1,1,1,1,1,1,1,1],
-    manager: [1,1,1,0,1,1,1,0],
-    user:    [1,0,0,0,1,0,0,0],
-    guest:   [1,0,0,0,0,0,0,0],
+    admin:   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    manager: [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0],
+    user:    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    guest:   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 };

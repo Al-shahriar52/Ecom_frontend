@@ -1,3 +1,4 @@
+
 import React, { useContext } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -15,20 +16,34 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
     }
 
     if (allowedRoles) {
-        // Extract raw role or default guest
-        const rawRole = user?.role || (isGuest ? 'GUEST' : '');
+        // Extract user roles safely, supporting arrays, Sets, or single string fields from backend
+        let userRoles = [];
+        if (user) {
+            if (Array.isArray(user.roles)) {
+                userRoles = user.roles;
+            } else if (user.roles instanceof Set) {
+                userRoles = Array.from(user.roles);
+            } else if (user.role) {
+                userRoles = [user.role];
+            }
+        } else if (isGuest) {
+            userRoles = ['GUEST'];
+        }
 
-        // Strip 'ROLE_' prefix if present (e.g. ROLE_MANAGER -> MANAGER)
-        const userRole = rawRole.replace(/^ROLE_/, '');
+        // Normalize user roles (strip 'ROLE_' prefix and uppercase)
+        const normalizedUserRoles = userRoles.map(r => {
+            const roleStr = typeof r === 'string' ? r : r.name || '';
+            return roleStr.replace(/^ROLE_/, '').toUpperCase();
+        });
 
-        // Normalize allowedRoles list
-        const normalizedAllowedRoles = allowedRoles.map(r => r.replace(/^ROLE_/, ''));
+        // Normalize allowed roles list
+        const normalizedAllowedRoles = allowedRoles.map(r => r.replace(/^ROLE_/, '').toUpperCase());
 
-        const hasAccess = normalizedAllowedRoles.includes(userRole) ||
+        const hasAccess = normalizedUserRoles.some(r => normalizedAllowedRoles.includes(r)) ||
             (isGuest && normalizedAllowedRoles.includes('CUSTOMER'));
 
         if (!hasAccess) {
-            console.warn(`Access Denied: User role '${userRole}' is not authorized for allowed roles:`, allowedRoles);
+            console.warn(`Access Denied: User roles '${normalizedUserRoles.join(', ')}' are not authorized for allowed roles:`, allowedRoles);
             return <Navigate to="/" replace />;
         }
     }
