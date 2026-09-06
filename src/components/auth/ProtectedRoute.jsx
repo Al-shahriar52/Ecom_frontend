@@ -1,38 +1,53 @@
+
 import React, { useContext } from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-    // 1. EXTRACT isGuest FROM YOUR AUTH CONTEXT
     const { user, isAuthenticated, loading, isGuest } = useContext(AuthContext);
     const location = useLocation();
 
-    // 1. Loading State: Wait for Auth check to finish
     if (loading) {
         return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>Loading...</div>;
     }
 
-    // 2. Not Authenticated & Not a Guest: Redirect to Login
-    // This allows guest users to bypass the login screen wall
     if (!isAuthenticated && !isGuest) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // 3. Role Authorization
-    // If allowedRoles is defined, ensure the user has permission
     if (allowedRoles) {
-        const userRole = user?.role || (isGuest ? 'GUEST' : '');
+        // Extract user roles safely, supporting arrays, Sets, or single string fields from backend
+        let userRoles = [];
+        if (user) {
+            if (Array.isArray(user.roles)) {
+                userRoles = user.roles;
+            } else if (user.roles instanceof Set) {
+                userRoles = Array.from(user.roles);
+            } else if (user.role) {
+                userRoles = [user.role];
+            }
+        } else if (isGuest) {
+            userRoles = ['GUEST'];
+        }
 
-        // Guests are allowed to access routes designated for 'CUSTOMER' (like Checkout)
-        const hasAccess = allowedRoles.includes(userRole) || (isGuest && allowedRoles.includes('CUSTOMER'));
+        // Normalize user roles (strip 'ROLE_' prefix and uppercase)
+        const normalizedUserRoles = userRoles.map(r => {
+            const roleStr = typeof r === 'string' ? r : r.name || '';
+            return roleStr.replace(/^ROLE_/, '').toUpperCase();
+        });
+
+        // Normalize allowed roles list
+        const normalizedAllowedRoles = allowedRoles.map(r => r.replace(/^ROLE_/, '').toUpperCase());
+
+        const hasAccess = normalizedUserRoles.some(r => normalizedAllowedRoles.includes(r)) ||
+            (isGuest && normalizedAllowedRoles.includes('CUSTOMER'));
 
         if (!hasAccess) {
-            console.warn(`Access Denied: User role '${userRole}' is not authorized.`);
+            console.warn(`Access Denied: User roles '${normalizedUserRoles.join(', ')}' are not authorized for allowed roles:`, allowedRoles);
             return <Navigate to="/" replace />;
         }
     }
 
-    // 4. Render the Component
     return children ? children : <Outlet />;
 };
 

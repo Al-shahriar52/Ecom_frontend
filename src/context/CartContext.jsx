@@ -17,18 +17,8 @@ export const CartProvider = ({ children }) => {
 
     const { user, loginAsGuest } = useContext(AuthContext);
 
-    // Guards against out-of-order responses. `fetchSeqRef` tags each call
-    // as it's issued; `appliedSeqRef` tracks the seq of the last response
-    // that actually wrote to state. We only compare against appliedSeqRef,
-    // NOT fetchSeqRef — a request that fails (e.g. a racing getCart that
-    // fires before the cart exists yet, 404/500s, and never touches state)
-    // must not be able to invalidate a correct response that resolves later.
     const fetchSeqRef = React.useRef(0);
     const appliedSeqRef = React.useRef(0);
-
-    // Ensures loginAsGuest() is only ever in flight once, even if
-    // addToCart/addAllToCart are triggered multiple times before the
-    // first guest session finishes provisioning (e.g. double-click).
     const guestLoginPromiseRef = React.useRef(null);
 
     const ensureGuestSession = async () => {
@@ -44,10 +34,6 @@ export const CartProvider = ({ children }) => {
     };
 
     // --- FETCH CART ---
-    // `force` lets callers bypass the `user` guard right after a guest
-    // session was just provisioned, since the backend already trusts the
-    // guest cookie (withCredentials: true) even though the local `user`
-    // state hasn't re-rendered yet in this closure.
     const fetchCart = async (isBackground = false, force = false) => {
         if (!user && !force) {
             setCart([]);
@@ -62,9 +48,6 @@ export const CartProvider = ({ children }) => {
         try {
             const response = await axiosInstance.get('/api/v1/cart/getCart');
 
-            // A LATER response has already been applied to state — discard
-            // this one so it can't clobber fresher data. A failed/racing
-            // request never reaches this line, so it can never block us.
             if (seq < appliedSeqRef.current) return;
             appliedSeqRef.current = seq;
 
@@ -102,9 +85,18 @@ export const CartProvider = ({ children }) => {
                 quantity: quantity
             });
 
-            // force=true when we just created the guest session, so this
-            // fetch doesn't get skipped by a stale `user === null` closure
             await fetchCart(true, justProvisioned);
+
+            // --- META PIXEL: ADD TO CART EVENT ---
+            if (window.fbq) {
+                window.fbq('track', 'AddToCart', {
+                    content_ids: [product.productId || product.id],
+                    content_name: product.name || product.title || 'Product',
+                    value: product.price ? (product.price * quantity) : 0,
+                    currency: 'BDT'
+                });
+            }
+
             return true;
         } catch (error) {
             toast.error("Failed to add item.");
@@ -166,8 +158,22 @@ export const CartProvider = ({ children }) => {
             }));
 
             await axiosInstance.post('/api/v1/cart/add-multiple', payload);
-
             await fetchCart(true, justProvisioned);
+
+            // --- META PIXEL: ADD TO CART EVENT (BUNDLE) ---
+            if (window.fbq) {
+                // Calculate total bundle value if prices are available
+                const bundleValue = products.reduce((total, p) => total + (p.price || 0), 0);
+                const productIds = products.map(p => p.productId || p.id);
+
+                window.fbq('track', 'AddToCart', {
+                    content_ids: productIds,
+                    content_type: 'product_group',
+                    value: bundleValue,
+                    currency: 'BDT'
+                });
+            }
+
             return true;
 
         } catch (error) {
