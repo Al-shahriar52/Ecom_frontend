@@ -3,15 +3,16 @@ import { Search } from 'lucide-react';
 import ListView from './components/CouponList';
 import BuilderView from './components/CouponBuilder';
 import DetailView from './components/CouponDetail';
-import { COUPON_ROWS } from './couponData';
 import './Couponmanagement.css';
 
 export default function CouponManagement() {
     const [view, setView] = useState('list');
     const [chartRange, setChartRange] = useState('daily');
 
-    // Centralized list states for full interactivity
-    const [rows, setRows] = useState(COUPON_ROWS);
+    // State to hold the currently selected coupon data
+    const [selectedCoupon, setSelectedCoupon] = useState(null);
+
+    // Centralized list states
     const [searchQuery, setSearchQuery] = useState('');
     const [statusTab, setStatusTab] = useState('all');
     const [selectedType, setSelectedType] = useState('all');
@@ -19,9 +20,24 @@ export default function CouponManagement() {
     const [sortBy, setSortBy] = useState('recent');
     const [endingSoonActive, setEndingSoonActive] = useState(false);
 
-    function goList() { setView('list'); }
-    function goBuilder() { setView('builder'); }
-    function goDetail() { setView('detail'); }
+    function goList() {
+        setSelectedCoupon(null);
+        setView('list');
+    }
+
+    function goBuilder(couponToEdit = null) {
+        if (couponToEdit && !couponToEdit.target) {
+            setSelectedCoupon(couponToEdit);
+        } else {
+            setSelectedCoupon(null);
+        }
+        setView('builder');
+    }
+
+    function goDetail(couponData) {
+        setSelectedCoupon(couponData);
+        setView('detail');
+    }
 
     return (
         <div className="coupon-management">
@@ -34,7 +50,7 @@ export default function CouponManagement() {
                         <>
                             <span className="crumb-link" onClick={goList}>Coupons</span>
                             <span className="sep">/</span>
-                            <b>{view === 'builder' ? 'New coupon' : 'SAVE10'}</b>
+                            <b>{view === 'builder' ? (selectedCoupon ? `Edit ${selectedCoupon.code}` : 'New coupon') : selectedCoupon?.code}</b>
                         </>
                     )}
                 </div>
@@ -51,8 +67,6 @@ export default function CouponManagement() {
 
             {view === 'list' && (
                 <ListView
-                    rows={rows}
-                    setRows={setRows}
                     searchQuery={searchQuery}
                     statusTab={statusTab}
                     setStatusTab={setStatusTab}
@@ -64,12 +78,29 @@ export default function CouponManagement() {
                     setSortBy={setSortBy}
                     endingSoonActive={endingSoonActive}
                     setEndingSoonActive={setEndingSoonActive}
-                    onNewCoupon={goBuilder}
+                    onNewCoupon={() => goBuilder(null)}
+                    onEditCoupon={goBuilder}
                     onOpenRow={goDetail}
                 />
             )}
-            {view === 'builder' && <BuilderView onDiscard={goList} />}
-            {view === 'detail' && <DetailView chartRange={chartRange} setChartRange={setChartRange} onEdit={goBuilder} />}
+
+            {view === 'builder' && (
+                <BuilderView
+                    onDiscard={goList}
+                    initialData={selectedCoupon}
+                />
+            )}
+
+            {view === 'detail' && (
+                <DetailView
+                    coupon={selectedCoupon}
+                    couponId={selectedCoupon?.id}
+                    chartRange={chartRange}
+                    setChartRange={setChartRange}
+                    onEdit={goBuilder}
+                    onBack={goList}
+                />
+            )}
         </div>
     );
 }
