@@ -106,7 +106,7 @@ const AddressTypeIcon = ({type}) => {
 const VISIBLE_ADDRESS_LIMIT = 3;
 
 const Checkout = () => {
-    const {cart, cartTotal, fetchCart} = useContext(CartContext);
+    const {cart, cartTotal, fetchCart, isLoadingCart} = useContext(CartContext);
     const {user, isGuest} = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -611,7 +611,7 @@ const Checkout = () => {
         </div>
     );
 
-    if (loadingCities) {
+    if (loadingCities || isLoadingCart) {
         return (
             <div className="checkout-container">
                 <div className="checkout-wrapper">
