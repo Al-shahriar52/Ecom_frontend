@@ -39,6 +39,28 @@ const checkIsDefault = (addr) => {
         addr.is_default === true || addr.is_default === 1 || addr.is_default === '1';
 };
 
+const getDiscountBadgeText = (coupon) => {
+    // 1. If your backend already sends a pre-formatted label, use it
+    if (coupon.discountLabel) return coupon.discountLabel;
+
+    // 2. Automatically format based on standard DB fields (matching your Admin Panel)
+    const type = (coupon.discountType || coupon.rewardType || coupon.type || '').toLowerCase();
+    const value = coupon.discountValue || coupon.discount || coupon.amount;
+
+    if (value) {
+        if (type.includes('percent') || type === '%') {
+            return `${value}% OFF`;
+        }
+        if (type.includes('fixed') || type.includes('flat') || type.includes('amount')) {
+            return `৳${value} OFF`;
+        }
+        // Fallback if type is unknown but value exists
+        return `৳${value} OFF`;
+    }
+
+    return 'OFFER';
+};
+
 const AddressTypeIcon = ({type}) => {
     switch ((type || '').toUpperCase()) {
         case 'HOME':
@@ -1097,6 +1119,7 @@ const Checkout = () => {
                                                 availableCoupons.map(c => {
                                                     const isSelected = selectedCouponCode === c.code.toUpperCase();
                                                     const isLoadingThis = applyingCode === c.code.toUpperCase();
+                                                    const badgeText = getDiscountBadgeText(c);
                                                     return (
                                                         <div key={c.id} className={`coupon-item ${isSelected ? 'is-selected' : ''}`}>
                                                             <div className="coupon-item-icon">
@@ -1105,7 +1128,7 @@ const Checkout = () => {
                                                             <div className="coupon-item-left">
                                                                 <div className="coupon-item-code-row">
                                                                     <span className="coupon-item-code">{c.code}</span>
-                                                                    {c.discountLabel && <span className="coupon-item-badge">{c.discountLabel}</span>}
+                                                                    {badgeText && <span className="coupon-item-badge">{badgeText}</span>}
                                                                 </div>
                                                                 {c.internalName && <p className="coupon-item-name">{c.internalName}</p>}
                                                                 {c.checkoutMsg && <p className="coupon-item-desc">{c.checkoutMsg}</p>}
