@@ -1,10 +1,11 @@
 
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import { AuthContext } from '../context/AuthContext';
+import React, {useContext, useState, useEffect, useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {CartContext} from '../context/CartContext';
+import {AuthContext} from '../context/AuthContext';
 import axiosInstance from '../api/AxiosInstance';
-import { toast } from 'react-hot-toast';
+import {toast} from 'react-hot-toast';
+import {X, Ticket} from 'lucide-react';
 import './Checkout.css';
 
 // REGEX
@@ -21,68 +22,70 @@ const getInitials = (name = '') => {
 
 // --- ADDRESS TYPES ---
 const ADDRESS_TYPES = [
-    { value: 'HOME', label: 'Home' },
-    { value: 'OFFICE', label: 'Office' },
-    { value: 'BILLING', label: 'Billing' },
-    { value: 'OTHER', label: 'Other' }
+    {value: 'HOME', label: 'Home'},
+    {value: 'OFFICE', label: 'Office'},
+    {value: 'BILLING', label: 'Billing'},
+    {value: 'OTHER', label: 'Other'}
 ];
 
 const getAddressTypeLabel = (type = '') => {
     const match = ADDRESS_TYPES.find(t => t.value === (type || '').toUpperCase());
     if (match) return match.label;
-    // Fall back gracefully for any legacy/unexpected value from the API
     return type ? type.charAt(0).toUpperCase() + type.slice(1).toLowerCase() : 'Other';
 };
 
-// --- BULLETPROOF IS-DEFAULT CHECK ---
-// Handles mismatches between frontend camelCase and backend snake_case / booleans vs numbers
 const checkIsDefault = (addr) => {
     return addr.isDefault === true || addr.isDefault === 1 || addr.isDefault === '1' ||
         addr.is_default === true || addr.is_default === 1 || addr.is_default === '1';
 };
 
-const AddressTypeIcon = ({ type }) => {
+const AddressTypeIcon = ({type}) => {
     switch ((type || '').toUpperCase()) {
         case 'HOME':
             return (
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M2 7.5L8 2.5L14 7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M3.5 6.5V13H12.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M6.5 13V9.5H9.5V13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2 7.5L8 2.5L14 7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"
+                          strokeLinejoin="round"/>
+                    <path d="M3.5 6.5V13H12.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"
+                          strokeLinejoin="round"/>
+                    <path d="M6.5 13V9.5H9.5V13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"
+                          strokeLinejoin="round"/>
                 </svg>
             );
         case 'OFFICE':
             return (
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <rect x="2" y="6" width="12" height="7.5" rx="1" stroke="currentColor" strokeWidth="1.4" />
-                    <path d="M5.5 6V4.2C5.5 3.5 6.1 3 6.8 3H9.2C9.9 3 10.5 3.5 10.5 4.2V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                    <path d="M2 9.5H14" stroke="currentColor" strokeWidth="1.4" />
+                    <rect x="2" y="6" width="12" height="7.5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M5.5 6V4.2C5.5 3.5 6.1 3 6.8 3H9.2C9.9 3 10.5 3.5 10.5 4.2V6" stroke="currentColor"
+                          strokeWidth="1.4" strokeLinecap="round"/>
+                    <path d="M2 9.5H14" stroke="currentColor" strokeWidth="1.4"/>
                 </svg>
             );
         case 'BILLING':
             return (
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <rect x="1.5" y="4" width="13" height="8.5" rx="1.3" stroke="currentColor" strokeWidth="1.4" />
-                    <path d="M1.5 6.8H14.5" stroke="currentColor" strokeWidth="1.4" />
-                    <path d="M3.5 10H7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    <rect x="1.5" y="4" width="13" height="8.5" rx="1.3" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M1.5 6.8H14.5" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M3.5 10H7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
                 </svg>
             );
         default:
             return (
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M8 14.5C8 14.5 13 10.2 13 6.6C13 3.8 10.8 1.5 8 1.5C5.2 1.5 3 3.8 3 6.6C3 10.2 8 14.5 8 14.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                    <circle cx="8" cy="6.6" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+                    <path
+                        d="M8 14.5C8 14.5 13 10.2 13 6.6C13 3.8 10.8 1.5 8 1.5C5.2 1.5 3 3.8 3 6.6C3 10.2 8 14.5 8 14.5Z"
+                        stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                    <circle cx="8" cy="6.6" r="1.8" stroke="currentColor" strokeWidth="1.4"/>
                 </svg>
             );
     }
 };
 
-// How many saved-address cards to show before collapsing behind "Show all"
 const VISIBLE_ADDRESS_LIMIT = 3;
 
 const Checkout = () => {
-    const { cart, cartTotal, fetchCart } = useContext(CartContext);
-    const { user, isGuest } = useContext(AuthContext);
+    const {cart, cartTotal, fetchCart} = useContext(CartContext);
+    const {user, isGuest} = useContext(AuthContext);
     const navigate = useNavigate();
 
     // --- FORM & ERROR STATE ---
@@ -98,7 +101,7 @@ const Checkout = () => {
     });
 
     const [errors, setErrors] = useState({});
-    const [lockedFields, setLockedFields] = useState({ email: false, phone: false });
+    const [lockedFields, setLockedFields] = useState({email: false, phone: false});
 
     // Data States
     const [cities, setCities] = useState([]);
@@ -106,29 +109,34 @@ const Checkout = () => {
     const [savedAddresses, setSavedAddresses] = useState([]);
     const [selectedAddressId, setSelectedAddressId] = useState('');
 
+    // Coupon States
+    const [availableCoupons, setAvailableCoupons] = useState([]);
+    const [selectedCouponCode, setSelectedCouponCode] = useState('');
+    const [appliedDiscount, setAppliedDiscount] = useState(0);
+    const [couponMessage, setCouponMessage] = useState('');
+    const [showCouponModal, setShowCouponModal] = useState(false);
+    const [manualCouponInput, setManualCouponInput] = useState('');
+    const [applyingCode, setApplyingCode] = useState(null);
+
     // New-address form state
     const [addressType, setAddressType] = useState('HOME');
     const [setAsDefaultAddress, setSetAsDefaultAddress] = useState(true);
     const [savingAddress, setSavingAddress] = useState(false);
-
-    // Controls whether the full saved-address list is expanded
     const [showAllAddresses, setShowAllAddresses] = useState(false);
-
-    // Tracks product thumbnails that failed to load, so we fall back to initials
     const [brokenImages, setBrokenImages] = useState({});
 
-    // Guards the default-address auto-select so it only runs once per logged-in user
     const hasAutoSelected = useRef(false);
 
-    // Loading States
+    // Loading & Method States
     const [loadingCities, setLoadingCities] = useState(true);
     const [loadingAreas, setLoadingAreas] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
     const [shippingMethod, setShippingMethod] = useState('inside');
-    const shippingCost = shippingMethod === 'inside' ? 60 : 120;
     const [paymentMethod, setPaymentMethod] = useState('COD');
-    const grandTotal = cartTotal + shippingCost;
+
+    const shippingCost = shippingMethod === 'inside' ? 60 : 120;
+    const grandTotal = Math.max(0, cartTotal - appliedDiscount) + shippingCost;
 
     // --- META PIXEL: INITIATE CHECKOUT ---
     useEffect(() => {
@@ -159,6 +167,53 @@ const Checkout = () => {
         fetchCities();
     }, []);
 
+    // --- FETCH AVAILABLE COUPONS ---
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const res = await axiosInstance.get('/api/v1/checkout/coupons/available');
+                setAvailableCoupons(res.data || []);
+            } catch (err) {
+                console.error("Failed to load coupons", err);
+            }
+        };
+        fetchCoupons();
+    }, [cartTotal]);
+
+    // --- COUPON HANDLERS ---
+    const handleApplyCoupon = async (codeToApply) => {
+        const code = (codeToApply || manualCouponInput).trim();
+        if (!code) {
+            toast.error("Please enter a coupon code.");
+            return;
+        }
+        setApplyingCode(code.toUpperCase());
+        try {
+            const res = await axiosInstance.post(`/api/v1/checkout/coupons/dry-run?code=${encodeURIComponent(code)}`);
+            if (res.data && res.data.valid) {
+                setSelectedCouponCode(code.toUpperCase());
+                setAppliedDiscount(res.data.discountAmount || 0);
+                setCouponMessage(res.data.message);
+                toast.success(res.data.message || "Coupon applied successfully!");
+                setShowCouponModal(false);
+                setManualCouponInput('');
+            } else {
+                toast.error(res.data?.message || "Invalid coupon code.");
+            }
+        } catch (e) {
+            toast.error(e.response?.data?.message || "Failed to apply coupon.");
+        } finally {
+            setApplyingCode(null);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setSelectedCouponCode('');
+        setAppliedDiscount(0);
+        setCouponMessage('');
+        toast.success("Coupon removed.");
+    };
+
     // --- INITIALIZE USER DATA & ADDRESSES ---
     useEffect(() => {
         const fetchUserProfileAndAddresses = async () => {
@@ -176,10 +231,9 @@ const Checkout = () => {
                     }));
 
                     if (tempEmail) {
-                        setLockedFields(prev => ({ ...prev, email: true }));
+                        setLockedFields(prev => ({...prev, email: true}));
                     }
 
-                    // 2. Fetch full profile and addresses concurrently
                     const [profileRes, addressesRes] = await Promise.all([
                         axiosInstance.get('/api/v1/user/get'),
                         axiosInstance.get('/api/v1/address/all')
@@ -211,8 +265,8 @@ const Checkout = () => {
                     console.error("Error fetching user data:", error);
                 }
             } else {
-                setFormData(prev => ({ ...prev, name: '', phone: '', email: '' }));
-                setLockedFields({ email: false, phone: false });
+                setFormData(prev => ({...prev, name: '', phone: '', email: ''}));
+                setLockedFields({email: false, phone: false});
                 setSavedAddresses([]);
             }
         };
@@ -224,25 +278,22 @@ const Checkout = () => {
     useEffect(() => {
         if (!hasAutoSelected.current && cities.length > 0 && savedAddresses.length > 0) {
             hasAutoSelected.current = true;
-            // Uses the bulletproof check
             const defaultAddr = savedAddresses.find(checkIsDefault) || savedAddresses[0];
             handleAddressSelection(defaultAddr.id.toString());
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cities, savedAddresses]);
-
 
     // --- ADDRESS CARD SELECTION HANDLER ---
     const handleAddressSelection = async (addressId) => {
         setSelectedAddressId(addressId);
 
         if (!addressId) {
-            setFormData(prev => ({ ...prev, city: '', cityId: '', area: '', address: '' }));
+            setFormData(prev => ({...prev, city: '', cityId: '', area: '', address: ''}));
             setAreas([]);
             setShippingMethod('inside');
             setAddressType('HOME');
             setSetAsDefaultAddress(savedAddresses.length === 0);
-            setErrors(prev => ({ ...prev, cityId: '', area: '', address: '' }));
+            setErrors(prev => ({...prev, cityId: '', area: '', address: ''}));
             return;
         }
 
@@ -252,7 +303,7 @@ const Checkout = () => {
         const matchedCity = cities.find(c => c.name.toLowerCase() === selectedAddr.city.toLowerCase());
         const cityId = matchedCity ? matchedCity.id : '';
 
-        setErrors(prev => ({ ...prev, cityId: '', area: '', address: '' }));
+        setErrors(prev => ({...prev, cityId: '', area: '', address: ''}));
 
         setFormData(prev => ({
             ...prev,
@@ -276,7 +327,6 @@ const Checkout = () => {
             }
         }
     };
-
 
     // --- SINGLE FIELD VALIDATOR ---
     const validateField = (name, value) => {
@@ -314,12 +364,12 @@ const Checkout = () => {
 
     // --- INPUT HANDLERS ---
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
 
         if (errors[name]) {
             const fieldError = validateField(name, value);
-            setErrors(prev => ({ ...prev, [name]: fieldError }));
+            setErrors(prev => ({...prev, [name]: fieldError}));
         }
 
         if (['address', 'area'].includes(name) && selectedAddressId) {
@@ -328,26 +378,26 @@ const Checkout = () => {
     };
 
     const handleBlur = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         const fieldError = validateField(name, value);
-        setErrors(prev => ({ ...prev, [name]: fieldError }));
+        setErrors(prev => ({...prev, [name]: fieldError}));
     };
 
     const handleCityChange = async (e) => {
         const selectedCityId = e.target.value;
         const selectedCityObj = cities.find(c => c.id === parseInt(selectedCityId));
 
-        setErrors(prev => ({ ...prev, cityId: '', area: '' }));
+        setErrors(prev => ({...prev, cityId: '', area: ''}));
         setSelectedAddressId('');
 
         if (!selectedCityId) {
-            setFormData(prev => ({ ...prev, city: '', cityId: '', area: '' }));
+            setFormData(prev => ({...prev, city: '', cityId: '', area: ''}));
             setAreas([]);
             return;
         }
 
         const cityName = selectedCityObj.name;
-        setFormData(prev => ({ ...prev, city: cityName, cityId: selectedCityId, area: '' }));
+        setFormData(prev => ({...prev, city: cityName, cityId: selectedCityId, area: ''}));
         setShippingMethod(cityName.toLowerCase() === 'dhaka' ? 'inside' : 'outside');
 
         setLoadingAreas(true);
@@ -393,7 +443,7 @@ const Checkout = () => {
         });
 
         if (Object.keys(newErrors).length > 0) {
-            setErrors(prev => ({ ...prev, ...newErrors }));
+            setErrors(prev => ({...prev, ...newErrors}));
             toast.error('Please fill in city, area and address first.');
             return;
         }
@@ -409,7 +459,7 @@ const Checkout = () => {
                 area: formData.area,
                 address: formData.address.trim(),
                 isDefault: willBeDefault,
-                is_default: willBeDefault // Fallback for backend naming mismatch
+                is_default: willBeDefault
             });
 
             const newAddress = response.data?.data;
@@ -417,7 +467,7 @@ const Checkout = () => {
             if (newAddress && newAddress.id) {
                 setSavedAddresses(prev => {
                     const next = willBeDefault
-                        ? prev.map(a => ({ ...a, isDefault: false, is_default: false }))
+                        ? prev.map(a => ({...a, isDefault: false, is_default: false}))
                         : prev;
                     return [...next, newAddress];
                 });
@@ -453,7 +503,6 @@ const Checkout = () => {
         const cleanPhone = formData.phone.replace(/[\s-]/g, '');
         const cleanEmail = formData.email.trim();
 
-        // Check if we need to auto-save this as their first default address
         if (savedAddresses.length === 0 && !isGuest && user) {
             try {
                 await axiosInstance.post('/api/v1/address/add', {
@@ -462,7 +511,7 @@ const Checkout = () => {
                     area: formData.area,
                     address: formData.address.trim(),
                     isDefault: true,
-                    is_default: true // Fallback for backend naming mismatch
+                    is_default: true
                 });
             } catch (e) {
                 console.error("Background address save failed", e);
@@ -478,6 +527,8 @@ const Checkout = () => {
             name: formData.name.trim(),
             orderNote: formData.note.trim(),
             paymentMethod: paymentMethod,
+            couponCode: selectedCouponCode,
+            discountAmount: appliedDiscount,
             items: cart.map(item => ({
                 productId: item.productId || item.id,
                 quantity: item.quantity
@@ -514,21 +565,23 @@ const Checkout = () => {
         }
     };
 
-    // --- STEP INDICATOR ---
     const StepIndicator = () => (
         <div className="checkout-steps" aria-label="Checkout progress">
             <div className="checkout-step is-done">
                 <span className="checkout-step-dot">
-                    <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <svg width="11" height="9" viewBox="0 0 11 9" fill="none"><path d="M1 4.5L4 7.5L10 1.5"
+                                                                                    stroke="white" strokeWidth="1.6"
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"/></svg>
                 </span>
                 <span className="checkout-step-label">Bag</span>
             </div>
-            <span className="checkout-step-line is-done" />
+            <span className="checkout-step-line is-done"/>
             <div className="checkout-step is-active">
                 <span className="checkout-step-dot">2</span>
                 <span className="checkout-step-label">Checkout</span>
             </div>
-            <span className="checkout-step-line" />
+            <span className="checkout-step-line"/>
             <div className="checkout-step">
                 <span className="checkout-step-dot">3</span>
                 <span className="checkout-step-label">Confirmation</span>
@@ -542,7 +595,7 @@ const Checkout = () => {
                 <div className="checkout-wrapper">
                     <div className="checkout-left">
                         <div className="checkout-skeleton-box skeleton-title"></div>
-                        <div className="checkout-skeleton-box skeleton-card" style={{ height: 90 }}></div>
+                        <div className="checkout-skeleton-box skeleton-card" style={{height: 90}}></div>
                         <div className="checkout-skeleton-box skeleton-sub-title"></div>
                         <div className="skeleton-address-grid">
                             <div className="checkout-skeleton-box skeleton-address-card"></div>
@@ -575,7 +628,6 @@ const Checkout = () => {
     const isDhaka = formData.city.toLowerCase() === 'dhaka';
     const showAddressForm = savedAddresses.length === 0 || selectedAddressId === '';
 
-    // Default address first, then the rest in the order the API returned them
     const sortedAddresses = [...savedAddresses].sort((a, b) => {
         const aIsDefault = checkIsDefault(a);
         const bIsDefault = checkIsDefault(b);
@@ -593,18 +645,18 @@ const Checkout = () => {
     return (
         <div className="checkout-container">
             <div className="checkout-header">
-                <StepIndicator />
+                <StepIndicator/>
                 <div className="checkout-secure-note">
-                    <svg width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M6.5 1L1 3.2V6.8C1 10.1 3.3 13 6.5 14C9.7 13 12 10.1 12 6.8V3.2L6.5 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+                    <svg width="13" height="15" viewBox="0 0 13 15" fill="none">
+                        <path d="M6.5 1L1 3.2V6.8C1 10.1 3.3 13 6.5 14C9.7 13 12 10.1 12 6.8V3.2L6.5 1Z"
+                              stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                    </svg>
                     Secure checkout
                 </div>
             </div>
 
             <div className="checkout-wrapper">
-                {/* LEFT SIDE FORM */}
                 <div className="checkout-left">
-
-                    {/* Contact */}
                     <section className="checkout-panel">
                         <h2 className="panel-title">Contact information</h2>
                         <div className="form-row">
@@ -656,7 +708,6 @@ const Checkout = () => {
                         </div>
                     </section>
 
-                    {/* Delivery address */}
                     <section className="checkout-panel">
                         <h2 className="panel-title">Delivery address</h2>
 
@@ -676,15 +727,16 @@ const Checkout = () => {
                                             >
                                                 <span className="address-card-top">
                                                     <span className="address-card-type">
-                                                        <AddressTypeIcon type={addr.addressType} />
+                                                        <AddressTypeIcon type={addr.addressType}/>
                                                         {getAddressTypeLabel(addr.addressType)}
                                                     </span>
-                                                    {isDefaultAddress && <span className="address-card-badge">Default</span>}
+                                                    {isDefaultAddress &&
+                                                        <span className="address-card-badge">Default</span>}
                                                 </span>
                                                 <span className="address-card-body">
                                                     {addr.address}, {addr.area}, {addr.city}
                                                 </span>
-                                                <span className="address-card-radio" aria-hidden="true" />
+                                                <span className="address-card-radio" aria-hidden="true"/>
                                             </button>
                                         );
                                     })}
@@ -733,7 +785,8 @@ const Checkout = () => {
                                             </select>
                                             <span className="select-arrow">
                                                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                                                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#666" strokeWidth="1.5"
+                                                          strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
                                             </span>
                                         </div>
@@ -760,7 +813,8 @@ const Checkout = () => {
                                             </select>
                                             <span className="select-arrow">
                                                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                                                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <path d="M1 1.5L6 6.5L11 1.5" stroke="#666" strokeWidth="1.5"
+                                                          strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
                                             </span>
                                         </div>
@@ -800,7 +854,8 @@ const Checkout = () => {
                                                 </select>
                                                 <span className="select-arrow">
                                                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                                                        <path d="M1 1.5L6 6.5L11 1.5" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        <path d="M1 1.5L6 6.5L11 1.5" stroke="#666" strokeWidth="1.5"
+                                                              strokeLinecap="round" strokeLinejoin="round"/>
                                                     </svg>
                                                 </span>
                                             </div>
@@ -831,7 +886,8 @@ const Checkout = () => {
 
                         <div className="form-row">
                             <div className="form-group full-width">
-                                <label className="form-label">Delivery note <span className="form-label-optional">(optional)</span></label>
+                                <label className="form-label">Delivery note <span
+                                    className="form-label-optional">(optional)</span></label>
                                 <textarea
                                     name="note"
                                     placeholder="Add instructions for the courier"
@@ -843,11 +899,11 @@ const Checkout = () => {
                         </div>
                     </section>
 
-                    {/* Delivery method */}
                     <section className="checkout-panel">
                         <h2 className="panel-title">Delivery method</h2>
                         <div className="method-grid">
-                            <label className={`method-card ${shippingMethod === 'inside' ? 'is-selected' : ''} ${isCitySelected && !isDhaka ? 'is-disabled' : ''}`}>
+                            <label
+                                className={`method-card ${shippingMethod === 'inside' ? 'is-selected' : ''} ${isCitySelected && !isDhaka ? 'is-disabled' : ''}`}>
                                 <input
                                     type="radio"
                                     name="shipping"
@@ -862,7 +918,8 @@ const Checkout = () => {
                                 <span className="method-card-price">৳60.00</span>
                             </label>
 
-                            <label className={`method-card ${shippingMethod === 'outside' ? 'is-selected' : ''} ${isCitySelected && isDhaka ? 'is-disabled' : ''}`}>
+                            <label
+                                className={`method-card ${shippingMethod === 'outside' ? 'is-selected' : ''} ${isCitySelected && isDhaka ? 'is-disabled' : ''}`}>
                                 <input
                                     type="radio"
                                     name="shipping"
@@ -879,7 +936,6 @@ const Checkout = () => {
                         </div>
                     </section>
 
-                    {/* Payment method */}
                     <section className="checkout-panel">
                         <h2 className="panel-title">Payment method</h2>
                         <div className="method-grid">
@@ -913,7 +969,6 @@ const Checkout = () => {
                     </section>
                 </div>
 
-                {/* RIGHT SIDE SUMMARY */}
                 <aside className="checkout-right">
                     <div className="summary-card">
                         <h2 className="panel-title">Order summary</h2>
@@ -941,7 +996,10 @@ const Checkout = () => {
                                                     <img
                                                         src={resolvedImage}
                                                         alt={item.name || 'Product'}
-                                                        onError={() => setBrokenImages(prev => ({ ...prev, [key]: true }))}
+                                                        onError={() => setBrokenImages(prev => ({
+                                                            ...prev,
+                                                            [key]: true
+                                                        }))}
                                                     />
                                                 )
                                                 : getInitials(item.name)}
@@ -958,16 +1016,138 @@ const Checkout = () => {
                             })}
                         </ul>
 
-                        <button type="button" className="coupon-row">
-                            <span>Have a coupon or voucher?</span>
-                            <span className="coupon-row-arrow">›</span>
-                        </button>
+                        {/* ===================== COUPON SECTION ===================== */}
+                        <div className="coupon-section">
+                            {selectedCouponCode ? (
+                                <div className="coupon-applied">
+                                    <div className="coupon-applied-icon">
+                                        <Ticket size={16} />
+                                    </div>
+                                    <div className="coupon-applied-info">
+                                        <span className="coupon-applied-code">{selectedCouponCode}</span>
+                                        <span className="coupon-applied-msg">{couponMessage || 'Coupon applied'}</span>
+                                    </div>
+                                    <span className="coupon-applied-savings">− ৳ {appliedDiscount.toFixed(2)}</span>
+                                    <button type="button" className="coupon-remove-btn" onClick={handleRemoveCoupon} aria-label="Remove coupon">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button type="button" className="coupon-trigger"
+                                        onClick={() => setShowCouponModal(true)}>
+                                    <span className="coupon-trigger-icon"><Ticket size={16}/></span>
+                                    <span className="coupon-trigger-text">Apply a coupon or voucher</span>
+                                    <svg className="coupon-trigger-arrow" width="8" height="12" viewBox="0 0 8 12"
+                                         fill="none">
+                                        <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="1.5"
+                                              strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </button>
+                            )}
+
+                            {showCouponModal && (
+                                <div className="coupon-modal-overlay" onClick={() => setShowCouponModal(false)}>
+                                    <div className="coupon-modal" onClick={e => e.stopPropagation()}>
+                                        <div className="coupon-modal-header">
+                                            <h3>Coupons &amp; Vouchers</h3>
+                                            <button
+                                                type="button"
+                                                className="coupon-modal-close"
+                                                onClick={() => setShowCouponModal(false)}
+                                                aria-label="Close"
+                                            >
+                                                <X size={18} color="#333333" />
+                                            </button>
+                                        </div>
+
+                                        <div className="coupon-manual-entry">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter coupon code"
+                                                value={manualCouponInput}
+                                                onChange={(e) => setManualCouponInput(e.target.value.toUpperCase())}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                                                className="coupon-manual-input"
+                                                disabled={!!applyingCode}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="coupon-manual-apply"
+                                                onClick={() => handleApplyCoupon()}
+                                                disabled={!manualCouponInput.trim() || !!applyingCode}
+                                            >
+                                                {applyingCode === manualCouponInput.trim().toUpperCase() ? (
+                                                    <span className="coupon-spinner"/>
+                                                ) : 'Apply'}
+                                            </button>
+                                        </div>
+
+                                        <div className="coupon-modal-divider">
+                                            <span>Available offers</span>
+                                        </div>
+
+                                        <div className="coupon-list">
+                                            {availableCoupons.length === 0 ? (
+                                                <div className="coupon-empty-state">
+                                                    <Ticket size={32} />
+                                                    <p>No active offers right now</p>
+                                                    <span>Check back later for new deals</span>
+                                                </div>
+                                            ) : (
+                                                availableCoupons.map(c => {
+                                                    const isSelected = selectedCouponCode === c.code.toUpperCase();
+                                                    const isLoadingThis = applyingCode === c.code.toUpperCase();
+                                                    return (
+                                                        <div key={c.id} className={`coupon-item ${isSelected ? 'is-selected' : ''}`}>
+                                                            <div className="coupon-item-icon">
+                                                                <Ticket size={18} />
+                                                            </div>
+                                                            <div className="coupon-item-left">
+                                                                <div className="coupon-item-code-row">
+                                                                    <span className="coupon-item-code">{c.code}</span>
+                                                                    {c.discountLabel && <span className="coupon-item-badge">{c.discountLabel}</span>}
+                                                                </div>
+                                                                {c.internalName && <p className="coupon-item-name">{c.internalName}</p>}
+                                                                {c.checkoutMsg && <p className="coupon-item-desc">{c.checkoutMsg}</p>}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                className={`coupon-item-btn ${isSelected ? 'is-applied' : ''}`}
+                                                                onClick={() => handleApplyCoupon(c.code)}
+                                                                disabled={isSelected || !!applyingCode}
+                                                            >
+                                                                {isLoadingThis ? (
+                                                                    <span className="coupon-spinner" />
+                                                                ) : isSelected ? (
+                                                                    <>
+                                                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                                                            <path d="M2 6.5L4.5 9L10 2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                                                                        </svg>
+                                                                        Applied
+                                                                    </>
+                                                                ) : 'Apply'}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="price-breakdown">
                             <div className="price-row">
                                 <span>Subtotal</span>
                                 <span>৳ {cartTotal.toFixed(2)}</span>
                             </div>
+                            {appliedDiscount > 0 && (
+                                <div className="price-row" style={{color: '#28a745'}}>
+                                    <span>Discount ({selectedCouponCode})</span>
+                                    <span>- ৳ {appliedDiscount.toFixed(2)}</span>
+                                </div>
+                            )}
                             <div className="price-row">
                                 <span>Delivery</span>
                                 <span>৳ {shippingCost.toFixed(2)}</span>
@@ -983,7 +1163,10 @@ const Checkout = () => {
                         </button>
 
                         <p className="summary-footnote">
-                            <svg width="12" height="14" viewBox="0 0 13 15" fill="none"><path d="M6.5 1L1 3.2V6.8C1 10.1 3.3 13 6.5 14C9.7 13 12 10.1 12 6.8V3.2L6.5 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+                            <svg width="12" height="14" viewBox="0 0 13 15" fill="none">
+                                <path d="M6.5 1L1 3.2V6.8C1 10.1 3.3 13 6.5 14C9.7 13 12 10.1 12 6.8V3.2L6.5 1Z"
+                                      stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                            </svg>
                             Your payment and personal details are protected end to end.
                         </p>
                     </div>
