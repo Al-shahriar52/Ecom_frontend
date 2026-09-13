@@ -33,6 +33,7 @@ const AdminSidebar = () => {
     const canManageCoupons = !loading && hasPermission(user, 8);
     const canManageAccounting = !loading && hasPermission(user, 9);
     const canManageFbt = !loading && hasPermission(user, 10);
+    const canManageProducts = !loading && hasPermission(user, 11);
 
     const Icons = {
         MenuToggle: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>,
@@ -125,6 +126,13 @@ const AdminSidebar = () => {
                     <NavLink to="/admin/frequently-bought-together" className="sidebar-link" data-tooltip="FBT Management">
                         <span className="icon"><Icons.FBT /></span>
                         <span className="text">FBT Management</span>
+                    </NavLink>
+                )}
+
+                {canManageProducts && (
+                    <NavLink to="/admin/products" className="sidebar-link" data-tooltip="Products">
+                        <span className="icon"><Icons.Products /></span>
+                        <span className="text">Products</span>
                     </NavLink>
                 )}
 
