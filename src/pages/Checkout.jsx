@@ -562,7 +562,7 @@ const Checkout = () => {
             name: formData.name.trim(),
             orderNote: formData.note.trim(),
             paymentMethod: paymentMethod,
-            couponCode: selectedCouponCode,
+            couponCode: selectedCouponCode || "",
             discountAmount: appliedDiscount,
             items: cart.map(item => ({
                 productId: item.productId || item.id,
