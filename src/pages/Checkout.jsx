@@ -61,6 +61,16 @@ const getDiscountBadgeText = (coupon) => {
     return 'OFFER';
 };
 
+const getItemSavings = (item) => {
+    const regularPrice = item.regularPrice || item.comparePrice || item.originalPrice || item.product?.regularPrice || item.product?.comparePrice;
+    const currentPrice = item.price;
+
+    if (regularPrice && regularPrice > currentPrice) {
+        return (regularPrice - currentPrice) * item.quantity;
+    }
+    return 0;
+};
+
 const AddressTypeIcon = ({type}) => {
     switch ((type || '').toUpperCase()) {
         case 'HOME':
@@ -159,6 +169,9 @@ const Checkout = () => {
 
     const shippingCost = shippingMethod === 'inside' ? 60 : 120;
     const grandTotal = Math.max(0, cartTotal - appliedDiscount) + shippingCost;
+
+    const totalProductSavings = cart.reduce((acc, item) => acc + getItemSavings(item), 0);
+    const totalOverallSavings = totalProductSavings + appliedDiscount;
 
     // --- META PIXEL: INITIATE CHECKOUT ---
     useEffect(() => {
@@ -1161,25 +1174,54 @@ const Checkout = () => {
                         </div>
 
                         <div className="price-breakdown">
+                            {/* 1. Subtotal (MRP) */}
                             <div className="price-row">
-                                <span>Subtotal</span>
-                                <span>৳ {cartTotal.toFixed(2)}</span>
+                                <span>{totalProductSavings > 0 ? 'Subtotal (MRP)' : 'Subtotal'}</span>
+                                <span>৳ {(cartTotal + totalProductSavings).toFixed(2)}</span>
                             </div>
+
+                            {/* 2. Total Product Savings */}
+                            {totalProductSavings > 0 && (
+                                <div className="price-row" style={{ color: '#28a745' }}>
+                                    <span>Total Product Savings</span>
+                                    <span>- ৳ {totalProductSavings.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {/* 3. Discounted Subtotal */}
+                            {totalProductSavings > 0 && (
+                                <div className="price-row" style={{ fontWeight: 500 }}>
+                                    <span>Discounted Subtotal</span>
+                                    <span>৳ {cartTotal.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {/* 4. Coupon Code (If Applied) */}
                             {appliedDiscount > 0 && (
-                                <div className="price-row" style={{color: '#28a745'}}>
+                                <div className="price-row" style={{ color: '#28a745' }}>
                                     <span>Discount ({selectedCouponCode})</span>
                                     <span>- ৳ {appliedDiscount.toFixed(2)}</span>
                                 </div>
                             )}
+
+                            {/* 5. Delivery */}
                             <div className="price-row">
                                 <span>Delivery</span>
                                 <span>৳ {shippingCost.toFixed(2)}</span>
                             </div>
-                            <div className="price-row total-row">
+
+                            {/* Divider Line (Optional: handled by CSS class or inline style) */}
+                            <div className="price-row total-row" style={{ borderTop: '1px solid #eaeaea', paddingTop: '12px', marginTop: '8px' }}>
                                 <span>Total</span>
                                 <span className="grand-total">৳ {grandTotal.toFixed(2)}</span>
                             </div>
                         </div>
+
+                        {totalOverallSavings > 0 && (
+                            <div className="checkout-savings-banner" style={{ background: '#e6f4ea', color: '#137333', padding: '10px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', textAlign: 'center', marginBottom: '16px' }}>
+                                🎉 You are saving ৳ {totalOverallSavings.toFixed(2)} on this order!
+                            </div>
+                        )}
 
                         <button className="place-order-btn" onClick={handlePlaceOrder} disabled={isProcessing}>
                             {isProcessing ? 'Processing…' : 'Place order'}
