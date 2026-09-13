@@ -10,6 +10,7 @@ export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
     const [cartTotal, setCartTotal] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isLoadingCart, setIsLoadingCart] = useState(true); // Tracks initial/active cart fetch
     const [updatingItemIds, setUpdatingItemIds] = useState([]);
 
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ export const CartProvider = ({ children }) => {
         if (!user && !force) {
             setCart([]);
             setCartTotal(0);
+            setIsLoadingCart(false); // Make sure to clear loading state here too
             return;
         }
 
@@ -58,6 +60,7 @@ export const CartProvider = ({ children }) => {
             console.error("Failed to fetch cart:", error);
         } finally {
             if (!isBackground) setLoading(false);
+            setIsLoadingCart(false); // Finished fetching, turn off loader
         }
     };
 
@@ -162,7 +165,6 @@ export const CartProvider = ({ children }) => {
 
             // --- META PIXEL: ADD TO CART EVENT (BUNDLE) ---
             if (window.fbq) {
-                // Calculate total bundle value if prices are available
                 const bundleValue = products.reduce((total, p) => total + (p.price || 0), 0);
                 const productIds = products.map(p => p.productId || p.id);
 
@@ -188,6 +190,7 @@ export const CartProvider = ({ children }) => {
             cart,
             cartTotal,
             loading,
+            isLoadingCart, // Exposed to components
             updatingItemIds,
             addToCart,
             addAllToCart,

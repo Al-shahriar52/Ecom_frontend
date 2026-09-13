@@ -47,7 +47,7 @@ import UserManagement from './pages/admin/UserManagement';
 import AdminOrders from './pages/admin/orders/AdminOrders';
 import AdminOrderDetails from "./pages/admin/orders/AdminOrderDetails";
 import Accounting from './pages/admin/Accounting';
-import CouponManagement from './pages/admin/CouponManagement';
+import CouponManagement from './pages/admin/coupons/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';
 import EditProductPage from './pages/admin/EditProductPage';
 import Wishlist from './pages/Wishlist';

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
@@ -23,7 +24,7 @@ const OrderSuccess = () => {
                 setOrder(response.data.data);
             } catch (err) {
                 console.error("Failed to load order", err);
-                setError(err.response.data.message || "Failed to load order details");
+                setError(err.response?.data?.message || "Failed to load order details");
             } finally {
                 setLoading(false);
             }
@@ -67,31 +68,22 @@ const OrderSuccess = () => {
         return (
             <div className="order-success-page">
                 <div className="order-success-container">
-                    {/* Banner Skeleton */}
                     <div className="order-skeleton-box skeleton-banner"></div>
-
-                    {/* Header Row Skeleton */}
                     <div className="order-header-row">
                         <div className="order-skeleton-box skeleton-title-sm"></div>
                         <div className="order-skeleton-box skeleton-title-sm"></div>
                     </div>
-
-                    {/* Table Skeleton */}
                     <div className="order-section">
                         <div className="order-skeleton-box skeleton-table-header"></div>
                         <div className="order-skeleton-box skeleton-table-row"></div>
                         <div className="order-skeleton-box skeleton-table-row"></div>
                     </div>
-
-                    {/* Customer & Order Details Skeleton */}
                     <div className="order-section">
                         <div className="order-skeleton-box skeleton-section-title"></div>
                         <div className="order-skeleton-box skeleton-detail-row"></div>
                         <div className="order-skeleton-box skeleton-detail-row"></div>
                         <div className="order-skeleton-box skeleton-detail-row"></div>
                     </div>
-
-                    {/* Split Sections Skeleton */}
                     <div className="bottom-split-container">
                         <div className="order-section">
                             <div className="order-skeleton-box skeleton-section-title"></div>
@@ -104,8 +96,6 @@ const OrderSuccess = () => {
                             <div className="order-skeleton-box skeleton-detail-row"></div>
                         </div>
                     </div>
-
-                    {/* Total Bar Skeleton */}
                     <div className="order-skeleton-box skeleton-total-bar"></div>
                 </div>
             </div>
@@ -134,7 +124,13 @@ const OrderSuccess = () => {
     };
 
     const { date, time } = formatDate(order.createdAt);
-    const subTotal = order.totalAmount - order.shippingCost;
+
+    // Pull calculations safely from order/invoice payload if available, or fall back gracefully
+    const subTotalMrp = order.subTotalMrp || order.totalAmount - order.shippingCost;
+    const productSavings = order.productSavings || 0;
+    const discountedSubTotal = order.discountedSubTotal || (subTotalMrp - productSavings);
+    const couponDiscount = order.discountAmount || 0;
+    const shippingCost = order.shippingCost || 0;
 
     // --- DETERMINE GUEST STATUS ---
     const isGuest = !isAuthenticated;
@@ -224,7 +220,7 @@ const OrderSuccess = () => {
 
                     <div className="detail-row">
                         <span className="label">Customer Name</span>
-                        <span className="value">{order.user?.name || "Guest"}</span>
+                        <span className="value">{order.user?.name || order.name || "Guest"}</span>
                     </div>
                     <div className="detail-row">
                         <span className="label">Phone Number</span>
@@ -237,7 +233,7 @@ const OrderSuccess = () => {
                     <div className="detail-row">
                         <span className="label">Delivery Type</span>
                         <span className="value">
-                            {order.shippingCost > 60 ? "Outside Dhaka" : "Inside Dhaka"}
+                            {shippingCost > 60 ? "Outside Dhaka" : "Inside Dhaka"}
                         </span>
                     </div>
                     <div className="detail-row">
@@ -280,13 +276,40 @@ const OrderSuccess = () => {
                             <span className="label">Order Time</span>
                             <span className="value">{time}</span>
                         </div>
-                        <div className="detail-row">
-                            <span className="label">Sub Total</span>
-                            <span className="value">৳ {subTotal.toFixed(2)}</span>
-                        </div>
+
+                        {/* CONDITIONAL BREAKDOWN MATCHING CHECKOUT */}
+                        {productSavings > 0 ? (
+                            <>
+                                <div className="detail-row">
+                                    <span className="label">Subtotal (MRP)</span>
+                                    <span className="value">৳ {subTotalMrp.toFixed(2)}</span>
+                                </div>
+                                <div className="detail-row" style={{ color: '#28a745' }}>
+                                    <span className="label">Total Product Savings</span>
+                                    <span className="value">-৳ {productSavings.toFixed(2)}</span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="label">Discounted Subtotal</span>
+                                    <span className="value">৳ {discountedSubTotal.toFixed(2)}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="detail-row">
+                                <span className="label">Subtotal</span>
+                                <span className="value">৳ {discountedSubTotal.toFixed(2)}</span>
+                            </div>
+                        )}
+
+                        {couponDiscount > 0 && (
+                            <div className="detail-row" style={{ color: '#28a745' }}>
+                                <span className="label">Discount ({order.couponCode || 'Coupon'})</span>
+                                <span className="value">-৳ {couponDiscount.toFixed(2)}</span>
+                            </div>
+                        )}
+
                         <div className="detail-row">
                             <span className="label">Delivery Fee</span>
-                            <span className="value">৳ {order.shippingCost.toFixed(2)}</span>
+                            <span className="value">৳ {shippingCost.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>

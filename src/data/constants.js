@@ -38,7 +38,8 @@ export const PERMISSIONS = [
     "Manage settings",    // Index 7
     "Manage Coupons",     // Index 8
     "Manage Accounting",  // Index 9
-    "Manage FBT"          // Index 10
+    "Manage FBT",          // Index 10
+    "Manage products"     // Index 11
 ];
 
 export const ROLE_META = {

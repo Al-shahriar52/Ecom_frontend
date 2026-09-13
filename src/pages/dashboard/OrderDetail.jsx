@@ -13,7 +13,6 @@ const OrderDetail = () => {
     const [error, setError] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    // 1. ADDED: State to manage Tracking Modal visibility
     const [showTracking, setShowTracking] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -39,7 +38,7 @@ const OrderDetail = () => {
         try {
             setIsDownloading(true);
             const response = await axiosInstance.get(`/api/v1/order/${orderId}/invoice/download`, {
-                responseType: 'blob' // Essential for parsing PDF binary streams
+                responseType: 'blob'
             });
 
             const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -61,7 +60,6 @@ const OrderDetail = () => {
         }
     };
 
-    // --- HELPER: Format Date/Time from Array ---
     const formatDate = (dateArray) => {
         if (!Array.isArray(dateArray)) return { date: 'N/A', time: 'N/A' };
         const date = new Date(dateArray[0], dateArray[1] - 1, dateArray[2], dateArray[3], dateArray[4]);
@@ -72,8 +70,6 @@ const OrderDetail = () => {
         };
     };
 
-    // --- HELPER: Status Color Class ---
-    // 2. UPDATED: Enhanced mapping to match your expected milestone lifecycle classes
     const getStatusClass = (status) => {
         if (!status) return '';
         const s = status.toUpperCase();
@@ -86,7 +82,7 @@ const OrderDetail = () => {
             case 'PACKING':
                 return 'status-pending';
             case 'CANCELLED':
-                return 'status-cancelled'; // Changed to represent a cancellation/danger UI style
+                return 'status-cancelled';
             default:
                 return 'status-pending';
         }
@@ -96,16 +92,20 @@ const OrderDetail = () => {
     if (error || !order) return <div className="dashboard-content error-text">{error || "Order not found."}</div>;
 
     const { date, time } = formatDate(order.createdAt);
-    const subTotal = order.totalAmount - order.shippingCost;
+
+    // Pull calculations safely from order DTO with fallbacks
+    const subTotalMrp = order.subTotalMrp || order.totalAmount - order.shippingCost;
+    const productSavings = order.productSavings || 0;
+    const discountedSubTotal = order.discountedSubTotal || (subTotalMrp - productSavings);
+    const couponDiscount = order.discountAmount || 0;
+    const shippingCost = order.shippingCost || 0;
 
     const handleBack = () => {
         if (location.state?.fromUserModal) {
-            // If we came from the user modal, send state back to the users page
             navigate('/admin/users', {
                 state: { reopenModalForUserId: location.state.userId, activeTab: 'orders' }
             });
         } else {
-            // Otherwise, just go back to the standard order list
             navigate('/admin/orders');
         }
     };
@@ -125,7 +125,6 @@ const OrderDetail = () => {
                         {order.orderStatus}
                     </span>
 
-                    {/* 3. ADDED: A live "Track Order" button for the customer */}
                     <button
                         onClick={() => setShowTracking(true)}
                         className="dashboard-track-btn"
@@ -141,7 +140,6 @@ const OrderDetail = () => {
                         {isDownloading ? 'Downloading...' : 'Download Invoice'}
                     </button>
 
-                    {/* Show Pay Button only if Pending & NOT Cash on Delivery */}
                     {order.orderStatus === 'PENDING' && order.paymentMethod !== 'COD' && (
                         <button className="btn-make-payment">Make Payment</button>
                     )}
@@ -165,7 +163,6 @@ const OrderDetail = () => {
                         />
                         <p>{item.productName}</p>
                         <span>x {item.quantity}</span>
-                        {/* 4. FIXED: Added fallback values (|| 0) to avoid runtime UI crashes if data is missing */}
                         <span>৳{(item.price || 0).toFixed(2)}</span>
                         <span>৳{(item.total || 0).toFixed(2)}</span>
                     </div>
@@ -189,7 +186,7 @@ const OrderDetail = () => {
                 </div>
                 <div className="detail-item">
                     <span>Delivery Type</span>
-                    <span>{order.shippingCost > 60 ? "Outside Dhaka" : "Inside Dhaka"}</span>
+                    <span>{shippingCost > 60 ? "Outside Dhaka" : "Inside Dhaka"}</span>
                 </div>
                 <div className="detail-item">
                     <span>Payment Method</span>
@@ -209,8 +206,25 @@ const OrderDetail = () => {
                     <h3>ORDER SUMMARY</h3>
                     <p><strong>Order Date:</strong> {date}</p>
                     <p><strong>Order Time:</strong> {time}</p>
-                    <p><strong>Sub Total:</strong> ৳{subTotal.toFixed(2)}</p>
-                    <p><strong>Delivery Fee:</strong> ৳{order.shippingCost.toFixed(2)}</p>
+
+                    {/* CONDITIONAL BREAKDOWN MATCHING CHECKOUT & INVOICES */}
+                    {productSavings > 0 ? (
+                        <>
+                            <p><strong>Subtotal (MRP):</strong> ৳{subTotalMrp.toFixed(2)}</p>
+                            <p style={{ color: '#28a745' }}><strong>Total Product Savings:</strong> -৳{productSavings.toFixed(2)}</p>
+                            <p><strong>Discounted Subtotal:</strong> ৳{discountedSubTotal.toFixed(2)}</p>
+                        </>
+                    ) : (
+                        <p><strong>Subtotal:</strong> ৳{discountedSubTotal.toFixed(2)}</p>
+                    )}
+
+                    {couponDiscount > 0 && (
+                        <p style={{ color: '#28a745' }}>
+                            <strong>Discount ({order.couponCode || 'Coupon'}):</strong> -৳{couponDiscount.toFixed(2)}
+                        </p>
+                    )}
+
+                    <p><strong>Delivery Fee:</strong> ৳{shippingCost.toFixed(2)}</p>
                     <hr/>
                     <p className="total">
                         <strong>TOTAL</strong> <span>৳{order.totalAmount.toFixed(2)}</span>
@@ -218,7 +232,6 @@ const OrderDetail = () => {
                 </div>
             </section>
 
-            {/* 5. ADDED: Conditional rendering for the custom milestone Tracking Modal */}
             {showTracking && (
                 <TrackingModal
                     order={order}
