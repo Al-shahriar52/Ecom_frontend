@@ -29,6 +29,12 @@ const toLocalISOString = (d) => {
     return d.substring(0, 16); // Fallback for standard ISO strings
 };
 
+// Helper to get the current local time in HTML datetime-local format to block past dates
+const getNowLocalISO = () => {
+    const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+    return new Date(Date.now() - tzOffset).toISOString().slice(0, 16);
+};
+
 // Helper to pair up ID arrays with Name arrays from the backend
 const buildList = (ids, names) => {
     if (!ids) return [];
@@ -97,17 +103,15 @@ export default function CouponBuilder({ onDiscard, initialData }) {
     const [newChannel, setNewChannel] = useState('');
 
     // Step 5: Schedule & Blackouts
-    const [startDate, setStartDate] = useState(initialData?.startDate ? toLocalISOString(initialData.startDate) : '2026-08-20T00:00');
-    const [endDate, setEndDate] = useState(initialData?.endDate ? toLocalISOString(initialData.endDate) : '2026-08-31T23:59');
+    const [startDate, setStartDate] = useState(initialData?.startDate ? toLocalISOString(initialData.startDate) : getNowLocalISO());
+    const [endDate, setEndDate] = useState(initialData?.endDate ? toLocalISOString(initialData.endDate) : '');
     const [noEndDate, setNoEndDate] = useState(initialData?.noEndDate ?? false);
 
     const initialBlackouts = initialData?.blackouts ? initialData.blackouts.map(b => ({
         ...b,
         start: toLocalISOString(b.start),
         end: toLocalISOString(b.end)
-    })) : [
-        { name: 'Independence Day flash sale', start: '2026-08-26T00:00', end: '2026-08-27T23:59' },
-    ];
+    })) : [];
     const [blackouts, setBlackouts] = useState(initialBlackouts);
     const [blackoutName, setBlackoutName] = useState('');
     const [blackoutStart, setBlackoutStart] = useState('');
@@ -171,6 +175,12 @@ export default function CouponBuilder({ onDiscard, initialData }) {
     function handleSaveBlackout() {
         if (!blackoutName.trim() || !blackoutStart || !blackoutEnd) {
             toast.error('Please provide blackout name, start date, and end date');
+            return;
+        }
+
+        // Additional manual validation to ensure dates are valid
+        if (blackoutStart > blackoutEnd) {
+            toast.error('Blackout start date cannot be after end date');
             return;
         }
 
@@ -656,11 +666,26 @@ export default function CouponBuilder({ onDiscard, initialData }) {
                                 <div className="grid2">
                                     <div className="field">
                                         <label htmlFor="f-start">Starts</label>
-                                        <input id="f-start" className="inp" type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                        <input
+                                            id="f-start"
+                                            className="inp"
+                                            type="datetime-local"
+                                            value={startDate}
+                                            min={getNowLocalISO()}
+                                            onChange={(e) => setStartDate(e.target.value)}
+                                        />
                                     </div>
                                     <div className="field">
                                         <label htmlFor="f-end">Ends</label>
-                                        <input id="f-end" className="inp" type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} disabled={noEndDate} />
+                                        <input
+                                            id="f-end"
+                                            className="inp"
+                                            type="datetime-local"
+                                            value={endDate}
+                                            min={startDate || getNowLocalISO()}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            disabled={noEndDate}
+                                        />
                                     </div>
                                 </div>
                                 <SwitchRow
@@ -697,11 +722,25 @@ export default function CouponBuilder({ onDiscard, initialData }) {
                                     <div className="grid2" style={{ marginBottom: '10px' }}>
                                         <div className="field">
                                             <label>Blackout Start</label>
-                                            <input className="inp" type="datetime-local" value={blackoutStart} onChange={(e) => setBlackoutStart(e.target.value)} />
+                                            <input
+                                                className="inp"
+                                                type="datetime-local"
+                                                value={blackoutStart}
+                                                min={startDate || getNowLocalISO()}
+                                                max={noEndDate ? undefined : (endDate || undefined)}
+                                                onChange={(e) => setBlackoutStart(e.target.value)}
+                                            />
                                         </div>
                                         <div className="field">
                                             <label>Blackout End</label>
-                                            <input className="inp" type="datetime-local" value={blackoutEnd} onChange={(e) => setBlackoutEnd(e.target.value)} />
+                                            <input
+                                                className="inp"
+                                                type="datetime-local"
+                                                value={blackoutEnd}
+                                                min={blackoutStart || startDate || getNowLocalISO()}
+                                                max={noEndDate ? undefined : (endDate || undefined)}
+                                                onChange={(e) => setBlackoutEnd(e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -725,8 +764,18 @@ export default function CouponBuilder({ onDiscard, initialData }) {
                         <span className="autosave">Draft state</span>
                         <div style={{ display: 'flex', gap: 8 }}>
                             <button type="button" className="btn" style={{ visibility: step === 1 ? 'hidden' : 'visible' }} onClick={prev}>Back</button>
-                            <button type="button" className="btn btn-primary" onClick={next}>{step === total ? 'Review & publish' : 'Continue'}</button>
-                        </div>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={step === total ? handlePublish : next}
+                                disabled={loading}
+                            >
+                                {step === total
+                                    ? (loading ? 'Saving...' : (initialData?.id ? 'Save Changes' : 'Review & publish'))
+                                    : 'Continue'
+                                }
+                            </button>
+                            </div>
                     </div>
                 </div>
 
@@ -744,7 +793,7 @@ export default function CouponBuilder({ onDiscard, initialData }) {
                             <div className="stub-bot">
                                 <div className="stub-code">{(code || 'CODE').toUpperCase()}</div>
                                 <div className="stub-terms">
-                                    <div><span>Valid</span><span>{toLocalISOString(startDate).split('T')[0]} → {noEndDate ? 'Forever' : toLocalISOString(endDate).split('T')[0]}</span></div>
+                                    <div><span>Valid</span><span>{startDate.split('T')[0]} → {noEndDate ? 'Forever' : endDate.split('T')[0]}</span></div>
                                     <div><span>Cities</span><span>{preview.cityNames}</span></div>
                                     <div><span>Per customer</span><span>{perCustomer || '∞'} use</span></div>
                                 </div>
