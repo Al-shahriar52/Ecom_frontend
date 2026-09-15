@@ -27,7 +27,7 @@ const Wishlist = () => {
                                 {/* Left: Image (Clickable) */}
                                 <div
                                     className="w-card-image"
-                                    onClick={() => navigate(`/product/${item.productId}`)}
+                                    onClick={() => navigate(`/product/${item.slug || item.productId}`)}
                                 >
                                     <img
                                         src={item.imageUrl || 'https://via.placeholder.com/150'}
@@ -37,7 +37,7 @@ const Wishlist = () => {
 
                                 {/* Center: Details (Clickable) */}
                                 <div className="w-card-details">
-                                    <h3 onClick={() => navigate(`/product/${item.productId}`)}>
+                                    <h3 onClick={() => navigate(`/product/${item.slug || item.productId}`)}>
                                         {item.productName}
                                     </h3>
                                     <span className="w-price">৳ {item.price}</span>
