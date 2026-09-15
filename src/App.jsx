@@ -154,7 +154,7 @@ function App() {
                                         <Route path="/brand/:slug" element={<ShopPage />} />
                                         <Route path="/category/:slug" element={<ShopPage />} />
                                         <Route path="/subcategory/:slug" element={<ShopPage />} />
-                                        <Route path="/product/:productId" element={<ProductDetailPage />} />
+                                        <Route path="/product/:slug" element={<ProductDetailPage />} />
                                         <Route path="/checkout" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><Checkout /></ProtectedRoute>}/>
                                         <Route path="/wishlist" element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'ROLE_USER', 'ROLE_ADMIN']}><Wishlist /></ProtectedRoute>}/>
                                         <Route path="/order-success/:orderId" element={<ProtectedRoute allowedRoles={['GUEST', 'USER', 'ADMIN', 'ROLE_GUEST', 'ROLE_USER', 'ROLE_ADMIN']}><OrderSuccess /></ProtectedRoute>} />

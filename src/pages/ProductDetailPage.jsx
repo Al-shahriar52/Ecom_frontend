@@ -12,7 +12,7 @@ import SimilarProducts from '../components/productDetails/SimilarProducts';
 import { WishlistContext } from '../context/WishlistContext';
 
 const ProductDetailPage = () => {
-    const { productId } = useParams();
+    const { slug } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -23,7 +23,8 @@ const ProductDetailPage = () => {
         const fetchProductDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axiosInstance.get(`/api/v1/product/detail/${productId}`);
+                setError(null);
+                const response = await axiosInstance.get(`/api/v1/product/detail/slug/${slug}`);
                 setProduct(response.data.data);
             } catch (err) {
                 setError('Failed to load product details.');
@@ -34,20 +35,20 @@ const ProductDetailPage = () => {
         };
 
         fetchProductDetails();
-    }, [productId]);
+    }, [slug]);
 
     // 2. --- META PIXEL: VIEW CONTENT EVENT ---
     useEffect(() => {
         if (product && window.fbq) {
             window.fbq('track', 'ViewContent', {
-                content_ids: [product.productId || productId],
+                content_ids: [product.productId],
                 content_name: product.name,
                 content_type: 'product',
                 value: product.discountedPrice || product.originalPrice || 0,
                 currency: 'BDT' // Change to 'USD' if necessary
             });
         }
-    }, [product, productId]);
+    }, [product]);
     // ------------------------------------------
 
     /* ================= SKELETON LOADER STATE ================= */
@@ -119,6 +120,9 @@ const ProductDetailPage = () => {
         }
     };
 
+    // Prefer the slug returned by the API (guaranteed fresh/canonical); fall back to the URL param.
+    const productSlug = product.slug || slug;
+
     const schemaData = {
         "@context": "https://schema.org/",
         "@type": "Product",
@@ -132,7 +136,7 @@ const ProductDetailPage = () => {
         },
         "offers": {
             "@type": "Offer",
-            "url": `https://beautyhaat.com/product/${productId}`,
+            "url": `https://beautyhaat.com/product/${productSlug}`,
             "priceCurrency": "BDT",
             "price": product.discountedPrice || product.originalPrice,
             "itemCondition": "https://schema.org/NewCondition",
@@ -207,7 +211,7 @@ const ProductDetailPage = () => {
                 "@type": "ListItem",
                 "position": 3,
                 "name": product.name,
-                "item": `https://beautyhaat.com/product/${productId}`
+                "item": `https://beautyhaat.com/product/${productSlug}`
             }
         ]
     };
@@ -218,7 +222,7 @@ const ProductDetailPage = () => {
             <Helmet>
                 <title>{product.name ? `${product.name} | BeautyHaat` : 'Product | BeautyHaat'}</title>
                 <meta name="description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
-                <link rel="canonical" href={`https://beautyhaat.com/product/${productId}`} />
+                <link rel="canonical" href={`https://beautyhaat.com/product/${productSlug}`} />
                 <script type="application/ld+json">
                     {JSON.stringify(schemaData)}
                 </script>
@@ -258,7 +262,7 @@ const ProductDetailPage = () => {
                     </Tab>
                     <Tab label={`Reviews (${product.numReviews || 0})`}>
                         <ProductReviews
-                            productId={productId}
+                            productId={product.productId}
                             averageRating={product.rating}
                             numReviews={product.numReviews}
                         />

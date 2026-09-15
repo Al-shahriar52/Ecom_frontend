@@ -313,7 +313,7 @@ const Header = () => {
                                 <ul className="search-results-list">
                                     {searchResults.map(product => (
                                         <li key={product.productId}>
-                                            <Link to={`/product/${product.productId}`} className="search-result-item" onClick={() => setIsSearchDropdownOpen(false)}>
+                                            <Link to={`/product/${product.slug}`} className="search-result-item" onClick={() => setIsSearchDropdownOpen(false)}>
                                                 <img src={product.imageUrl} alt={product.name} className="search-result-image" />
                                                 <div className="search-result-details">
                                                     <span className="search-result-name">{product.name}</span>
@@ -736,7 +736,7 @@ const Header = () => {
                                 <ul className="search-results-list">
                                     {searchResults.map(product => (
                                         <li key={product.productId}>
-                                            <Link to={`/product/${product.productId}`} className="search-result-item" onClick={() => setIsSearchDropdownOpen(false)}>
+                                            <Link to={`/product/${product.slug}`} className="search-result-item" onClick={() => setIsSearchDropdownOpen(false)}>
                                                 <img src={product.imageUrl} alt={product.name} className="search-result-image" />
                                                 <div className="search-result-details">
                                                     <span className="search-result-name">{product.name}</span>

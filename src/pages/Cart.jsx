@@ -16,8 +16,8 @@ const Cart = () => {
     const navigate = useNavigate();
     const safeCart = cart || [];
 
-    const handleProductClick = (productId) => {
-        navigate(`/product/${productId}`);
+    const handleProductClick = (item) => {
+        navigate(`/product/${item.slug || item.productId}`);
     };
 
     // --- LOGIC: CHECK IF ANY ITEM IS INVALID ---
@@ -124,7 +124,7 @@ const Cart = () => {
                             >
                                 <div
                                     className="card-left clickable"
-                                    onClick={() => handleProductClick(item.productId)}
+                                    onClick={() => handleProductClick(item)}
                                 >
                                     <img src={item.imageUrl} alt={item.name} />
                                     {/* Overlay for OOS image */}
@@ -134,7 +134,7 @@ const Cart = () => {
                                 <div className="card-middle">
                                     <h3
                                         className="clickable-title"
-                                        onClick={() => handleProductClick(item.productId)}
+                                        onClick={() => handleProductClick(item)}
                                     >
                                         {item.name}
                                     </h3>

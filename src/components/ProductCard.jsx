@@ -31,7 +31,7 @@ const ProductCard = ({ product }) => {
 
     return (
         <div className={`product-card ${isOutOfStock ? 'card-disabled' : ''}`}>
-            <Link to={`/product/${product.productId}`} className="product-image-link">
+            <Link to={`/product/${product.slug}`} className="product-image-link">
                 <div className="product-image-container">
                     <img src={imageUrl} alt={product.name} className="product-image" />
 
@@ -56,7 +56,7 @@ const ProductCard = ({ product }) => {
 
             <div className="product-info">
                 <h3 className="product-name">
-                    <Link to={`/product/${product.productId}`}>{product.name}</Link>
+                    <Link to={`/product/${product.slug}`}>{product.name}</Link>
                 </h3>
 
                 <div className="product-tag-container">

@@ -193,7 +193,7 @@ const OrderSuccess = () => {
                         {order.orderItems.map((item, index) => (
                             <tr key={index}>
                                 <td className="col-image">
-                                    <Link to={`/product/${item.productId}`}>
+                                    <Link to={`/product/${item.slug || item.productId}`}>
                                         <img
                                             src={item.productImageUrl || 'https://via.placeholder.com/60'}
                                             alt={item.productName}
@@ -201,7 +201,7 @@ const OrderSuccess = () => {
                                     </Link>
                                 </td>
                                 <td className="col-name">
-                                    <Link to={`/product/${item.productId}`} className="product-name-link">
+                                    <Link to={`/product/${item.slug || item.productId}`} className="product-name-link">
                                         {item.productName}
                                     </Link>
                                 </td>
