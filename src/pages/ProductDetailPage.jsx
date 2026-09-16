@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance';
 import { Helmet } from 'react-helmet-async';
 import './ProductDetailPage.css';
@@ -17,7 +17,18 @@ const ProductDetailPage = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // Set only when a legacy numeric /product/:id URL resolves to a real
+    // product - triggers a redirect to the canonical slug URL instead of
+    // rendering the page at the old URL.
+    const [redirectSlug, setRedirectSlug] = useState(null);
     const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
+
+    // True for old pre-migration URLs like /product/12. These still get
+    // crawled/visited (old links, bookmarks, anything Google indexed before
+    // the slug migration), so instead of dead-ending them we look the
+    // product up by id and send the visitor - and Google - to the real
+    // slug URL.
+    const isLegacyNumericId = /^\d+$/.test(slug);
 
     // 1. Fetch Product Details
     useEffect(() => {
@@ -25,8 +36,24 @@ const ProductDetailPage = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await axiosInstance.get(`/api/v1/product/detail/slug/${slug}`);
-                setProduct(response.data.data);
+                setRedirectSlug(null);
+
+                if (isLegacyNumericId) {
+                    const response = await axiosInstance.get(`/api/v1/product/detail/${slug}`);
+                    const data = response.data.data;
+                    if (data?.slug) {
+                        // Found it - send to the canonical slug URL rather
+                        // than rendering the page here.
+                        setRedirectSlug(data.slug);
+                        setProduct(data);
+                    } else {
+                        // Legacy id doesn't resolve to a product anymore.
+                        setProduct(null);
+                    }
+                } else {
+                    const response = await axiosInstance.get(`/api/v1/product/detail/slug/${slug}`);
+                    setProduct(response.data.data);
+                }
             } catch (err) {
                 setError('Failed to load product details.');
                 console.error(err);
@@ -36,6 +63,7 @@ const ProductDetailPage = () => {
         };
 
         fetchProductDetails();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slug]);
 
     // 2. --- META PIXEL: VIEW CONTENT EVENT ---
@@ -102,11 +130,33 @@ const ProductDetailPage = () => {
     }
 
     if (error) {
-        return <div className="pdp-error">{error}</div>;
+        return (
+            <div className="pdp-error">
+                <Helmet>
+                    <meta name="robots" content="noindex, follow" />
+                </Helmet>
+                {error}
+            </div>
+        );
+    }
+
+    // A legacy /product/:id URL resolved to a real product - send both the
+    // visitor and any crawler on to the canonical slug URL.
+    if (redirectSlug) {
+        return <Navigate to={`/product/${redirectSlug}`} replace />;
     }
 
     if (!product) {
-        return <div className="pdp-error">Product not found.</div>;
+        return (
+            <div className="pdp-error">
+                <Helmet>
+                    {/* Keeps stale/legacy URLs that no longer resolve out of
+                        Google's index instead of leaving them in limbo. */}
+                    <meta name="robots" content="noindex, follow" />
+                </Helmet>
+                Product not found.
+            </div>
+        );
     }
 
     const isWishlisted = product ? isInWishlist(product.productId) : false;
