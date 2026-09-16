@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import './RefundPolicy.css';
 
 const RefundPolicy = () => {
@@ -6,8 +7,18 @@ const RefundPolicy = () => {
 
     return (
         <div className="refund-page">
+            <Helmet>
+                <title>Return & Refund Policy | BeautyHaat</title>
+                <meta name="description" content="Read BeautyHaat's return and refund policy, including eligibility, timelines and how to request a refund." />
+                <link rel="canonical" href="https://beautyhaat.com/refund-policy" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="Return & Refund Policy | BeautyHaat" />
+                <meta property="og:description" content="Read BeautyHaat's return and refund policy, including eligibility, timelines and how to request a refund." />
+                <meta property="og:url" content="https://beautyhaat.com/refund-policy" />
+            </Helmet>
+
             <div className="refund-header">
-                <h2>{language === 'en' ? 'Return & Refund Policy' : 'রিটার্ন ও রিফান্ড পলিসি'}</h2>
+                <h1>{language === 'en' ? 'Return & Refund Policy' : 'রিটার্ন ও রিফান্ড পলিসি'}</h1>
                 <div className="language-toggle">
                     <button
                         className={language === 'en' ? 'active' : ''}

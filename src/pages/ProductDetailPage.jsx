@@ -10,6 +10,7 @@ import ProductReviews from '../components/review/ProductReviews';
 import FrequentlyBoughtTogether from '../components/productDetails/FrequentlyBoughtTogether';
 import SimilarProducts from '../components/productDetails/SimilarProducts';
 import { WishlistContext } from '../context/WishlistContext';
+import { slugify } from '../utils/slugify';
 
 const ProductDetailPage = () => {
     const { slug } = useParams();
@@ -189,7 +190,7 @@ const ProductDetailPage = () => {
     };
 
     const categoryName = product.category?.name || "Shop";
-    const categorySlug = product.category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-');
+    const categorySlug = product.category?.slug || slugify(categoryName);
 
     const breadcrumbSchema = {
         "@context": "https://schema.org",
@@ -223,6 +224,25 @@ const ProductDetailPage = () => {
                 <title>{product.name ? `${product.name} | BeautyHaat` : 'Product | BeautyHaat'}</title>
                 <meta name="description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
                 <link rel="canonical" href={`https://beautyhaat.com/product/${productSlug}`} />
+
+                {/* Open Graph / Facebook & WhatsApp link previews */}
+                <meta property="og:type" content="product" />
+                <meta property="og:title" content={product.name ? `${product.name} | BeautyHaat` : 'BeautyHaat'} />
+                <meta property="og:description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
+                <meta property="og:url" content={`https://beautyhaat.com/product/${productSlug}`} />
+                {product.imageUrls && product.imageUrls.length > 0 && (
+                    <meta property="og:image" content={product.imageUrls[0]} />
+                )}
+                <meta property="product:price:amount" content={product.discountedPrice || product.originalPrice} />
+                <meta property="product:price:currency" content="BDT" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={product.name ? `${product.name} | BeautyHaat` : 'BeautyHaat'} />
+                <meta name="twitter:description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
+                {product.imageUrls && product.imageUrls.length > 0 && (
+                    <meta name="twitter:image" content={product.imageUrls[0]} />
+                )}
                 <script type="application/ld+json">
                     {JSON.stringify(schemaData)}
                 </script>

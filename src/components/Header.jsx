@@ -420,6 +420,7 @@ import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import { WishlistContext } from '../context/WishlistContext';
 import axiosInstance from '../api/AxiosInstance';
+import { slugify } from '../utils/slugify';
 import './Header.css';
 
 const parseSubcategories = (subCategoryData, categoryName) => {
@@ -433,7 +434,7 @@ const parseSubcategories = (subCategoryData, categoryName) => {
     const createLink = (item) => ({
         id: item.id,
         name: item.name,
-        path: `/subcategory/${item.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
+        path: `/subcategory/${slugify(item.name)}`
     });
 
     subCategoryData.forEach(item => {
@@ -512,7 +513,7 @@ const Header = () => {
                 const apiCategories = response.data.data || [];
                 const formattedCategories = apiCategories.map(cat => ({
                     id: cat.id, name: cat.name, iconUrl: cat.iconUrl,
-                    path: `/category/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`,
+                    path: `/category/${slugify(cat.name)}`,
                     subcategories: null, areSubcategoriesFetched: false,
                 }));
                 setCategories(formattedCategories);

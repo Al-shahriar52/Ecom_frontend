@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import './PrivacyPolicy.css';
 
 const PrivacyPolicy = () => {
@@ -6,8 +7,18 @@ const PrivacyPolicy = () => {
 
     return (
         <div className="privacy-page">
+            <Helmet>
+                <title>Privacy Policy | BeautyHaat</title>
+                <meta name="description" content="Read BeautyHaat's privacy policy to understand how we collect, use and protect your personal information." />
+                <link rel="canonical" href="https://beautyhaat.com/privacy-policy" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="Privacy Policy | BeautyHaat" />
+                <meta property="og:description" content="Read BeautyHaat's privacy policy to understand how we collect, use and protect your personal information." />
+                <meta property="og:url" content="https://beautyhaat.com/privacy-policy" />
+            </Helmet>
+
             <div className="privacy-header">
-                <h2>{language === 'en' ? 'Privacy Policy' : 'প্রাইভেসি পলিসি'}</h2>
+                <h1>{language === 'en' ? 'Privacy Policy' : 'প্রাইভেসি পলিসি'}</h1>
                 <div className="language-toggle">
                     <button
                         className={language === 'en' ? 'active' : ''}

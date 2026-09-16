@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import './Contact.css';
 import axiosInstance from '../api/AxiosInstance';
 import toast from 'react-hot-toast';
@@ -51,8 +52,18 @@ const Contact = () => {
 
     return (
         <div className="contact-page">
+            <Helmet>
+                <title>Contact Us | BeautyHaat</title>
+                <meta name="description" content="Get in touch with BeautyHaat for questions about orders, products or partnerships." />
+                <link rel="canonical" href="https://beautyhaat.com/contact" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="Contact Us | BeautyHaat" />
+                <meta property="og:description" content="Get in touch with BeautyHaat for questions about orders, products or partnerships." />
+                <meta property="og:url" content="https://beautyhaat.com/contact" />
+            </Helmet>
+
             <div className="contact-header">
-                <h2>Contact Us</h2>
+                <h1>Contact Us</h1>
                 <p>We'd love to hear from you! Please reach out with any questions about our beauty products.</p>
             </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import './AboutUs.css';
 
 const AboutUs = () => {
@@ -6,8 +7,18 @@ const AboutUs = () => {
 
     return (
         <div className="about-page">
+            <Helmet>
+                <title>About Us | BeautyHaat</title>
+                <meta name="description" content="Learn about BeautyHaat's mission to bring genuine makeup, skincare and beauty products to customers across Bangladesh." />
+                <link rel="canonical" href="https://beautyhaat.com/about" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="About Us | BeautyHaat" />
+                <meta property="og:description" content="Learn about BeautyHaat's mission to bring genuine makeup, skincare and beauty products to customers across Bangladesh." />
+                <meta property="og:url" content="https://beautyhaat.com/about" />
+            </Helmet>
+
             <div className="about-header">
-                <h2>{language === 'en' ? 'About Us' : 'আমাদের সম্পর্কে'}</h2>
+                <h1>{language === 'en' ? 'About Us' : 'আমাদের সম্পর্কে'}</h1>
                 <div className="language-toggle">
                     <button
                         className={language === 'en' ? 'active' : ''}
