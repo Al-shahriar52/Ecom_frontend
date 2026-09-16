@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Footer.css';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/AxiosInstance'; // Ensure this path matches your project structure
+import { slugify } from '../utils/slugify';
 
 const Footer = () => {
     const [topCategories, setTopCategories] = useState([]);
@@ -58,7 +59,7 @@ const Footer = () => {
                     ) : (
                         <ul>
                             {topCategories.map((category) => {
-                                const slug = category.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+                                const slug = slugify(category.name);
                                 return (
                                     <li key={category.id}>
                                         <Link

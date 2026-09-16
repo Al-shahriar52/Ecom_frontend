@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import './ShippingDeliveryFooter.css';
 
 const Shipping = () => {
@@ -6,8 +7,18 @@ const Shipping = () => {
 
     return (
         <div className="shipping-page">
+            <Helmet>
+                <title>Shipping & Delivery | BeautyHaat</title>
+                <meta name="description" content="Learn about BeautyHaat's shipping options, delivery times and charges across Bangladesh." />
+                <link rel="canonical" href="https://beautyhaat.com/shipping-delivery" />
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content="Shipping & Delivery | BeautyHaat" />
+                <meta property="og:description" content="Learn about BeautyHaat's shipping options, delivery times and charges across Bangladesh." />
+                <meta property="og:url" content="https://beautyhaat.com/shipping-delivery" />
+            </Helmet>
+
             <div className="shipping-header">
-                <h2>{language === 'en' ? 'Shipping & Delivery' : 'শিপিং এবং ডেলিভারি'}</h2>
+                <h1>{language === 'en' ? 'Shipping & Delivery' : 'শিপিং এবং ডেলিভারি'}</h1>
                 <div className="language-toggle">
                     <button
                         className={language === 'en' ? 'active' : ''}

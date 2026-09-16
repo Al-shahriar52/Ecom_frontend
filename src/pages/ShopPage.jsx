@@ -1,13 +1,15 @@
 
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation, useMatch } from 'react-router-dom';
+import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import axiosInstance from '../api/AxiosInstance';
 import ProductCard from '../components/ProductCard';
 import { toast } from 'react-hot-toast';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import './ShopPage.css';
+import { slugify } from '../utils/slugify';
 
 const SkeletonCard = () => {
     return (
@@ -23,6 +25,7 @@ const SkeletonCard = () => {
 
 const ShopPage = () => {
     const location = useLocation();
+    const { slug } = useParams();
     const initialState = location.state || {};
 
     const isBrandPage = !!useMatch("/brand/:slug");
@@ -34,6 +37,10 @@ const ShopPage = () => {
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [filterData, setFilterData] = useState(null);
+    // True only when a /category|brand|subcategory/:slug URL was loaded
+    // directly (no React Router state) AND the slug didn't match anything -
+    // used to show a friendly message and keep the page out of the index.
+    const [filterNotFound, setFilterNotFound] = useState(false);
 
     // Mobile filter popup state
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -138,37 +145,98 @@ const ShopPage = () => {
         fetchProducts(0);
     }, [debouncedPriceRange, selectedBrandId, selectedCategoryId, selectedSubCategoryId, selectedTagId, sortOption, fetchProducts]);
 
+    // Resolve which brand/category/subcategory this page is for.
+    //
+    // IMPORTANT: this used to trust React Router's `location.state` alone,
+    // which only exists when the user clicked a link from inside the app.
+    // A direct page load - a search engine crawling /category/lipstick from
+    // the sitemap, a shared link, or a plain refresh - has no state, so the
+    // page silently fell back to showing every product instead of the
+    // category. We now resolve the slug against the live category/brand
+    // list from the API every time, which makes these URLs work on their
+    // own. `location.state` is still used as an instant "fast path" so
+    // in-app navigation still feels immediate while that request is in flight.
     useEffect(() => {
-        const newState = location.state || {};
-        const isBrand = location.pathname.startsWith("/brand/");
-        const isCategory = location.pathname.startsWith("/category/");
-        const isSubCategory = location.pathname.startsWith("/subcategory/");
+        let isCancelled = false;
 
-        setSelectedBrandId(null);
-        setSelectedBrandName(null);
-        setSelectedCategoryId(null);
-        setSelectedCategoryName(null);
-        setSelectedSubCategoryId(null);
-        setSelectedSubCategoryName(null);
+        const resolveFilterFromUrl = async () => {
+            setFilterNotFound(false);
+            setSelectedBrandId(null);
+            setSelectedBrandName(null);
+            setSelectedCategoryId(null);
+            setSelectedCategoryName(null);
+            setSelectedSubCategoryId(null);
+            setSelectedSubCategoryName(null);
+            setProducts([]);
+            setPageNo(0);
+            setHasMore(true);
 
-        if (isBrand) {
-            setSelectedBrandId(newState.brandId);
-            setSelectedBrandName(newState.brandName);
-        } else if (isSubCategory) {
-            setSelectedCategoryId(newState.categoryId);
-            setSelectedCategoryName(newState.categoryName);
-            setSelectedSubCategoryId(newState.subcategoryId);
-            setSelectedSubCategoryName(newState.subcategoryName);
-        } else if (isCategory) {
-            setSelectedCategoryId(newState.categoryId);
-            setSelectedCategoryName(newState.categoryName);
-        }
+            // Plain /shop - no filter to resolve.
+            if (!isBrandPage && !isCategoryPage && !isSubCategoryPage) return;
 
-        setProducts([]);
-        setPageNo(0);
-        setHasMore(true);
+            const navState = location.state || {};
 
-    }, [location]);
+            // Fast path: an in-app link already told us the exact id/name.
+            if (isBrandPage && navState.brandId) {
+                setSelectedBrandId(navState.brandId);
+                setSelectedBrandName(navState.brandName);
+            } else if (isSubCategoryPage && navState.subcategoryId) {
+                setSelectedCategoryId(navState.categoryId);
+                setSelectedCategoryName(navState.categoryName);
+                setSelectedSubCategoryId(navState.subcategoryId);
+                setSelectedSubCategoryName(navState.subcategoryName);
+            } else if (isCategoryPage && navState.categoryId) {
+                setSelectedCategoryId(navState.categoryId);
+                setSelectedCategoryName(navState.categoryName);
+            }
+
+            // Authoritative path: always confirm/resolve straight from the
+            // URL slug so the page works with no state at all.
+            try {
+                const response = await axiosInstance.get('/api/v1/product/filters');
+                if (isCancelled) return;
+                const data = response.data.data;
+
+                if (isBrandPage) {
+                    const match = data.availableBrands?.find(b => slugify(b.brandName) === slug);
+                    if (match) {
+                        setSelectedBrandId(match.brandId);
+                        setSelectedBrandName(match.brandName);
+                    } else if (!navState.brandId) {
+                        setFilterNotFound(true);
+                    }
+                } else if (isSubCategoryPage) {
+                    let found = false;
+                    for (const cat of data.availableCategories || []) {
+                        const sub = cat.subCategories?.find(s => slugify(s.subCategoryName) === slug);
+                        if (sub) {
+                            setSelectedCategoryId(cat.categoryId);
+                            setSelectedCategoryName(cat.categoryName);
+                            setSelectedSubCategoryId(sub.subCategoryId);
+                            setSelectedSubCategoryName(sub.subCategoryName);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found && !navState.subcategoryId) setFilterNotFound(true);
+                } else if (isCategoryPage) {
+                    const match = data.availableCategories?.find(c => slugify(c.categoryName) === slug);
+                    if (match) {
+                        setSelectedCategoryId(match.categoryId);
+                        setSelectedCategoryName(match.categoryName);
+                    } else if (!navState.categoryId) {
+                        setFilterNotFound(true);
+                    }
+                }
+            } catch (error) {
+                console.error("Error resolving category/brand from slug:", error);
+            }
+        };
+
+        resolveFilterFromUrl();
+        return () => { isCancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname, slug, isBrandPage, isCategoryPage, isSubCategoryPage]);
 
     const handlePriceChange = (newRange) => {
         setPriceRange(newRange);
@@ -251,8 +319,97 @@ const ShopPage = () => {
     const filteredBrands = filterData?.availableBrands?.filter(brand => brand.brandName.toLowerCase().includes(brandSearchQuery.toLowerCase())) || [];
     const brandsToShow = showAllBrands ? filteredBrands : filteredBrands.slice(0, 15);
 
+    // ================= SEO: page-level title / description / heading =================
+    const pageHeading = isBrandPage
+        ? (selectedBrandName || 'Brand')
+        : isSubCategoryPage
+            ? (selectedSubCategoryName || 'Products')
+            : isCategoryPage
+                ? (selectedCategoryName || 'Category')
+                : 'Shop All Products';
+
+    const pageTitle = !isBrandPage && !isCategoryPage && !isSubCategoryPage
+        ? 'Shop All Products | BeautyHaat'
+        : `${pageHeading} | BeautyHaat`;
+
+    const pageDescription = isBrandPage
+        ? `Shop genuine ${selectedBrandName || 'brand'} products online at BeautyHaat with fast delivery across Bangladesh.`
+        : isSubCategoryPage
+            ? `Browse ${selectedSubCategoryName || ''} products online at BeautyHaat with fast delivery across Bangladesh.`
+            : isCategoryPage
+                ? `Shop the best ${selectedCategoryName || ''} products online at BeautyHaat with fast delivery across Bangladesh.`
+                : 'Browse the full range of makeup, skincare, haircare and personal care products at BeautyHaat, with fast delivery across Bangladesh.';
+
+    const canonicalUrl = `https://beautyhaat.com${location.pathname}`;
+
+    // ItemList schema: tells Google this page lists these specific products
+    // (separate from, and complementary to, the Product schema on each
+    // product's own detail page).
+    const itemListSchema = products.length > 0 ? {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": products.slice(0, 24).map((p, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `https://beautyhaat.com/product/${p.slug || p.productId}`,
+            "name": p.name,
+            ...(p.imageUrl ? { "image": p.imageUrl } : {})
+        }))
+    } : null;
+
+    const breadcrumbItems = [
+        { name: "Home", item: "https://beautyhaat.com/" }
+    ];
+    if (isBrandPage) {
+        breadcrumbItems.push({ name: pageHeading, item: canonicalUrl });
+    } else if (isCategoryPage) {
+        breadcrumbItems.push({ name: pageHeading, item: canonicalUrl });
+    } else if (isSubCategoryPage) {
+        if (selectedCategoryName) {
+            breadcrumbItems.push({ name: selectedCategoryName, item: `https://beautyhaat.com/category/${slugify(selectedCategoryName)}` });
+        }
+        breadcrumbItems.push({ name: pageHeading, item: canonicalUrl });
+    } else {
+        breadcrumbItems.push({ name: "Shop", item: canonicalUrl });
+    }
+
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbItems.map((crumb, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "name": crumb.name,
+            "item": crumb.item
+        }))
+    };
+    // ====================================================================================
+
     return (
         <div className="shop-page-container">
+
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={canonicalUrl} />
+                {filterNotFound && <meta name="robots" content="noindex, follow" />}
+
+                {/* Open Graph / Facebook & WhatsApp link previews */}
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:url" content={canonicalUrl} />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+
+                {itemListSchema && (
+                    <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
+                )}
+                <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+            </Helmet>
 
             {/* Mobile Filter Backdrop */}
             {isMobileFilterOpen && (
@@ -340,6 +497,14 @@ const ShopPage = () => {
 
             {/* Main Content Section */}
             <main className="main-content">
+
+                <h1 className="shop-page-heading">{pageHeading}</h1>
+
+                {filterNotFound && (
+                    <p className="end-of-results">
+                        We couldn't find that {isBrandPage ? 'brand' : isSubCategoryPage ? 'subcategory' : 'category'}. Showing all products instead.
+                    </p>
+                )}
 
                 {/* Sticky Controls Header: Search + Filter Toggle + Sorting */}
                 <div className="sticky-top-controls">
