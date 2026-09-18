@@ -494,6 +494,7 @@ const Header = () => {
     const [searchPageNo, setSearchPageNo] = useState(0);
     const [hasMoreSearchResults, setHasMoreSearchResults] = useState(false);
     const [expandedMobileCategory, setExpandedMobileCategory] = useState(null);
+    const [isMobileBrandsExpanded, setIsMobileBrandsExpanded] = useState(false);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -651,6 +652,19 @@ const Header = () => {
         }
     };
 
+    const toggleMobileBrands = async () => {
+        const willExpand = !isMobileBrandsExpanded;
+        setIsMobileBrandsExpanded(willExpand);
+        if (willExpand && !brandMenuData && !isLoadingBrands) {
+            setIsLoadingBrands(true);
+            try {
+                const response = await axiosInstance.get('/api/v1/product/brandMenu');
+                setBrandMenuData(response.data.data);
+            } catch (error) { console.error("Error fetching brand menu:", error);
+            } finally { setIsLoadingBrands(false); }
+        }
+    };
+
     return (
         <header className="header-wrapper">
             {isMobileMenuOpen && <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
@@ -707,7 +721,32 @@ const Header = () => {
                         })
                     )}
                     <hr />
-                    <Link to="/brands" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Brands</Link>
+                    {/* Mobile Brands accordion - mirrors the desktop mega menu so a
+                        specific brand can actually be reached on mobile */}
+                    <div className="sidenav-item">
+                        <div className="sidenav-main-link">
+                            <Link to="/brands" onClick={() => setIsMobileMenuOpen(false)}>
+                                <span>Brands</span>
+                            </Link>
+                            <button className="expand-btn" onClick={toggleMobileBrands}>{isMobileBrandsExpanded ? '−' : '+'}</button>
+                        </div>
+                        {isMobileBrandsExpanded && (
+                            <ul className="sidenav-subcategory-list">
+                                {isLoadingBrands && <li className="sidenav-subcategory-loading">Loading brands...</li>}
+                                {!isLoadingBrands && brandMenuData?.allBrands?.map(b => (
+                                    <li key={b.id}>
+                                        <Link
+                                            to={`/brand/${slugify(b.name)}`}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            state={{ brandName: b.name, brandId: b.id }}
+                                        >
+                                            {b.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                     <Link to="/wishlist" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
                     {isAuthenticated ? <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>My Account</Link> : <Link to="/login" className="sidenav-item-single" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>}
                 </div>
@@ -869,11 +908,11 @@ const Header = () => {
                                 <div className="brand-list-scrollable">
                                     <div className="brand-section">
                                         <h4 className="brand-section-title">TOP BRANDS</h4>
-                                        <ul>{brandMenuData.topBrands.map(b => <li key={b.id}><Link to={`/brand/${b.slug}`} state={{brandName:b.name, brandId:b.id}}>{b.name}<span className="brand-product-count">{b.productCount}</span></Link></li>)}</ul>
+                                        <ul>{brandMenuData.topBrands.map(b => <li key={b.id}><Link to={`/brand/${slugify(b.name)}`} state={{brandName:b.name, brandId:b.id}}>{b.name}<span className="brand-product-count">{b.productCount}</span></Link></li>)}</ul>
                                     </div>
                                     <div className="brand-section">
                                         <h4 className="brand-section-title">ALL BRANDS</h4>
-                                        {Object.keys(groupedBrands).sort().map(l => <div key={l} className="brand-group" id={`brand-group-${l}`}><h5 className="brand-letter-title">{l}</h5><ul>{groupedBrands[l].map(b => <li key={b.id}><Link to={`/brand/${b.slug}`} state={{brandName:b.name, brandId:b.id}}>{b.name}<span className="brand-product-count">{b.productCount}</span></Link></li>)}</ul></div>)}
+                                        {Object.keys(groupedBrands).sort().map(l => <div key={l} className="brand-group" id={`brand-group-${l}`}><h5 className="brand-letter-title">{l}</h5><ul>{groupedBrands[l].map(b => <li key={b.id}><Link to={`/brand/${slugify(b.name)}`} state={{brandName:b.name, brandId:b.id}}>{b.name}<span className="brand-product-count">{b.productCount}</span></Link></li>)}</ul></div>)}
                                     </div>
                                 </div>
                             </div>
@@ -882,7 +921,7 @@ const Header = () => {
                                 <div className="top-brands-grid">
                                     <h4>TOP BRANDS</h4>
                                     <div className="logo-grid">
-                                        {brandMenuData.topBrands.map(b => <Link to={`/brand/${b.slug}`} key={b.id} className="brand-logo-item" state={{brandName:b.name, brandId:b.id}}><img src={b.logoUrl} alt={b.name}/><p>{b.name}</p></Link>)}
+                                        {brandMenuData.topBrands.map(b => <Link to={`/brand/${slugify(b.name)}`} key={b.id} className="brand-logo-item" state={{brandName:b.name, brandId:b.id}}><img src={b.logoUrl} alt={b.name}/><p>{b.name}</p></Link>)}
                                     </div>
                                 </div>
                             </div>

@@ -1,0 +1,151 @@
+.brands-page {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 15px;
+}
+
+.brands-page-heading {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.brands-page-loading {
+    padding: 3rem 0;
+    text-align: center;
+    color: #666;
+}
+
+.brands-page-top {
+    margin-bottom: 2.5rem;
+}
+
+.brands-page-top h2 {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+.brands-page-logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.brands-page-logo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.brands-page-logo-item:hover {
+    border-color: #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.brands-page-logo-item img {
+    max-width: 100%;
+    max-height: 48px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+}
+
+.brands-page-logo-item p {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.brands-page-body {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.brands-page-alphabet {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    flex-shrink: 0;
+}
+
+.brands-page-alphabet a {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #333;
+    text-decoration: none;
+    text-align: center;
+    width: 22px;
+}
+
+.brands-page-alphabet a.disabled {
+    color: #ccc;
+    pointer-events: none;
+}
+
+.brands-page-list {
+    flex: 1;
+    min-width: 0;
+}
+
+.brands-page-letter-group {
+    margin-bottom: 1.5rem;
+    scroll-margin-top: 100px;
+}
+
+.brands-page-letter-group h3 {
+    font-size: 1rem;
+    color: #888;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
+.brands-page-letter-group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem 1.5rem;
+}
+
+.brands-page-letter-group li a {
+    display: flex;
+    justify-content: space-between;
+    color: #333;
+    text-decoration: none;
+    padding: 0.25rem 0;
+}
+
+.brands-page-letter-group li a:hover {
+    text-decoration: underline;
+}
+
+.brands-page-count {
+    color: #999;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+    .brands-page-body {
+        flex-direction: column;
+    }
+
+    .brands-page-alphabet {
+        flex-direction: row;
+        flex-wrap: wrap;
+        position: static;
+        justify-content: center;
+    }
+}

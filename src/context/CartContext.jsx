@@ -90,6 +90,8 @@ export const CartProvider = ({ children }) => {
 
             await fetchCart(true, justProvisioned);
 
+            toast.success(`${product.name || 'Item'} added to cart`);
+
             // --- META PIXEL: ADD TO CART EVENT ---
             if (window.fbq) {
                 window.fbq('track', 'AddToCart', {
@@ -162,6 +164,8 @@ export const CartProvider = ({ children }) => {
 
             await axiosInstance.post('/api/v1/cart/add-multiple', payload);
             await fetchCart(true, justProvisioned);
+
+            toast.success(`${products.length} item${products.length > 1 ? 's' : ''} added to cart`);
 
             // --- META PIXEL: ADD TO CART EVENT (BUNDLE) ---
             if (window.fbq) {

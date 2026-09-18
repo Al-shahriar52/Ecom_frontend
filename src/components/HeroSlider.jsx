@@ -20,16 +20,20 @@ const HeroSlider = () => {
     // Updated slides data
     const slides = [
         {
-            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1778600655/ecommerce/Gemini_Generated_Image_cfsrpdcfsrpdcfsr_1_y2olu3.jpg',
-            buttonLink: 'https://beautyhaat.com/product/14'
+            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1789743511/Gemini_Generated_Image_yeux6kyeux6kyeux_coh03b.png',
+            buttonLink: 'https://beautyhaat.com/subcategory/cleanser'
         },
         {
-            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1778600655/ecommerce/IMG_4045.JPG_dppabw.jpg',
-            buttonLink: 'https://beautyhaat.com/product/2' // Internal relative path
+            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1789743572/Gemini_Generated_Image_wdz63mwdz63mwdz6_ccdr2z.png',
+            buttonLink: 'https://beautyhaat.com/subcategory/sunscreen' // Internal relative path
+        },
+        {
+            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1778600655/ecommerce/Gemini_Generated_Image_cfsrpdcfsrpdcfsr_1_y2olu3.jpg',
+            buttonLink: 'https://beautyhaat.com/category/hair'
         },
         {
             imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1778600655/ecommerce/Gemini_Generated_Image_p7ndqwp7ndqwp7nd_1_1_p6ssqx.jpg',
-            buttonLink: 'https://beautyhaat.com/product/10' // Internal relative path
+            buttonLink: 'https://beautyhaat.com/category/hair' // Internal relative path
         },
         /*{
             imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1756663199/shop-by-concern-web-updated_dvxdhi.webp',

@@ -22,7 +22,7 @@
 .shop-page-heading {
     font-size: 1.5rem;
     font-weight: 700;
-    margin: 0 0 1rem;
+    margin: 0 0 0.6rem;
     text-transform: capitalize;
 }
 
@@ -39,22 +39,22 @@
     align-items: center;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 0 15px;
-    margin-bottom: 0.5rem;
+    padding: 0 12px;
     background-color: #fff;
 }
 
 .main-search-bar-wrapper svg {
     color: #999;
-    margin-right: 10px;
+    margin-right: 8px;
+    flex-shrink: 0;
 }
 
 .main-search-bar-wrapper input {
     width: 100%;
     border: none;
     outline: none;
-    padding: 12px 0;
-    font-size: 1rem;
+    padding: 8px 0;
+    font-size: 0.95rem;
     background-color: transparent;
 }
 
@@ -86,12 +86,9 @@
 /* ======================================== */
 .page-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
-    padding: 1rem;
-    background-color: #f9f9f9;
-    border-radius: 8px;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .active-filters {
@@ -214,14 +211,25 @@
     top: 115px; /* Adjusted to sit cleanly under desktop header */
     background-color: #ffffff;
     z-index: 90; /* Sits below top header (z-index 1000+) but above product cards */
-    padding: 12px 15px;
-    margin-bottom: 15px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
     border-bottom: 1px solid #eee;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.sticky-top-controls .main-search-bar-wrapper {
-    margin-bottom: 0.75rem;
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.controls-row .main-search-bar-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.active-filters {
+    margin-top: 8px;
 }
 
 /* ======================================== */
@@ -295,7 +303,7 @@
     .sticky-top-controls {
         /* Set to match the total height of your sticky header (Logo row + Main search row) */
         top: 115px;
-        padding: 10px;
+        padding: 8px 10px;
     }
 
     .shop-page-container {
@@ -307,15 +315,14 @@
         display: flex;
     }
 
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
     .page-header {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: nowrap;
-        gap: 10px;
-        padding: 0;
-        background-color: transparent;
+        gap: 8px;
     }
 
     .mobile-filter-toggle,
