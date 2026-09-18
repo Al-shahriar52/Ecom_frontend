@@ -17,6 +17,7 @@ import RefundPolicy from './pages/RefundPolicy';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Shop from './pages/ShopPage';
 import AboutUs from './pages/AboutUs';
+import Brands from './pages/Brands';
 
 // --- Context Providers ---
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -149,6 +150,7 @@ function App() {
                                         <Route path="/refund-policy" element={<RefundPolicy />} />
                                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                                         <Route path="/about" element={<AboutUs />} />
+                                        <Route path="/brands" element={<Brands />} />
                                         <Route path="/cart" element={<Cart />} />
                                         <Route path="/login" element={<AuthPage />} />
                                         <Route path="/brand/:slug" element={<ShopPage />} />

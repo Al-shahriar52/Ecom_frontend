@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/AxiosInstance';
 import { toast } from 'react-hot-toast';
 import { CartContext } from '../../context/CartContext';
@@ -110,9 +111,16 @@ const FrequentlyBoughtTogether = ({ mainProduct }) => {
                 <div className="fbt-visuals">
                     {allProducts.map((product, index) => {
                         const imageSrc = product.imageUrl || (product.imageUrls && product.imageUrls[0]) || '/placeholder.png';
+                        const image = <ImageWithSkeleton src={imageSrc} alt={product.name} />;
                         return (
                             <React.Fragment key={product.productId || product.id}>
-                                <ImageWithSkeleton src={imageSrc} alt={product.name} />
+                                {index === 0 ? (
+                                    image
+                                ) : (
+                                    <Link to={`/product/${product.slug || product.productId || product.id}`} className="fbt-item-link" title={product.name}>
+                                        {image}
+                                    </Link>
+                                )}
                                 {index < allProducts.length - 1 && <span className="fbt-plus-icon">+</span>}
                             </React.Fragment>
                         );
@@ -147,8 +155,16 @@ const FrequentlyBoughtTogether = ({ mainProduct }) => {
                             />
                             <div className="fbt-item-details">
                                 <span className="fbt-item-name">
-                                    {index === 0 ? <strong>This Item: </strong> : null}
-                                    {product.name}
+                                    {index === 0 ? (
+                                        <>
+                                            <strong>This Item: </strong>
+                                            {product.name}
+                                        </>
+                                    ) : (
+                                        <Link to={`/product/${product.slug || productId}`} className="fbt-item-name-link">
+                                            {product.name}
+                                        </Link>
+                                    )}
                                 </span>
                                 <div className="fbt-item-pricing">
                                     <span className="original-price">৳{product.originalPrice?.toFixed(2)}</span>

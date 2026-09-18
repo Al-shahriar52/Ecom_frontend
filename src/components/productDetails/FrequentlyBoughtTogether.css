@@ -343,3 +343,18 @@
         width: 100%; /* Make the summary box take full width */
     }
 }
+/* Product links added for FBT items (name + thumbnail navigate to the product) */
+.fbt-item-name-link {
+    color: #333;
+    text-decoration: none;
+}
+
+.fbt-item-name-link:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+.fbt-item-link {
+    display: inline-block;
+    cursor: pointer;
+}

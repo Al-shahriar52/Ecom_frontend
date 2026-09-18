@@ -506,46 +506,48 @@ const ShopPage = () => {
                     </p>
                 )}
 
-                {/* Sticky Controls Header: Search + Filter Toggle + Sorting */}
+                {/* Sticky Controls Bar: Search + Filter Toggle + Sorting, in one compact row */}
                 <div className="sticky-top-controls">
 
-                    {/* Search Bar within current results */}
-                    <div className="main-search-bar-wrapper">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input
-                            type="text"
-                            placeholder="Search within these results..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                    <div className="controls-row">
+                        {/* Search Bar within current results */}
+                        <div className="main-search-bar-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input
+                                type="text"
+                                placeholder="Search within these results..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
 
-                    {/* Filter Toggle + Sorting Dropdown */}
-                    <div className="page-header">
-                        <button className="mobile-filter-toggle" onClick={() => setIsMobileFilterOpen(true)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="4" y1="21" x2="4" y2="14"></line>
-                                <line x1="4" y1="10" x2="4" y2="3"></line>
-                                <line x1="12" y1="21" x2="12" y2="12"></line>
-                                <line x1="12" y1="8" x2="12" y2="3"></line>
-                                <line x1="20" y1="21" x2="20" y2="16"></line>
-                                <line x1="20" y1="12" x2="20" y2="3"></line>
-                                <line x1="1" y1="14" x2="7" y2="14"></line>
-                                <line x1="9" y1="8" x2="15" y2="8"></line>
-                                <line x1="17" y1="16" x2="23" y2="16"></line>
-                            </svg>
-                            All Filters
-                        </button>
+                        {/* Filter Toggle + Sorting Dropdown */}
+                        <div className="page-header">
+                            <button className="mobile-filter-toggle" onClick={() => setIsMobileFilterOpen(true)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                                </svg>
+                                Filters
+                            </button>
 
-                        <select className="sort-dropdown" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                            <option value="">Default Sorting</option>
-                            <option value="name,asc">Sort by Name (A-Z)</option>
-                            <option value="name,desc">Sort by Name (Z-A)</option>
-                            <option value="quantity,asc">Sort by Stock (Low to High)</option>
-                            <option value="quantity,desc">Sort by Stock (High to Low)</option>
-                            <option value="discountedPrice,asc">Sort by Price (Low to High)</option>
-                            <option value="discountedPrice,desc">Sort by Price (High to Low)</option>
-                        </select>
+                            <select className="sort-dropdown" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                                <option value="">Default Sorting</option>
+                                <option value="name,asc">Sort by Name (A-Z)</option>
+                                <option value="name,desc">Sort by Name (Z-A)</option>
+                                <option value="quantity,asc">Sort by Stock (Low to High)</option>
+                                <option value="quantity,desc">Sort by Stock (High to Low)</option>
+                                <option value="discountedPrice,asc">Sort by Price (Low to High)</option>
+                                <option value="discountedPrice,desc">Sort by Price (High to Low)</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Active Filters */}
