@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { MoreVertical, Eye, Pencil, Truck, MapPinned, XCircle } from 'lucide-react';
 import axiosInstance from '../../../api/AxiosInstance';
+import OrderUpdateModal from './OrderUpdateModal';
+import PickupModal from './PickupModal';
+import TrackingModal from './TrackingModal';
 import './AdminOrders.css';
 
-// --- PORTAL COMPONENT ---
-const ModalPortal = ({ children }) => {
-    return ReactDOM.createPortal(children, document.body);
-};
 
 const AdminOrders = () => {
+    const navigate = useNavigate();
+
     const initialFilters = {
         method: 'All',
         paymentStatus: 'All',
@@ -45,15 +46,9 @@ const AdminOrders = () => {
     const [selectedInvoices, setSelectedInvoices] = useState([]);
     const [showTrackModal, setShowTrackModal] = useState(false);
     const [showPickupModal, setShowPickupModal] = useState(false);
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [openMenuOrderId, setOpenMenuOrderId] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
-    const [trackingHistory, setTrackingHistory] = useState([]);
-    const [pickupLoading, setPickupLoading] = useState(false);
-
-    // Pickup Form State
-    const [pickupForm, setPickupForm] = useState({
-        invoice: '', recipient_name: '', recipient_phone: '', recipient_address: '', cod_amount: 0, note: '',
-        delivery_type: 0, alternative_phone: '', recipient_email: '', item_description: '', total_lot: 1
-    });
 
     const stats = [
         { label: 'Total Orders', value: dashboardStats.totalOrders || 0, icon: '📋', color: '#e3f2fd', text: '#1565c0' },
@@ -223,52 +218,30 @@ const AdminOrders = () => {
     const handleTrackOrder = (order) => {
         setSelectedOrder(order);
         setShowTrackModal(true);
-        // Mock timeline data
-        const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        setTrackingHistory([
-            { time: `${today}, 10:30 AM`, msg: 'Out for Delivery', status: 'active' },
-            { time: `${today}, 08:00 AM`, msg: 'Received at Local Hub', status: 'completed' },
-            { time: `${formatDate(order.date)}`, msg: 'Order Confirmed', status: 'completed' }
-        ]);
     };
 
     const openPickupModal = (order) => {
         setSelectedOrder(order);
-        setPickupForm({
-            invoice: order.invoice || 'N/A',
-            recipient_name: order.customer || '',
-            recipient_phone: order.phone || '',
-            recipient_address: order.address || '', // Requires full address from Order API, not list API
-            cod_amount: order.paymentStatus === 'PAID' ? 0 : order.totalAmount,
-            note: '', delivery_type: 0, alternative_phone: '',
-            recipient_email: order.email || '',
-            item_description: 'Standard Package',
-            total_lot: 1
-        });
         setShowPickupModal(true);
     };
 
-    const handlePickupSubmit = async (e) => {
-        e.preventDefault();
-        setPickupLoading(true);
+    const openUpdateModal = (order) => {
+        setSelectedOrder(order);
+        setShowUpdateModal(true);
+    };
 
-        try {
-            // Our backend bulk API handles both single and bulk, so we just wrap the single ID in an array
-            await axiosInstance.post('/api/v1/admin/orders/pickup', { orderIds: [selectedOrder.id] });
+    const handleViewDetails = (order) => {
+        // Pass the row data along so the details page can render instantly;
+        // it still confirms/refreshes from the API itself.
+        navigate(`/admin/orders/${order.id}`, { state: { order } });
+    };
 
-            toast.success(`Consignment created for ${pickupForm.invoice}`);
-            setShowPickupModal(false); // Close the modal
-            setRefreshTrigger(prev => prev + 1); // Refresh the table data automatically
-        } catch (error) {
-            console.error("Error creating pickup:", error);
-            toast.error(error.response?.data?.message || "Failed to place pickup request.");
-        } finally {
-            setPickupLoading(false);
-        }
+    const handlePickupSuccess = () => {
+        setRefreshTrigger(prev => prev + 1);
     };
 
     return (
-        <div className="order-dashboard">
+        <div className="order-dashboard" onClick={() => setOpenMenuOrderId(null)}>
 
             {/* STATS GRID */}
             <div className="stats-grid">
@@ -378,7 +351,7 @@ const AdminOrders = () => {
 
                                             <td>
                                                 {order.invoice ? (
-                                                    <Link to={`/admin/orders/${order.id}`} className="text-pink fw-bold" style={{textDecoration:'none'}}>
+                                                    <Link to={`/admin/orders/${order.id}`} state={{ order }} className="text-pink fw-bold" style={{textDecoration:'none'}}>
                                                         {order.invoice}
                                                     </Link>
                                                 ) : (
@@ -417,15 +390,59 @@ const AdminOrders = () => {
                                             <td className="fw-bold">৳{order.totalAmount || 0}</td>
 
                                             <td>
-                                                <div style={{display:'flex', gap:'5px'}}>
-                                                    {order.cid ? (
-                                                        <button className="btn-action btn-track" onClick={() => handleTrackOrder(order)}>Track</button>
-                                                    ) : (
-                                                        <button className="btn-action btn-pickup" onClick={() => openPickupModal(order)} disabled={order.orderStatus === 'CANCELLED'}>Pickup</button>
-                                                    )}
+                                                <div className="order-row-menu-wrap" onClick={e => e.stopPropagation()}>
+                                                    <button
+                                                        className="order-row-menu-trigger"
+                                                        onClick={() => setOpenMenuOrderId(openMenuOrderId === order.id ? null : order.id)}
+                                                    >
+                                                        <MoreVertical size={18} />
+                                                    </button>
 
-                                                    {order.orderStatus !== 'CANCELLED' && order.deliveryStatus !== 'DELIVERED' && (
-                                                        <button className="btn-action btn-cancel" onClick={() => handleCancelOrder(order)} title="Cancel Order">✕</button>
+                                                    {openMenuOrderId === order.id && (
+                                                        <div className={`order-row-menu ${i >= orders.length - 2 ? 'menu-up' : ''}`}>
+                                                            <button
+                                                                className="order-row-menu-item"
+                                                                onClick={() => { handleViewDetails(order); setOpenMenuOrderId(null); }}
+                                                            >
+                                                                <Eye size={14} /> View Details
+                                                            </button>
+
+                                                            <button
+                                                                className="order-row-menu-item"
+                                                                onClick={() => { openUpdateModal(order); setOpenMenuOrderId(null); }}
+                                                            >
+                                                                <Pencil size={14} /> Update Order
+                                                            </button>
+
+                                                            {order.cid ? (
+                                                                <button
+                                                                    className="order-row-menu-item"
+                                                                    onClick={() => { handleTrackOrder(order); setOpenMenuOrderId(null); }}
+                                                                >
+                                                                    <MapPinned size={14} /> Track
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    className="order-row-menu-item"
+                                                                    disabled={order.orderStatus === 'CANCELLED'}
+                                                                    onClick={() => { openPickupModal(order); setOpenMenuOrderId(null); }}
+                                                                >
+                                                                    <Truck size={14} /> Pickup
+                                                                </button>
+                                                            )}
+
+                                                            {order.orderStatus !== 'CANCELLED' && order.deliveryStatus !== 'DELIVERED' && (
+                                                                <>
+                                                                    <div className="order-row-menu-divider" />
+                                                                    <button
+                                                                        className="order-row-menu-item danger"
+                                                                        onClick={() => { handleCancelOrder(order); setOpenMenuOrderId(null); }}
+                                                                    >
+                                                                        <XCircle size={14} /> Cancel Order
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </td>
@@ -462,108 +479,25 @@ const AdminOrders = () => {
             </div>
 
             {/* TRACKING MODAL */}
-            {showTrackModal && (
-                <ModalPortal>
-                    <div className="modal-overlay" onClick={() => setShowTrackModal(false)}>
-                        <div className="modal-content track-modal-size" onClick={e => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <div>
-                                    <h4>Consignment Journey</h4>
-                                    <span className="text-small" style={{color:'#ccc'}}>CID: {selectedOrder?.cid}</span>
-                                </div>
-                                <button onClick={() => setShowTrackModal(false)}>✕</button>
-                            </div>
-                            <div className="modal-body">
-                                <div className="timeline-container">
-                                    {trackingHistory.map((step, i) => (
-                                        <div key={i} className={`timeline-item ${step.status}`}>
-                                            <div className="timeline-content">
-                                                <p className="timeline-msg">{step.msg}</p>
-                                                <span className="timeline-time">{step.time}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </ModalPortal>
+            {showTrackModal && selectedOrder && (
+                <TrackingModal order={selectedOrder} onClose={() => setShowTrackModal(false)} />
             )}
 
             {/* PICKUP MODAL */}
-            {showPickupModal && (
-                <ModalPortal>
-                    <div className="modal-overlay" onClick={() => setShowPickupModal(false)}>
-                        <div className="modal-content pickup-modal-size" onClick={e => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <div>
-                                    <h4>Create Order (Steadfast)</h4>
-                                    <span className="text-small" style={{color:'#ccc'}}>Inv: {pickupForm.invoice}</span>
-                                </div>
-                                <button onClick={() => setShowPickupModal(false)}>✕</button>
-                            </div>
-                            <form onSubmit={handlePickupSubmit} style={{display:'flex', flexDirection:'column', overflow:'hidden', flex:1}}>
-                                <div className="modal-body">
-                                    <div className="pickup-grid">
-                                        <div className="input-group">
-                                            <label>Invoice ID <span className="req">*</span></label>
-                                            <input type="text" value={pickupForm.invoice} readOnly style={{backgroundColor:'#f5f5f5'}} />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>COD Amount (BDT) <span className="req">*</span></label>
-                                            <input type="number" value={pickupForm.cod_amount} min="0" onChange={e => setPickupForm({...pickupForm, cod_amount: e.target.value})} required />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Recipient Name <span className="req">*</span></label>
-                                            <input type="text" value={pickupForm.recipient_name} onChange={e => setPickupForm({...pickupForm, recipient_name: e.target.value})} maxLength="100" required />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Recipient Phone <span className="req">*</span></label>
-                                            <input type="text" value={pickupForm.recipient_phone} onChange={e => setPickupForm({...pickupForm, recipient_phone: e.target.value})} maxLength="11" required />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Alt. Phone</label>
-                                            <input type="text" value={pickupForm.alternative_phone} onChange={e => setPickupForm({...pickupForm, alternative_phone: e.target.value})} maxLength="11" />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Email</label>
-                                            <input type="email" value={pickupForm.recipient_email} onChange={e => setPickupForm({...pickupForm, recipient_email: e.target.value})} />
-                                        </div>
-                                        <div className="input-group full-width">
-                                            <label>Address <span className="req">*</span></label>
-                                            <textarea value={pickupForm.recipient_address} placeholder="Enter full delivery address" onChange={e => setPickupForm({...pickupForm, recipient_address: e.target.value})} maxLength="250" required />
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Delivery Type</label>
-                                            <select value={pickupForm.delivery_type} onChange={e => setPickupForm({...pickupForm, delivery_type: e.target.value})}>
-                                                <option value={0}>Home Delivery</option>
-                                                <option value={1}>Point/Hub Pickup</option>
-                                            </select>
-                                        </div>
-                                        <div className="input-group">
-                                            <label>Total Lot</label>
-                                            <input type="number" value={pickupForm.total_lot} min="1" onChange={e => setPickupForm({...pickupForm, total_lot: e.target.value})} />
-                                        </div>
-                                        <div className="input-group full-width">
-                                            <label>Item Description</label>
-                                            <input type="text" value={pickupForm.item_description} onChange={e => setPickupForm({...pickupForm, item_description: e.target.value})} />
-                                        </div>
-                                        <div className="input-group full-width">
-                                            <label>Note</label>
-                                            <input type="text" value={pickupForm.note} onChange={e => setPickupForm({...pickupForm, note: e.target.value})} />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn-cancel-modal" onClick={() => setShowPickupModal(false)}>Cancel</button>
-                                    <button type="submit" className="btn-submit-modal" disabled={pickupLoading}>
-                                        {pickupLoading ? "Creating..." : "Place Pickup Request"}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </ModalPortal>
+            {showPickupModal && selectedOrder && (
+                <PickupModal
+                    order={selectedOrder}
+                    onClose={() => setShowPickupModal(false)}
+                    onSuccess={handlePickupSuccess}
+                />
+            )}
+            {/* UPDATE ORDER MODAL */}
+            {showUpdateModal && selectedOrder && (
+                <OrderUpdateModal
+                    order={selectedOrder}
+                    onClose={() => setShowUpdateModal(false)}
+                    onSuccess={() => setRefreshTrigger(prev => prev + 1)}
+                />
             )}
         </div>
     );

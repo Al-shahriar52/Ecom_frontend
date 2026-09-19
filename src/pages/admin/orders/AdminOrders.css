@@ -378,6 +378,7 @@
 }
 
 .status-pill.pending { background: #fff9db; color: #f08c00; }
+.status-pill.confirmed { background: #e7f5ff; color: #1c7ed6; }
 .status-pill.processing { background: #e7f5ff; color: #1c7ed6; }
 .status-pill.completed { background: #e8f5e9; color: #2e7d32; }
 .status-pill.cancelled { background: #ffebee; color: #c62828; }
@@ -429,6 +430,81 @@
     transform: translateY(-1px);
     filter: brightness(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* --- ROW ACTIONS: 3-DOT DROPDOWN MENU --- */
+.order-row-menu-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.order-row-menu-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9fa2b4;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.order-row-menu-trigger:hover {
+    background-color: #f1f2f6;
+    color: #333;
+}
+
+.order-row-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    width: 190px;
+    z-index: 20;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(18, 22, 31, 0.16);
+    border: 1px solid #eee;
+    padding: 6px 0;
+}
+
+.order-row-menu.menu-up {
+    top: auto;
+    bottom: calc(100% + 4px);
+}
+
+.order-row-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.order-row-menu-item:hover:not(:disabled) {
+    background: #fafafb;
+}
+
+.order-row-menu-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.order-row-menu-item.danger {
+    color: #c62828;
+}
+
+.order-row-menu-divider {
+    margin: 6px 0;
+    border-top: 1px solid #eee;
 }
 
 /* --- PAGINATION --- */
@@ -504,6 +580,7 @@
 
 .pickup-modal-size { width: 600px; }
 .track-modal-size { width: 450px; }
+.update-modal-size { width: 520px; }
 
 .modal-header {
     padding: 18px 24px;
@@ -553,6 +630,23 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+}
+
+.update-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.update-warning-banner {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    color: #8a6d00;
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
 }
 
 .full-width { grid-column: span 2; }

@@ -1,56 +1,83 @@
-
+// Maps the backend's real OrderStatus / DeliveryStatus enum values
+// (ecommerce.enums.OrderStatus, ecommerce.enums.DeliveryStatus) to a 5-step
+// visual tracker. These are clean internal enums the backend controls
+// directly - NOT raw Steadfast courier webhook strings - so this logic
+// must be kept in sync with those two enums if they change.
 export const getTrackingMilestones = (orderStatus, deliveryStatus, cid) => {
-    // 1. Check for Cancellation immediately
-    const isCancelled =
-        orderStatus === 'CANCELLED' ||
-        ['cancelled', 'cancelled_approval_pending'].includes(deliveryStatus?.toLowerCase());
+    const isCancelled = orderStatus === 'CANCELLED' || deliveryStatus === 'CANCELLED';
+    const isReturned = orderStatus === 'RETURNED' || deliveryStatus === 'RETURNED';
 
     if (isCancelled) {
         return {
             currentStep: -1,
             isCancelled: true,
             steps: [
-                { title: 'Order Confirmed', status: 'completed', desc: 'Order was accepted' },
-                { title: 'Cancelled', status: 'failed', desc: 'Order was cancelled' }
+                { title: 'Order Confirmed', desc: 'Order was accepted' },
+                { title: 'Cancelled', desc: 'This order was cancelled' }
             ]
         };
     }
 
-    // Default configuration for a healthy delivery lifeline
-    let currentStep = 1; // Default to step 1 (Confirmed)
+    if (isReturned) {
+        return {
+            currentStep: -1,
+            isCancelled: true, // reuses the same completed/failed rendering
+            steps: [
+                { title: 'Shipped', desc: 'Package was handed to the courier' },
+                { title: 'Returned', desc: 'Package was returned to sender' }
+            ]
+        };
+    }
+
+    let currentStep = 1; // Default: order received, awaiting confirmation
     let step1Desc = 'We have received your order';
     let step2Desc = 'Preparing items in our warehouse';
     let step3Desc = 'Waiting for courier confirmation';
     let step4Desc = 'Package is on the way';
     let step5Desc = 'Package handed over';
 
-    const cleanDeliveryStatus = deliveryStatus?.toLowerCase() || '';
+    // --- Internal order workflow (before a courier is involved) ---
+    if (orderStatus === 'CONFIRMED') {
+        currentStep = Math.max(currentStep, 1);
+        step1Desc = 'Order approved';
+    }
+    if (orderStatus === 'PACKAGED') {
+        currentStep = Math.max(currentStep, 2);
+        step1Desc = 'Order approved';
+        step2Desc = 'Items packed and ready to ship';
+    }
+    if (orderStatus === 'SHIPPED') {
+        currentStep = Math.max(currentStep, 3);
+        step2Desc = 'Items packed and ready to ship';
+        step3Desc = 'Handed over to courier';
+    }
+    if (orderStatus === 'DELIVERED') {
+        currentStep = 5;
+    }
 
-    // Determine current step based on combination of internal flags and Steadfast statuses
+    // --- Courier/delivery workflow (once a pickup has been requested) ---
     if (cid) {
-        // If courier ID exists, we are at least at Step 3 (Handed Over)
-        currentStep = 3;
+        currentStep = Math.max(currentStep, 3);
+        step3Desc = 'Handed over to courier';
 
-        if (cleanDeliveryStatus === 'in_review') {
-            currentStep = 3;
-            step3Desc = 'Order created on Steadfast. Awaiting pickup approval.';
-        }
-        else if (['pending', 'hold'].includes(cleanDeliveryStatus)) {
-            currentStep = 4;
-            step3Desc = 'Picked up by courier';
-            step4Desc = cleanDeliveryStatus === 'hold' ? 'Delivery temporarily on hold' : 'Out for delivery';
-        }
-        else if (['delivered', 'delivered_approval_pending', 'partial_delivered', 'partial_delivered_approval_pending'].includes(cleanDeliveryStatus)) {
-            currentStep = 5;
-            step3Desc = 'Picked up by courier';
-            step4Desc = 'Delivery completed';
-            step5Desc = cleanDeliveryStatus.includes('approval') ? 'Delivered (Awaiting System Clearance)' : 'Successfully Delivered';
-        }
-    } else {
-        // No CID yet means it's still internal
-        if (orderStatus === 'CONFIRMED') {
-            currentStep = 2; // Move visually to Packing state
-            step1Desc = 'Order approved';
+        switch (deliveryStatus) {
+            case 'READY_FOR_PICKUP':
+                currentStep = Math.max(currentStep, 3);
+                step3Desc = 'Courier notified, awaiting rider pickup';
+                break;
+            case 'IN_TRANSIT':
+                currentStep = Math.max(currentStep, 4);
+                step3Desc = 'Picked up by courier';
+                step4Desc = 'Out for delivery';
+                break;
+            case 'DELIVERED':
+                currentStep = 5;
+                step3Desc = 'Picked up by courier';
+                step4Desc = 'Delivery completed';
+                step5Desc = 'Successfully delivered';
+                break;
+            default:
+                break; // PENDING - stays at "handed over to courier"
         }
     }
 
