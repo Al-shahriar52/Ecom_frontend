@@ -194,7 +194,7 @@ const ProductManagement = () => {
                                 <tr key={product.productId}>
                                     {/* Table data cells */}
                                     <td><img src={product.imageUrl || "https://via.placeholder.com/40"} alt={product.name} className="product-image" /></td>
-                                    <td className="td-product-name">{product.name}</td>
+                                    <td className="td-product-name" title={product.name}>{product.name}</td>
                                     <td>{product.sku}</td>
                                     <td>{product.categoryName}</td>
                                     <td>{product.quantity}</td>

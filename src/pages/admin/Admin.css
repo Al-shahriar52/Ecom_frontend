@@ -68,7 +68,14 @@
     border-radius: 8px;
     object-fit: cover;
 }
-.admin-page-content .td-product-name { font-weight: 600; color: #252733; white-space: normal; }
+.admin-page-content .td-product-name {
+    font-weight: 600;
+    color: #252733;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0; /* Forces the cell to respect the table's column width instead of growing */
+}
 .admin-page-content .status-badge { padding: 5px 12px; border-radius: 50px; font-weight: 600; font-size: 11px; text-align: center; text-transform: uppercase; white-space: nowrap; }
 .admin-page-content .status-in-stock { background-color: #dff9fb; color: #03a9f4; }
 .admin-page-content .status-limited { background-color: #fff8e1; color: #ffc107; }
