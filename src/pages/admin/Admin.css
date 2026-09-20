@@ -230,3 +230,66 @@
     fill: currentColor; /* Inherits the color from the button */
 }
 .no-results { color: #888; padding: 1rem; text-align: center; }
+/* ======================================== */
+/* --- RESPONSIVE / MOBILE --- */
+/* ======================================== */
+@media (max-width: 768px) {
+    .admin-page-content {
+        padding: 14px;
+    }
+
+    .admin-page-content .content-card,
+    .admin-page-content .form-card {
+        padding: 16px;
+    }
+
+    .admin-page-content .header-title-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .admin-page-content .header-actions {
+        width: 100%;
+    }
+
+    .admin-page-content .search-input,
+    .admin-page-content .filter-select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Add/Edit Product form: 2-column layout stacks to 1 column */
+    .admin-page-content .add-product-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-page-content .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-page-content .add-product-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .admin-page-content .form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .admin-page-content .form-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* FBT Management: 2-column layout stacks to 1 column */
+    .fbt-management-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+}

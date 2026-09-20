@@ -580,7 +580,7 @@
 
 .pickup-modal-size { width: 600px; }
 .track-modal-size { width: 450px; }
-.update-modal-size { width: 520px; }
+.update-modal-size { width: 640px; }
 
 .modal-header {
     padding: 18px 24px;
@@ -647,6 +647,21 @@
     border-radius: 8px;
     font-size: 12.5px;
     line-height: 1.5;
+}
+
+.update-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #9fa2b4;
+    margin: 22px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.update-section-title:first-child {
+    margin-top: 0;
 }
 
 .full-width { grid-column: span 2; }
@@ -785,4 +800,91 @@
 @keyframes popUp {
     from { transform: scale(0.9) translateY(20px); opacity: 0; }
     to { transform: scale(1) translateY(0); opacity: 1; }
+}
+/* ======================================== */
+/* --- RESPONSIVE / MOBILE --- */
+/* ======================================== */
+@media (max-width: 768px) {
+    .order-dashboard {
+        padding: 14px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .main-card {
+        padding: 14px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .card-header > div:last-child {
+        display: flex;
+        width: 100%;
+    }
+
+    .btn-global-export {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-search,
+    .filter-select,
+    .date-range-group {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .bulk-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .bulk-actions {
+        flex-wrap: wrap;
+    }
+
+    .pagination-container {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+    }
+
+    /* Modals: fixed pixel widths overflow small screens */
+    .modal-content {
+        max-width: 95vw;
+        max-height: 92vh;
+    }
+
+    .pickup-modal-size,
+    .track-modal-size,
+    .update-modal-size {
+        width: 95vw;
+    }
+
+    .pickup-grid,
+    .update-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-width {
+        grid-column: span 1;
+    }
 }
