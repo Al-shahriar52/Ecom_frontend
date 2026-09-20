@@ -9,6 +9,7 @@ import { Tabs, Tab } from '../components/productDetails/Tabs';
 import ProductReviews from '../components/review/ProductReviews';
 import FrequentlyBoughtTogether from '../components/productDetails/FrequentlyBoughtTogether';
 import SimilarProducts from '../components/productDetails/SimilarProducts';
+import ProductCarouselSection from '../components/productDetails/ProductCarouselSection';
 import { WishlistContext } from '../context/WishlistContext';
 import { slugify } from '../utils/slugify';
 
@@ -341,6 +342,16 @@ const ProductDetailPage = () => {
             </div>
 
             <SimilarProducts productId={product.productId} />
+
+            <ProductCarouselSection
+                title="CUSTOMERS ALSO VIEWED"
+                endpoint={`/api/v1/product/also-viewed/${product.productId}`}
+            />
+
+            <ProductCarouselSection
+                title="RECOMMENDED FOR YOU"
+                endpoint="/api/v1/product/recommended"
+            />
         </div>
     );
 };
