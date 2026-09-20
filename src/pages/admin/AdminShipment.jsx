@@ -42,38 +42,40 @@ const AdminShipment = () => {
             <div className="admin-content-card">
                 {/* --- LIST VIEW --- */}
                 {view === 'list' && (
-                    <table className="modern-table">
-                        <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Customer</th>
-                            <th>Payment</th>
-                            <th>Fulfillment</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {orders.map(order => (
-                            <tr key={order.id}>
-                                <td className="fw-bold">#{order.id}</td>
-                                <td className="text-muted">Feb 14, 2026</td>
-                                <td className="fw-bold">{order.customer}</td>
-                                <td><span className="badge badge-success">{order.status}</span></td>
-                                <td>
+                    <div className="table-scroll-wrap">
+                        <table className="modern-table">
+                            <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Payment</th>
+                                <th>Fulfillment</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {orders.map(order => (
+                                <tr key={order.id}>
+                                    <td className="fw-bold">#{order.id}</td>
+                                    <td className="text-muted">Feb 14, 2026</td>
+                                    <td className="fw-bold">{order.customer}</td>
+                                    <td><span className="badge badge-success">{order.status}</span></td>
+                                    <td>
                                         <span className={`badge ${order.fulfillment === 'Fulfilled' ? 'badge-blue' : 'badge-orange'}`}>
                                             {order.fulfillment}
                                         </span>
-                                </td>
-                                <td>
-                                    <button className="btn-track-action" onClick={() => setView('track')}>
-                                        📍 Track
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                                    </td>
+                                    <td>
+                                        <button className="btn-track-action" onClick={() => setView('track')}>
+                                            📍 Track
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
 
                 {/* --- TRACKING VIEW --- */}

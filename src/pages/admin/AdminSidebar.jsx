@@ -8,7 +8,9 @@ import './AdminDashboard.css';
 const AdminSidebar = () => {
     const { logout, user } = useContext(AuthContext);
     const { hasPermission, loading } = usePermissions();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() =>
+        typeof window !== 'undefined' && window.innerWidth <= 992
+    );
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
     const userRoles = user?.roles ? (Array.isArray(user.roles) ? user.roles : Array.from(user.roles)) : (user?.role ? [user.role] : []);
@@ -27,13 +29,14 @@ const AdminSidebar = () => {
     // 8 = Manage Coupons
     // 9 = Manage Accounting
     // 10 = Manage FBT
-    const canViewDashboard = !loading && hasPermission(user, 0);
-    const canManageUsers = !loading && (hasPermission(user, 1) || hasPermission(user, 2));
-    const canManageOrders = !loading && hasPermission(user, 4);
-    const canManageCoupons = !loading && hasPermission(user, 8);
-    const canManageAccounting = !loading && hasPermission(user, 9);
-    const canManageFbt = !loading && hasPermission(user, 10);
-    const canManageProducts = !loading && hasPermission(user, 11);
+// Add isAdmin || to each check so Admins see everything automatically
+    const canViewDashboard = !loading && (isAdmin || hasPermission(user, 0));
+    const canManageUsers = !loading && (isAdmin || hasPermission(user, 1) || hasPermission(user, 2));
+    const canManageOrders = !loading && (isAdmin || hasPermission(user, 4));
+    const canManageCoupons = !loading && (isAdmin || hasPermission(user, 8));
+    const canManageAccounting = !loading && (isAdmin || hasPermission(user, 9));
+    const canManageFbt = !loading && (isAdmin || hasPermission(user, 10));
+    const canManageProducts = !loading && (isAdmin || hasPermission(user, 11));
 
     const Icons = {
         MenuToggle: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>,
