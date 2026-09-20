@@ -1,0 +1,88 @@
+.product-carousel-container {
+    margin: 3rem 0;
+}
+
+.product-carousel-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.product-carousel-list {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto; /* Enables horizontal scrolling */
+    padding-bottom: 1.5rem; /* Space for the scrollbar */
+}
+
+/* Target each real product card inside the scrolling list */
+.product-carousel-list .product-card {
+    flex: 0 0 250px; /* Fixed width, won't shrink or grow */
+    width: 250px;
+}
+
+/* ========================================= */
+/* --- SKELETON STYLES --- */
+/* ========================================= */
+
+@keyframes pcs-skeleton-pulse {
+    0% { background-color: #e2e8f0; }
+    50% { background-color: #f1f5f9; }
+    100% { background-color: #e2e8f0; }
+}
+
+.pcs-skeleton-box {
+    border-radius: 6px;
+    animation: pcs-skeleton-pulse 1.5s infinite ease-in-out;
+}
+
+.pcs-skeleton-card {
+    flex: 0 0 250px;
+    width: 250px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-sizing: border-box;
+}
+
+.pcs-skeleton-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 6px;
+}
+
+.pcs-skeleton-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pcs-skeleton-brand {
+    width: 40%;
+    height: 12px;
+}
+
+.pcs-skeleton-name {
+    width: 85%;
+    height: 16px;
+}
+
+.pcs-skeleton-price {
+    width: 50%;
+    height: 20px;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+    .product-carousel-list .product-card,
+    .pcs-skeleton-card {
+        flex-basis: 180px;
+        width: 180px;
+    }
+}
