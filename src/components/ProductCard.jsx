@@ -59,6 +59,10 @@ const ProductCard = ({ product }) => {
                     <Link to={`/product/${product.slug}`}>{product.name}</Link>
                 </h3>
 
+                {product.size && (
+                    <div className="product-size">Size: {product.size}</div>
+                )}
+
                 <div className="product-tag-container">
                     {product.tagName && (
                         <span className={`product-tag tag-${product.tagName.toLowerCase().replace(' ', '-')}`}>
