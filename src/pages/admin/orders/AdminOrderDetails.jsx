@@ -107,7 +107,7 @@ const AdminOrderDetails = () => {
                     <span className={`status-pill ${order.orderStatus?.toLowerCase() || 'pending'}`}>{order.orderStatus || 'PENDING'}</span>
 
                     <button className="aod-action-btn" onClick={() => setShowUpdateModal(true)}>
-                        <Pencil size={15} /> Update Order
+                        <Pencil size={15} /> Update
                     </button>
 
                     {!hasCourier && (
@@ -116,13 +116,13 @@ const AdminOrderDetails = () => {
                             onClick={() => setShowPickupModal(true)}
                             disabled={order.orderStatus === 'CANCELLED'}
                         >
-                            <Truck size={15} /> Request Pickup
+                            <Truck size={15} /> Pickup
                         </button>
                     )}
 
                     {canCancel && (
                         <button className="aod-action-btn aod-action-danger" onClick={handleCancelOrder}>
-                            <XCircle size={15} /> Cancel Order
+                            <XCircle size={15} /> Cancel
                         </button>
                     )}
                 </div>
