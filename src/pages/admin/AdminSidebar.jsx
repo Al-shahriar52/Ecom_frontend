@@ -12,6 +12,7 @@ const AdminSidebar = () => {
         typeof window !== 'undefined' && window.innerWidth <= 992
     );
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isAccountingMenuOpen, setIsAccountingMenuOpen] = useState(false);
 
     const userRoles = user?.roles ? (Array.isArray(user.roles) ? user.roles : Array.from(user.roles)) : (user?.role ? [user.role] : []);
     const isAdmin = userRoles.some(r => String(r).replace(/^ROLE_/, '').toUpperCase() === 'ADMIN');
@@ -29,14 +30,13 @@ const AdminSidebar = () => {
     // 8 = Manage Coupons
     // 9 = Manage Accounting
     // 10 = Manage FBT
-// Add isAdmin || to each check so Admins see everything automatically
-    const canViewDashboard = !loading && (isAdmin || hasPermission(user, 0));
-    const canManageUsers = !loading && (isAdmin || hasPermission(user, 1) || hasPermission(user, 2));
-    const canManageOrders = !loading && (isAdmin || hasPermission(user, 4));
-    const canManageCoupons = !loading && (isAdmin || hasPermission(user, 8));
-    const canManageAccounting = !loading && (isAdmin || hasPermission(user, 9));
-    const canManageFbt = !loading && (isAdmin || hasPermission(user, 10));
-    const canManageProducts = !loading && (isAdmin || hasPermission(user, 11));
+    const canViewDashboard = !loading && hasPermission(user, 0);
+    const canManageUsers = !loading && (hasPermission(user, 1) || hasPermission(user, 2));
+    const canManageOrders = !loading && hasPermission(user, 4);
+    const canManageCoupons = !loading && hasPermission(user, 8);
+    const canManageAccounting = !loading && hasPermission(user, 9);
+    const canManageFbt = !loading && hasPermission(user, 10);
+    const canManageProducts = !loading && hasPermission(user, 11);
 
     const Icons = {
         MenuToggle: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>,
@@ -49,7 +49,21 @@ const AdminSidebar = () => {
         Accounting: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="18" x2="12" y2="22"></line><line x1="12" y1="2" x2="12" y2="6"></line></svg>,
         Logout: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>,
         ChevronDown: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>,
-        ChevronUp: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        ChevronUp: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>,
+        Grid: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>,
+        TrendUp: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>,
+        Swap: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>,
+        Landmark: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>,
+        Truck: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>,
+        Undo: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>,
+        Plus: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>,
+        Receipt: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2z"></path><line x1="8" y1="7" x2="16" y2="7"></line><line x1="8" y1="11" x2="16" y2="11"></line></svg>,
+        UserGroup: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
+        FileChart: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="17" x2="9" y2="13"></line><line x1="12" y1="17" x2="12" y2="11"></line><line x1="15" y1="17" x2="15" y2="15"></line></svg>,
+        Percent: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>,
+        Sliders: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
+        UserSingle: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
+        Shield: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>,
     };
 
     return (
@@ -110,13 +124,15 @@ const AdminSidebar = () => {
                             <ul className="sidebar-submenu-tree">
                                 <li>
                                     <NavLink to="/admin/users" end className="tree-link">
+                                        <span className="tree-icon"><Icons.UserSingle /></span>
                                         Users
                                     </NavLink>
                                 </li>
                                 {isAdmin && (
                                     <li>
                                         <NavLink to="/admin/roles" className="tree-link">
-                                            Roles & Permissions
+                                            <span className="tree-icon"><Icons.Shield /></span>
+                                            Roles &amp; Permissions
                                         </NavLink>
                                     </li>
                                 )}
@@ -160,10 +176,46 @@ const AdminSidebar = () => {
 
             <div className="sidebar-links">
                 {canManageAccounting && (
-                    <NavLink to="/admin/accounting" className="sidebar-link" data-tooltip="Accounting">
-                        <span className="icon"><Icons.Accounting /></span>
-                        <span className="text">Accounting</span>
-                    </NavLink>
+                    <div className={`sidebar-item-group ${isAccountingMenuOpen ? 'open' : ''}`}>
+                        <button
+                            onClick={() => setIsAccountingMenuOpen(!isAccountingMenuOpen)}
+                            className="sidebar-link dropdown-toggle"
+                            data-tooltip="Accounting"
+                        >
+                            <span className="icon"><Icons.Accounting /></span>
+                            <span className="text">Accounting</span>
+
+                            {!isCollapsed && (
+                                <span className="arrow">
+                                    {isAccountingMenuOpen ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                                </span>
+                            )}
+                        </button>
+
+                        {isAccountingMenuOpen && !isCollapsed && (
+                            <ul className="sidebar-submenu-tree">
+                                <li className="tree-group-label">Overview</li>
+                                <li><NavLink to="/admin/accounting" end className="tree-link"><span className="tree-icon"><Icons.Grid /></span>Dashboard</NavLink></li>
+                                <li><NavLink to="/admin/accounting/report" className="tree-link"><span className="tree-icon"><Icons.TrendUp /></span>Earnings report</NavLink></li>
+
+                                <li className="tree-group-label">Money in</li>
+                                <li><NavLink to="/admin/accounting/transactions" className="tree-link"><span className="tree-icon"><Icons.Swap /></span>Transactions</NavLink></li>
+                                <li><NavLink to="/admin/accounting/settlements" className="tree-link"><span className="tree-icon"><Icons.Landmark /></span>Settlements</NavLink></li>
+                                <li><NavLink to="/admin/accounting/cod" className="tree-link"><span className="tree-icon"><Icons.Truck /></span>Cash on delivery</NavLink></li>
+                                <li><NavLink to="/admin/accounting/refunds" className="tree-link"><span className="tree-icon"><Icons.Undo /></span>Refunds</NavLink></li>
+
+                                <li className="tree-group-label">Money out</li>
+                                <li><NavLink to="/admin/accounting/expenses/new" className="tree-link"><span className="tree-icon"><Icons.Plus /></span>Record a cost</NavLink></li>
+                                <li><NavLink to="/admin/accounting/expenses" end className="tree-link"><span className="tree-icon"><Icons.Receipt /></span>All expenses</NavLink></li>
+                                <li><NavLink to="/admin/accounting/payroll" className="tree-link"><span className="tree-icon"><Icons.UserGroup /></span>Payroll</NavLink></li>
+
+                                <li className="tree-group-label">Books</li>
+                                <li><NavLink to="/admin/accounting/profit-loss" className="tree-link"><span className="tree-icon"><Icons.FileChart /></span>Profit &amp; loss</NavLink></li>
+                                <li><NavLink to="/admin/accounting/vat-ait" className="tree-link"><span className="tree-icon"><Icons.Percent /></span>VAT &amp; AIT</NavLink></li>
+                                <li><NavLink to="/admin/accounting/gateways" className="tree-link"><span className="tree-icon"><Icons.Sliders /></span>Payment gateways</NavLink></li>
+                            </ul>
+                        )}
+                    </div>
                 )}
 
                 <button onClick={logout} className="sidebar-link logout-btn" data-tooltip="Logout">
