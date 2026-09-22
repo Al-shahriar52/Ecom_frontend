@@ -1,0 +1,38 @@
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 40px;
+    background-color: #25d366; /* Official WhatsApp Green */
+    color: #FFFFFF;            /* Forces the SVG fill to be solid white */
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    z-index: 100;
+    transition: transform 0.3s ease;
+}
+
+.whatsapp-float:hover {
+    transform: scale(1.1);
+}
+
+.whatsapp-icon {
+    width: 25px;
+    height: 25px;
+    /* Triggers the ringing animation for 3 seconds, looping forever */
+    animation: ring-wobble 3s infinite;
+}
+
+/* Keyframes for the ringing/shaking animation */
+@keyframes ring-wobble {
+    0%   { transform: rotate(0); }
+    5%   { transform: rotate(15deg); }
+    10%  { transform: rotate(-15deg); }
+    15%  { transform: rotate(15deg); }
+    20%  { transform: rotate(-15deg); }
+    25%  { transform: rotate(0); }
+    100% { transform: rotate(0); } /* Pauses the animation for the remaining 75% of the cycle */
+}

@@ -18,6 +18,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Shop from './pages/ShopPage';
 import AboutUs from './pages/AboutUs';
 import Brands from './pages/Brands';
+import WhatsAppWidget from './components/WhatsAppWidget';
 
 // --- Context Providers ---
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -126,6 +127,7 @@ const PublicLayout = () => {
         <>
             <Header />
             <ConditionalFloatingCart />
+            <WhatsAppWidget />
             <main>
                 <Outlet />
             </main>
