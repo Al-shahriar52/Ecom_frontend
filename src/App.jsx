@@ -47,7 +47,17 @@ import ProductManagement from './pages/admin/ProductManagement';
 import UserManagement from './pages/admin/UserManagement';
 import AdminOrders from './pages/admin/orders/AdminOrders';
 import AdminOrderDetails from "./pages/admin/orders/AdminOrderDetails";
-import Accounting from './pages/admin/Accounting';
+import FinanceLayout from './pages/admin/finance/FinanceLayout';
+import FinanceOverview from './pages/admin/finance/FinanceOverview';
+import FinanceTransactions from './pages/admin/finance/FinanceTransactions';
+import FinanceExpenseForm from './pages/admin/finance/FinanceExpenseForm';
+import FinanceExpenseList from './pages/admin/finance/FinanceExpenseList';
+import FinanceReport from './pages/admin/finance/FinanceReport';
+import FinanceSettlements from './pages/admin/finance/FinanceSettlements';
+import FinanceCOD from './pages/admin/finance/FinanceCOD';
+import FinanceProfitLoss from './pages/admin/finance/FinanceProfitLoss';
+import FinanceGateways from './pages/admin/finance/FinanceGateways';
+import FinancePlaceholder from './pages/admin/finance/FinancePlaceholder';
 import CouponManagement from './pages/admin/coupons/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';
 import EditProductPage from './pages/admin/EditProductPage';
@@ -186,7 +196,7 @@ function App() {
                                             <Route path="products" element={<ProductManagement />} />
                                             <Route path="users" element={<UserManagement />} />
                                             <Route path="orders" element={<AdminOrders />} />
-                                            <Route path="orders/:orderId" element={<OrderDetail />} />
+                                            <Route path="orders/:orderId" element={<AdminOrderDetails />} />
                                             <Route path="products/add" element={<AddProduct />} />
                                             <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
                                             <Route path="frequently-bought-together" element={<FbtManagementPage />} />
@@ -195,7 +205,20 @@ function App() {
                                             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN']} />}>
                                                 <Route path="roles" element={<RoleManagement />} />
                                                 <Route path="coupons" element={<CouponManagement />} />
-                                                <Route path="accounting" element={<Accounting />} />
+                                                <Route path="accounting" element={<FinanceLayout />}>
+                                                    <Route index element={<FinanceOverview />} />
+                                                    <Route path="report" element={<FinanceReport />} />
+                                                    <Route path="transactions" element={<FinanceTransactions />} />
+                                                    <Route path="settlements" element={<FinanceSettlements />} />
+                                                    <Route path="cod" element={<FinanceCOD />} />
+                                                    <Route path="refunds" element={<FinancePlaceholder title="Refunds" sub="Track and process customer refunds" body="Wire this up to a real refunds table once you're ready — it needs its own backend workflow separate from order cancellation." />} />
+                                                    <Route path="expenses/new" element={<FinanceExpenseForm />} />
+                                                    <Route path="expenses" element={<FinanceExpenseList />} />
+                                                    <Route path="payroll" element={<FinancePlaceholder title="Payroll" sub="Staff salaries and disbursements" body="Payroll needs its own employee records and disbursement history before this can be real — a bigger module than the others." />} />
+                                                    <Route path="profit-loss" element={<FinanceProfitLoss />} />
+                                                    <Route path="vat-ait" element={<FinancePlaceholder title="VAT & AIT" sub="Tax withheld across all your expenses" body="The numbers already exist on every expense you record — this view just needs to be built to aggregate and export them." />} />
+                                                    <Route path="gateways" element={<FinanceGateways />} />
+                                                </Route>
                                             </Route>
 
                                         </Route>
