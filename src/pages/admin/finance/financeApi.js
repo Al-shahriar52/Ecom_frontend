@@ -34,3 +34,35 @@ export const fetchTransactions = async ({ page = 0, size = 20, search, method, p
     });
     return response.data.data; // Spring Page of AdminTransactionDto
 };
+
+export const fetchDashboard = async (start, end, grain = 'week') => {
+    const response = await axiosInstance.get('/api/v1/admin/finance/dashboard', {
+        params: { start, end, grain },
+    });
+    return response.data.data;
+};
+
+export const fetchCodSummary = async () => {
+    const response = await axiosInstance.get('/api/v1/admin/finance/cod');
+    return response.data.data;
+};
+
+export const fetchProfitLoss = async (start, end) => {
+    const response = await axiosInstance.get('/api/v1/admin/finance/profit-loss', { params: { start, end } });
+    return response.data.data;
+};
+
+export const fetchReport = async (grain = 'week', periods = 12) => {
+    const response = await axiosInstance.get('/api/v1/admin/finance/report', { params: { grain, periods } });
+    return response.data.data;
+};
+
+export const fetchGateways = async () => {
+    const response = await axiosInstance.get('/api/v1/admin/finance/gateways');
+    return response.data.data;
+};
+
+export const updateGatewayRate = async (paymentMethod, feeRatePct) => {
+    const response = await axiosInstance.patch(`/api/v1/admin/finance/gateways/${paymentMethod}`, { feeRatePct });
+    return response.data.data;
+};
