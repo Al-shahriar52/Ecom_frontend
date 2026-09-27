@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-WQGTBPCN');</script>
+  <!-- End Google Tag Manager -->
   <meta charset="utf-8" />
   <link rel="icon" href="https://res.cloudinary.com/dgxol8iyp/image/upload/v1778592921/ecommerce/ChatGPT_Image_May_12_2026_07_34_49_PM_hauhxs.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,26 +31,29 @@
   <meta name="twitter:title" content="BeautyHaat | Buy Makeup, Skincare & Beauty Products Online in Bangladesh" />
   <meta name="twitter:description" content="Shop genuine makeup, skincare, haircare, fragrance and personal care products online at BeautyHaat, with fast delivery across Bangladesh." />
 
-  <!-- Meta Pixel Code -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R1PXX82G08"></script>
   <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '925044676605183');
-    fbq('track', 'PageView');
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    // send_page_view is off here because App.jsx sends its own page_view on
+    // every route change (see usePageTracking.js) - this is a client-side
+    // routed SPA, so without that, GA would only ever see one pageview for
+    // the whole visit.
+    gtag('config', 'G-R1PXX82G08', { send_page_view: false });
   </script>
-  <noscript><img height="1" width="1" style="display:none"
-                 src="https://www.facebook.com/tr?id=925044676605183&ev=PageView&noscript=1"
-  /></noscript>
+
+  <!-- Meta Pixel Code --><script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); fbq('init', '925044676605183'); fbq('track', 'PageView');</script><noscript> <img height="1" width="1" src="https://www.facebook.com/tr?id=925044676605183&ev=PageView&noscript=1"/></noscript>
   <!-- End Meta Pixel Code -->
 
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WQGTBPCN"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="root"></div>
 <div id="portal-root"></div>
