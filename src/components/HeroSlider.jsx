@@ -20,13 +20,14 @@ const HeroSlider = () => {
     // Updated slides data
     const slides = [
         {
-            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1789743511/Gemini_Generated_Image_yeux6kyeux6kyeux_coh03b.png',
-            buttonLink: 'https://beautyhaat.com/subcategory/cleanser'
+            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1790489889/1789724367516_1_zidgyl.jpg',
+            buttonLink: 'https://beautyhaat.com/subcategory/cleanser' // Internal relative path
         },
         {
-            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1789743572/Gemini_Generated_Image_wdz63mwdz63mwdz6_ccdr2z.png',
-            buttonLink: 'https://beautyhaat.com/subcategory/sunscreen' // Internal relative path
+            imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1790489889/1789725089094_1_uu2rpg.jpg',
+            buttonLink: 'https://beautyhaat.com/subcategory/sunscreen'
         },
+
         {
             imageUrl: 'https://res.cloudinary.com/dgxol8iyp/image/upload/v1778600655/ecommerce/Gemini_Generated_Image_cfsrpdcfsrpdcfsr_1_y2olu3.jpg',
             buttonLink: 'https://beautyhaat.com/category/hair'
