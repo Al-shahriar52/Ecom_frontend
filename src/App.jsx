@@ -18,7 +18,6 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Shop from './pages/ShopPage';
 import AboutUs from './pages/AboutUs';
 import Brands from './pages/Brands';
-import WhatsAppWidget from './components/WhatsAppWidget';
 
 // --- Context Providers ---
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -79,6 +78,26 @@ const PixelTracker = () => {
     return null;
 };
 
+// --- Helper Component to Handle Google Analytics Page View Tracking ---
+// gtag's initial config call in public/index.html only fires once, on the
+// very first load. This is a client-side-routed SPA, so without this,
+// GA would never see any page after that first one.
+const GaTracker = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+        if (window.gtag) {
+            window.gtag('event', 'page_view', {
+                page_path: location.pathname + location.search,
+                page_location: window.location.href,
+                page_title: document.title,
+            });
+        }
+    }, [location]);
+
+    return null;
+};
+
 // --- Helper Component to Hide Cart on Specific Routes ---
 const ConditionalFloatingCart = () => {
     const location = useLocation();
@@ -127,7 +146,6 @@ const PublicLayout = () => {
         <>
             <Header />
             <ConditionalFloatingCart />
-            <WhatsAppWidget />
             <main>
                 <Outlet />
             </main>
@@ -141,6 +159,7 @@ function App() {
         <HelmetProvider>
             <Router>
                 <PixelTracker />
+                <GaTracker />
                 <ScrollToTop />
                 <AuthProvider>
                     <PermissionProvider>
