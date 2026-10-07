@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import './AuthPage.css';
+import SocialLoginButtons from '../components/auth/SocialLoginButtons';
 
 const validateField = (name, value) => {
     switch (name) {
@@ -38,6 +39,18 @@ const AuthPage = () => {
     const [isLoginView, setIsLoginView] = useState(true);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [unverifiedData, setUnverifiedData] = useState(null);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Social login failure: backend redirects to /login?error=...
+    useEffect(() => {
+        const socialError = new URLSearchParams(location.search).get('error');
+        if (socialError) {
+            toast.error(socialError, { id: 'oauth-error' });
+            navigate('/login', { replace: true, state: location.state });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
 
     const toggleView = () => {
         setIsLoginView(!isLoginView);
@@ -162,6 +175,7 @@ const LoginForm = ({ onForgotClick, onUnverified }) => {
                     {isLoading ? 'Logging in...' : 'Login'}
                 </button>
             </form>
+            <SocialLoginButtons redirectTo={location.state?.from?.pathname} />
         </div>
     );
 };
@@ -393,6 +407,7 @@ const RegisterForm = ({ initialData }) => {
                             {isRegistering ? 'Sending OTP...' : 'Register'}
                         </button>
                     </form>
+                    <SocialLoginButtons redirectTo={location.state?.from?.pathname} />
                 </>
             )}
 
