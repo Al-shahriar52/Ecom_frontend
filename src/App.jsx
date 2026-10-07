@@ -30,6 +30,7 @@ import { PermissionProvider } from "./context/PermissionContext";
 import Home from './pages/Home';
 import Cart from './pages/Cart';
 import AuthPage from './pages/AuthPage';
+import OAuth2Callback from './pages/OAuth2Callback';
 import Checkout from './pages/Checkout';
 
 // --- User Dashboard Pages ---
@@ -184,6 +185,7 @@ function App() {
                                         <Route path="/brands" element={<Brands />} />
                                         <Route path="/cart" element={<Cart />} />
                                         <Route path="/login" element={<AuthPage />} />
+                                        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
                                         <Route path="/brand/:slug" element={<ShopPage />} />
                                         <Route path="/category/:slug" element={<ShopPage />} />
                                         <Route path="/subcategory/:slug" element={<ShopPage />} />
