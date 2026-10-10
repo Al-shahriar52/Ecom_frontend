@@ -52,3 +52,36 @@
     75% { transform: translateY(-50%) rotate(-3deg); }
     100% { transform: translateY(-50%) rotate(0deg); }
 }
+
+/* ---------- Mobile: compact cart button, moved above the WhatsApp button ---------- */
+@media (max-width: 768px) {
+    .floating-cart-button {
+        top: auto;
+        bottom: 136px;             /* sits just above the WhatsApp button (72px + 52px + gap) */
+        transform: translateZ(0);  /* own GPU layer: stops fixed buttons vanishing until scrolling ends */
+        will-change: transform;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+        box-shadow: -1px 2px 8px rgba(0, 0, 0, 0.18);
+    }
+
+    .floating-cart-button:hover {
+        transform: translateZ(0);
+    }
+
+    .cart-item-section {
+        gap: 2px;
+        padding: 5px 9px;
+        font-size: 10px;
+    }
+
+    .cart-item-section svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .cart-price-section {
+        padding: 5px 9px;
+        font-size: 12px;
+    }
+}

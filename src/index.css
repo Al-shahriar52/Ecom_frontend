@@ -62,3 +62,9 @@ button {
   margin: 0 auto;
   padding: 20px 0;
 }
+
+/* Stop the browser's pull-to-refresh (it reloaded the page when scrolling past the top on mobile) */
+html,
+body {
+  overscroll-behavior-y: contain;
+}

@@ -124,3 +124,9 @@
     font-size: 13px !important;
     color: #e2136e !important; /* Official bKash brand identity color */
 }
+
+@media (max-width: 768px) {
+    .footer-bottom {
+        padding-bottom: 140px;
+    }
+}
