@@ -36,3 +36,25 @@
     25%  { transform: rotate(0); }
     100% { transform: rotate(0); } /* Pauses the animation for the remaining 75% of the cycle */
 }
+
+/* ---------- Mobile: smaller button, closer to the corner ---------- */
+@media (max-width: 768px) {
+    .whatsapp-float {
+        width: 52px;
+        height: 52px;
+        bottom: 72px;              /* lifted so phone/browser bottom bars (Safari, in-app browsers) don't hide it */
+        right: 16px;
+        z-index: 998;              /* below modals/menus (1000+), above normal page content */
+        transform: translateZ(0);  /* own GPU layer: stops fixed buttons vanishing until scrolling ends */
+        will-change: transform;
+    }
+
+    .whatsapp-float:hover {
+        transform: translateZ(0);  /* no hover zoom on touch screens */
+    }
+
+    .whatsapp-icon {
+        width: 24px;
+        height: 24px;
+    }
+}
