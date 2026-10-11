@@ -5,6 +5,7 @@ import { Truck, AlertTriangle, ChevronDown } from 'lucide-react';
 import {
     fetchProviders, bookParcels, fetchPathaoCities, fetchPathaoZones, quotePathao,
 } from '../courier/courierApi';
+import axiosInstance from '../../../api/AxiosInstance';
 import CourierBadge from '../courier/CourierBadge';
 import '../courier/CourierBadge.css';
 import './BookParcelModal.css';
@@ -24,6 +25,23 @@ const validPhone = (raw) => {
  */
 const PickupModal = ({ order, orders, onClose, onSuccess }) => {
     const list = useMemo(() => (orders && orders.length ? orders : order ? [order] : []), [order, orders]);
+    // Editable copy of each order's delivery details. Changed fields are saved to the order before booking.
+    const [edits, setEdits] = useState({});
+    useEffect(() => {
+        const init = {};
+        list.forEach((o) => {
+            init[o.id] = {
+                customerName: o.customer || '',
+                phone: o.phone || '',
+                city: o.city || '',
+                area: o.area || '',
+                shippingAddress: o.shippingAddress || o.address || '',
+                orderNote: o.orderNote || '',
+            };
+        });
+        setEdits(init);
+    }, [list]);
+    const setField = (id, key, val) => setEdits((e) => ({ ...e, [id]: { ...e[id], [key]: val } }));
     const [providers, setProviders] = useState([]);
     const [courier, setCourier] = useState('');
     const [loading, setLoading] = useState(false);
@@ -51,18 +69,23 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
 
     const selected = providers.find((p) => p.provider === courier);
 
-    // Pathao has stricter rules than Steadfast, so warn before the API call.
+    // Checks before the API call: Steadfast and Pathao both need a valid phone and an address; Pathao is stricter.
     const problems = useMemo(() => {
-        if (courier !== 'pathao') return [];
         const out = [];
         list.forEach((o) => {
+            const e = edits[o.id];
+            if (!e) return;
             const inv = o.invoice || `#${o.id}`;
-            if (!validPhone(o.phone)) out.push(`${inv}: phone must be 11 digits starting with 01`);
-            if ((o.address || '').replace(/,\s*/g, '').trim().length < 10) out.push(`${inv}: address is too short`);
-            if ((o.customer || '').trim().length < 3) out.push(`${inv}: customer name is too short`);
+            const addr = [e.city, e.area, e.shippingAddress].filter((x) => (x || '').trim()).join(', ');
+            if (!validPhone(e.phone)) out.push(`${inv}: phone must be 11 digits starting with 01`);
+            if (!(e.shippingAddress || '').trim()) out.push(`${inv}: street address is missing`);
+            if (courier === 'pathao') {
+                if (addr.replace(/,\s*/g, '').trim().length < 10) out.push(`${inv}: address is too short for Pathao (10+ characters)`);
+                if ((e.customerName || '').trim().length < 3) out.push(`${inv}: customer name is too short for Pathao (3+ characters)`);
+            }
         });
         return out;
-    }, [courier, list]);
+    }, [courier, list, edits]);
 
     const openQuote = async () => {
         const next = !showQuote;
@@ -90,6 +113,18 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
         if (!courier) { toast.error('Choose a courier'); return; }
         setLoading(true);
         try {
+            // 1) save any corrected details to the order
+            for (const o of list) {
+                const e = edits[o.id] || {};
+                const was = { customerName: o.customer || '', phone: o.phone || '', city: o.city || '', area: o.area || '',
+                    shippingAddress: o.shippingAddress || o.address || '', orderNote: o.orderNote || '' };
+                const changed = {};
+                Object.keys(was).forEach((k) => { if ((e[k] ?? '') !== was[k]) changed[k] = e[k] ?? ''; });
+                if (Object.keys(changed).length) {
+                    await axiosInstance.patch(`/api/v1/admin/orders/${o.id}/status`, changed);
+                }
+            }
+            // 2) then book
             await bookParcels(list.map((o) => o.id), courier);
             toast.success(list.length === 1
                 ? `Parcel booked with ${selected?.displayName || courier}`
@@ -100,8 +135,6 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
             toast.error(error.response?.data?.message || 'Failed to book the parcel.');
         } finally { setLoading(false); }
     };
-
-    const shown = list.slice(0, 5);
 
     return (
         <ModalPortal>
@@ -142,20 +175,38 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
 
                             <div className="bp-label" style={{ marginTop: 16 }}>{list.length === 1 ? 'Order' : 'Orders'}</div>
                             <div className="bp-orders">
-                                {shown.map((o) => (
-                                    <div className="bp-order" key={o.id}>
-                                        <div><strong>{o.invoice || `#${o.id}`}</strong><span className="bp-muted"> · {o.customer}</span></div>
-                                        <div className="bp-muted">{o.phone}</div>
-                                        <div className="bp-cod">{o.paymentMethod === 'COD' ? `COD ৳${o.totalAmount}` : 'Prepaid'}</div>
-                                    </div>
-                                ))}
-                                {list.length > shown.length && <div className="bp-muted">+ {list.length - shown.length} more</div>}
+                                {list.map((o) => {
+                                    const cod = o.paymentMethod === 'COD';
+                                    return (
+                                        <div className="bp-order" key={o.id}>
+                                            <div className="bp-order-top">
+                                                <div><strong>{o.invoice || `#${o.id}`}</strong></div>
+                                                <div className="bp-cod">{cod ? `Collect ৳${o.totalAmount}` : 'Prepaid, collect ৳0'}</div>
+                                            </div>
+                                            {edits[o.id] && (
+                                                <div className="bp-edit">
+                                                    <label>Customer name<input value={edits[o.id].customerName} onChange={(ev) => setField(o.id, 'customerName', ev.target.value)} /></label>
+                                                    <label>Phone<input value={edits[o.id].phone} inputMode="tel" onChange={(ev) => setField(o.id, 'phone', ev.target.value)} /></label>
+                                                    <label>City<input value={edits[o.id].city} onChange={(ev) => setField(o.id, 'city', ev.target.value)} /></label>
+                                                    <label>Area<input value={edits[o.id].area} onChange={(ev) => setField(o.id, 'area', ev.target.value)} /></label>
+                                                    <label className="wide">Street address<textarea rows={2} value={edits[o.id].shippingAddress} onChange={(ev) => setField(o.id, 'shippingAddress', ev.target.value)} /></label>
+                                                    <label className="wide">Note for the rider<input value={edits[o.id].orderNote} placeholder="e.g. Call before 3 PM" onChange={(ev) => setField(o.id, 'orderNote', ev.target.value)} /></label>
+                                                </div>
+                                            )}
+                                            <div className="bp-row"><span className="bp-k">Payment</span><span>{o.paymentMethod || '—'}{o.paymentStatus ? ` · ${o.paymentStatus}` : ''} · Total ৳{o.totalAmount}</span></div>
+                                            {Array.isArray(o.items) && o.items.length > 0 && (
+                                                <div className="bp-row"><span className="bp-k">Items</span>
+                                                    <span>{o.items.map((it) => `${it.productName || it.name || 'Item'} × ${it.quantity ?? 1}`).join(', ')}</span></div>
+                                            )}
+                                                                        </div>
+                                    );
+                                })}
                             </div>
 
                             {problems.length > 0 && (
                                 <div className="bp-warn" style={{ marginTop: 12 }}>
                                     <AlertTriangle size={15} />
-                                    <div>Pathao may reject these. Fix them on the order first:
+                                    <div>The courier may reject these. Fix them on the order first:
                                         <ul>{problems.slice(0, 5).map((m) => <li key={m}>{m}</li>)}</ul>
                                     </div>
                                 </div>

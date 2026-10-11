@@ -41,3 +41,4 @@ export const syncOrderStatus = async (orderId) => (await axiosInstance.post(`${B
 export const fetchSteadfastPayouts = async (page = 1) => (await axiosInstance.get(`${BASE}/steadfast/payouts`, { params: { page } })).data.data;
 export const checkCustomer = async (phone) => (await axiosInstance.get(`${BASE}/steadfast/customer-check`, { params: { phone } })).data.data;
 export const fetchWebhookEvents = async () => (await axiosInstance.get(`${BASE}/webhook-events`)).data.data;
+export const reconcilePayout = async (paymentId) => (await axiosInstance.get(`${BASE}/steadfast/payouts/${encodeURIComponent(paymentId)}`)).data.data;
