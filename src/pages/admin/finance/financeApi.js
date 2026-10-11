@@ -66,3 +66,7 @@ export const updateGatewayRate = async (paymentMethod, feeRatePct) => {
     const response = await axiosInstance.patch(`/api/v1/admin/finance/gateways/${paymentMethod}`, { feeRatePct });
     return response.data.data;
 };
+export const fetchSettlements = async (start, end) => {
+    const response = await axiosInstance.get('/api/v1/admin/finance/settlements', { params: { start, end } });
+    return response.data.data;
+};

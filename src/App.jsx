@@ -60,6 +60,9 @@ import FinanceCOD from './pages/admin/finance/FinanceCOD';
 import FinanceProfitLoss from './pages/admin/finance/FinanceProfitLoss';
 import FinanceGateways from './pages/admin/finance/FinanceGateways';
 import FinancePlaceholder from './pages/admin/finance/FinancePlaceholder';
+import CourierPickups from './pages/admin/courier/CourierPickups';
+import CourierProviders from './pages/admin/courier/CourierProviders';
+import PathaoStores from './pages/admin/courier/PathaoStores';
 import CouponManagement from './pages/admin/coupons/CouponManagement';
 import AddProduct from './pages/admin/AddProduct';
 import EditProductPage from './pages/admin/EditProductPage';
@@ -230,6 +233,10 @@ function App() {
                                             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN']} />}>
                                                 <Route path="roles" element={<RoleManagement />} />
                                                 <Route path="coupons" element={<CouponManagement />} />
+                                                <Route path="courier" element={<Navigate to="/admin/courier/providers" replace />} />
+                                                <Route path="courier/providers" element={<CourierProviders />} />
+                                                <Route path="courier/pathao-stores" element={<PathaoStores />} />
+                                                <Route path="courier/pickups" element={<CourierPickups />} />
                                                 <Route path="accounting" element={<FinanceLayout />}>
                                                     <Route index element={<FinanceOverview />} />
                                                     <Route path="report" element={<FinanceReport />} />

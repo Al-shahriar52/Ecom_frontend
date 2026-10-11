@@ -35,6 +35,7 @@ const FinanceReport = () => {
     const totalGross = rows.reduce((sum, r) => sum + r.grossSales, 0);
     const totalRefunds = rows.reduce((sum, r) => sum + r.refunds, 0);
     const totalFees = rows.reduce((sum, r) => sum + r.gatewayFees, 0);
+    const totalCourierFees = rows.reduce((sum, r) => sum + (r.courierFees || 0), 0);
     const totalCogs = rows.reduce((sum, r) => sum + r.cogs, 0);
     const totalOp = rows.reduce((sum, r) => sum + r.operatingCost, 0);
     const totalNet = rows.reduce((sum, r) => sum + r.netEarning, 0);
@@ -89,7 +90,7 @@ const FinanceReport = () => {
                             <thead>
                             <tr>
                                 <th>Period</th><th className="r">Orders</th><th className="r">Gross sales</th><th className="r">Refunds</th>
-                                <th className="r">Gateway fees</th><th className="r">Cost of goods</th><th className="r">Operating cost</th>
+                                <th className="r">Gateway fees</th><th className="r" title="Fees couriers quoted on booking. Memo only, not deducted.">Courier fees (memo)</th><th className="r">Cost of goods</th><th className="r">Operating cost</th>
                                 <th className="r">Net earning</th><th className="r">Margin</th><th>Relative</th>
                             </tr>
                             </thead>
@@ -103,6 +104,7 @@ const FinanceReport = () => {
                                         <td className="r fin-money">{money(r.grossSales)}</td>
                                         <td className="r" style={{ color: 'var(--fin-tx2)' }}>{signedMoney(-r.refunds)}</td>
                                         <td className="r" style={{ color: 'var(--fin-tx2)' }}>{signedMoney(-r.gatewayFees)}</td>
+                                        <td className="r" style={{ color: 'var(--fin-tx3)' }}>{r.courierFees ? money(r.courierFees) : '—'}</td>
                                         <td className="r" style={{ color: 'var(--fin-tx2)' }}>{signedMoney(-r.cogs)}</td>
                                         <td className="r" style={{ color: 'var(--fin-tx2)' }}>{signedMoney(-r.operatingCost)}</td>
                                         <td className="r fin-money" style={{ color: r.netEarning >= 0 ? 'var(--fin-pos)' : 'var(--fin-neg)' }}>{money(r.netEarning)}</td>
@@ -121,6 +123,7 @@ const FinanceReport = () => {
                                 <td className="r">{money(totalGross)}</td>
                                 <td className="r">{signedMoney(-totalRefunds)}</td>
                                 <td className="r">{signedMoney(-totalFees)}</td>
+                                <td className="r">{totalCourierFees ? money(totalCourierFees) : '—'}</td>
                                 <td className="r">{signedMoney(-totalCogs)}</td>
                                 <td className="r">{signedMoney(-totalOp)}</td>
                                 <td className="r">{money(totalNet)}</td>
