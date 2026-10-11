@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Check } from './financeIcons';
 import { money, signedMoney } from './financeUtils';
 import { GW, SET, gwLabel } from './financeData';
+import CourierPayouts from './CourierPayouts';
 
 const CHIP_OPTIONS = ['All gateways', 'bKash', 'Nagad', 'SSLCommerz', 'Bank transfer'];
 
@@ -25,6 +26,7 @@ const FinanceSettlements = () => {
                 <button className="fin-btn pri"><Check size={14} />Match 3 unresolved</button>
             </div>
             <div className="fin-wrap">
+                <CourierPayouts />
                 <div className="fin-note w fin-mb">
                     <RefreshCw size={18} style={{ flex: 'none', marginTop: 1 }} />
                     <div className="fin-sp"><b>৳1,315 short across 3 batches.</b> bKash charged 1.90% on these, not the 1.85% saved in your settings. Update the rate and the gap closes.</div>

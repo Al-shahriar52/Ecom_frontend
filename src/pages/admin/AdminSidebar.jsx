@@ -13,6 +13,7 @@ const AdminSidebar = () => {
     );
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isAccountingMenuOpen, setIsAccountingMenuOpen] = useState(false);
+    const [isCourierMenuOpen, setIsCourierMenuOpen] = useState(false);
 
     const userRoles = user?.roles ? (Array.isArray(user.roles) ? user.roles : Array.from(user.roles)) : (user?.role ? [user.role] : []);
     const isAdmin = userRoles.some(r => String(r).replace(/^ROLE_/, '').toUpperCase() === 'ADMIN');
@@ -35,6 +36,7 @@ const AdminSidebar = () => {
     const canManageOrders = !loading && hasPermission(user, 4);
     const canManageCoupons = !loading && hasPermission(user, 8);
     const canManageAccounting = !loading && hasPermission(user, 9);
+    const canManageCourier = !loading && (hasPermission(user, 4) || isAdmin);
     const canManageFbt = !loading && hasPermission(user, 10);
     const canManageProducts = !loading && hasPermission(user, 11);
 
@@ -63,6 +65,8 @@ const AdminSidebar = () => {
         Percent: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>,
         Sliders: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
         UserSingle: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
+        Pickup: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
+        Store: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l1-5h16l1 5"></path><path d="M4 9v11h16V9"></path><path d="M9 20v-6h6v6"></path></svg>,
         Shield: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>,
     };
 
@@ -175,6 +179,34 @@ const AdminSidebar = () => {
             </div>
 
             <div className="sidebar-links">
+                {canManageCourier && (
+                    <div className={`sidebar-item-group ${isCourierMenuOpen ? 'open' : ''}`}>
+                        <button
+                            onClick={() => setIsCourierMenuOpen(!isCourierMenuOpen)}
+                            className="sidebar-link dropdown-toggle"
+                            data-tooltip="Courier"
+                        >
+                            <span className="icon"><Icons.Truck /></span>
+                            <span className="text">Courier</span>
+                            {!isCollapsed && (
+                                <span className="arrow">
+                                    {isCourierMenuOpen ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                                </span>
+                            )}
+                        </button>
+                        {isCourierMenuOpen && !isCollapsed && (
+                            <ul className="sidebar-submenu-tree">
+                                <li className="tree-group-label">Manage</li>
+                                <li><NavLink to="/admin/courier/providers" className="tree-link"><span className="tree-icon"><Icons.Sliders /></span>Couriers</NavLink></li>
+                                <li className="tree-group-label">Steadfast</li>
+                                <li><NavLink to="/admin/courier/pickups" className="tree-link"><span className="tree-icon"><Icons.Pickup /></span>Pickup requests</NavLink></li>
+                                <li className="tree-group-label">Pathao</li>
+                                <li><NavLink to="/admin/courier/pathao-stores" className="tree-link"><span className="tree-icon"><Icons.Store /></span>Stores</NavLink></li>
+                            </ul>
+                        )}
+                    </div>
+                )}
+
                 {canManageAccounting && (
                     <div className={`sidebar-item-group ${isAccountingMenuOpen ? 'open' : ''}`}>
                         <button

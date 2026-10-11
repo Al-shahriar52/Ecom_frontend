@@ -47,6 +47,28 @@ const FinanceCOD = () => {
                     <div className="fin-tile"><div className="fin-k">Delivered, not yet paid</div><div className="fin-v">{money(data.deliveredUnpaidAmount)}</div><div className="fin-r"><span className="fin-pill pend">{data.deliveredUnpaidCount} parcels</span></div></div>
                     <div className="fin-tile"><div className="fin-k">Returned to you</div><div className="fin-v" style={{ color: 'var(--fin-neg)' }}>{signedMoney(-data.returnedAmount)}</div><div className="fin-r"><span>{data.returnedCount} parcels · {data.returnRatePct.toFixed(1)}% return rate</span></div></div>
                 </div>
+                {data.courierStats && data.courierStats.length > 0 && (
+                    <div className="fin-card fin-mb">
+                        <div className="fin-ch"><div><h3>By courier</h3><p>Who is holding your cash</p></div></div>
+                        <div className="fin-tw">
+                            <table className="fin-table">
+                                <thead><tr><th>Courier</th><th className="r">Parcels</th><th className="r">Out for delivery</th><th className="r">Delivered, unpaid</th><th className="r">Returned</th><th className="r">Return rate</th></tr></thead>
+                                <tbody>
+                                {data.courierStats.map((c) => (
+                                    <tr key={c.courier}>
+                                        <td style={{ fontWeight: 500 }}>{c.courier}</td>
+                                        <td className="r">{c.totalParcels}</td>
+                                        <td className="r fin-money">{money(c.holdingAmount)} <span style={{ color: 'var(--fin-tx3)' }}>({c.holdingCount})</span></td>
+                                        <td className="r fin-money">{money(c.unpaidAmount)} <span style={{ color: 'var(--fin-tx3)' }}>({c.unpaidCount})</span></td>
+                                        <td className="r" style={{ color: 'var(--fin-neg)' }}>{money(c.returnedAmount)} <span style={{ color: 'var(--fin-tx3)' }}>({c.returnedCount})</span></td>
+                                        <td className="r">{c.returnRatePct.toFixed(1)}%</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
                 <div className="fin-split">
                     <div className="fin-card">
                         <div className="fin-ch"><div><h3>Recent COD parcels</h3></div></div>

@@ -1,0 +1,3 @@
+.courier-badge { display: inline-block; font-size: 11px; font-weight: 600; line-height: 1; padding: 3px 8px; border-radius: 10px; background: #eef2f6; color: #475569; letter-spacing: .1px; }
+.courier-badge.cb-steadfast { background: #E4F2EC; color: #0B7A55; }
+.courier-badge.cb-pathao { background: #FDECEC; color: #C62828; }

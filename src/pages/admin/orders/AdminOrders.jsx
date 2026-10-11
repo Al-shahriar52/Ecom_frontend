@@ -6,6 +6,8 @@ import { MoreVertical, Eye, Pencil, Truck, MapPinned, XCircle } from 'lucide-rea
 import axiosInstance from '../../../api/AxiosInstance';
 import OrderUpdateModal from './OrderUpdateModal';
 import PickupModal from './PickupModal';
+import CourierBadge from '../courier/CourierBadge';
+import '../courier/CourierBadge.css';
 import TrackingModal from './TrackingModal';
 import './AdminOrders.css';
 
@@ -46,6 +48,7 @@ const AdminOrders = () => {
     const [selectedInvoices, setSelectedInvoices] = useState([]);
     const [showTrackModal, setShowTrackModal] = useState(false);
     const [showPickupModal, setShowPickupModal] = useState(false);
+    const [bulkBookOrders, setBulkBookOrders] = useState(null); // selected orders while the bulk Book Parcel modal is open
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [openMenuOrderId, setOpenMenuOrderId] = useState(null);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -194,24 +197,11 @@ const AdminOrders = () => {
         }
     };
 
-    const handleBulkPickup = async () => {
-        if (!window.confirm(`Create courier pickup for ${selectedInvoices.length} orders?`)) return;
-
-        // Map the selected invoice strings back to their actual database order IDs
-        const selectedOrderIds = orders
-            .filter(order => selectedInvoices.includes(order.invoice))
-            .map(order => order.id);
-
-        try {
-            await axiosInstance.post('/api/v1/admin/orders/pickup', { orderIds: selectedOrderIds });
-
-            toast.success(`Pickup requested for ${selectedInvoices.length} orders!`);
-            setSelectedInvoices([]); // Clear the checkboxes
-            setRefreshTrigger(prev => prev + 1); // Refresh the table data automatically
-        } catch (error) {
-            console.error("Error in bulk pickup:", error);
-            toast.error(error.response?.data?.message || "Failed to request bulk pickup.");
-        }
+    const handleBulkPickup = () => {
+        // Map the selected invoice strings back to the full order rows, then let the admin pick a courier.
+        const selected = orders.filter(order => selectedInvoices.includes(order.invoice));
+        if (selected.length === 0) return;
+        setBulkBookOrders(selected);
     };
 
     // --- MODAL ACTIONS ---
@@ -303,7 +293,7 @@ const AdminOrders = () => {
                         <div className="bulk-actions">
                             <button className="btn-bulk-outline" onClick={handleBulkExport}>📥 Export</button>
                             <button className="btn-bulk-danger" onClick={handleBulkCancel}>✕ Cancel Orders</button>
-                            <button className="btn-bulk-primary" onClick={handleBulkPickup}>🚚 Bulk Pickup</button>
+                            <button className="btn-bulk-primary" onClick={handleBulkPickup}>🚚 Bulk Book</button>
                         </div>
                     </div>
                 )}
@@ -386,7 +376,14 @@ const AdminOrders = () => {
                                             </span>
                                             </td>
 
-                                            <td>{order.cid || '-'}</td>
+                                            <td>
+                                                {order.cid ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' }}>
+                                                        <CourierBadge name={order.courier} />
+                                                        <span>{order.cid}</span>
+                                                    </div>
+                                                ) : '-'}
+                                            </td>
                                             <td className="fw-bold">৳{order.totalAmount || 0}</td>
 
                                             <td>
@@ -427,7 +424,7 @@ const AdminOrders = () => {
                                                                     disabled={order.orderStatus === 'CANCELLED'}
                                                                     onClick={() => { openPickupModal(order); setOpenMenuOrderId(null); }}
                                                                 >
-                                                                    <Truck size={14} /> Pickup
+                                                                    <Truck size={14} /> Book Parcel
                                                                 </button>
                                                             )}
 
@@ -489,6 +486,14 @@ const AdminOrders = () => {
                     order={selectedOrder}
                     onClose={() => setShowPickupModal(false)}
                     onSuccess={handlePickupSuccess}
+                />
+            )}
+            {/* BULK BOOK PARCEL MODAL */}
+            {bulkBookOrders && (
+                <PickupModal
+                    orders={bulkBookOrders}
+                    onClose={() => setBulkBookOrders(null)}
+                    onSuccess={() => { setSelectedInvoices([]); setRefreshTrigger(prev => prev + 1); }}
                 />
             )}
             {/* UPDATE ORDER MODAL */}

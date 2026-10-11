@@ -1,0 +1,23 @@
+.bp-modal { width: 560px; max-width: 96vw; }
+.bp-label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; }
+.bp-muted { font-size: 12.5px; color: #94a3b8; }
+.bp-couriers { display: grid; gap: 8px; }
+.bp-courier { display: flex; gap: 10px; align-items: flex-start; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.bp-courier.on { border-color: #e91e63; background: #fdf2f6; }
+.bp-courier input { margin-top: 3px; accent-color: #e91e63; }
+.bp-cname { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.bp-def { font-size: 11px; background: #fdf2f6; color: #c2185b; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+.bp-sbx { font-size: 11px; background: #FBF0DA; color: #8A5D06; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+.bp-orders { border: 1px solid #e2e8f0; border-radius: 8px; }
+.bp-order { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13.5px; align-items: center; }
+.bp-order:last-child { border-bottom: none; }
+.bp-cod { font-weight: 600; white-space: nowrap; }
+.bp-warn { display: flex; gap: 8px; align-items: flex-start; background: #FBF0DA; color: #8A5D06; border-radius: 6px; padding: 9px 11px; font-size: 13px; }
+.bp-warn ul { margin: 4px 0 0; padding-left: 18px; }
+.bp-quote { margin-top: 14px; border-top: 1px dashed #e2e8f0; padding-top: 10px; }
+.bp-quote-toggle { background: none; border: none; color: #c2185b; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 0; }
+.bp-quote-body { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.bp-quote-body select, .bp-quote-body input { border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 9px; font: inherit; min-width: 0; }
+.bp-quote-body input { width: 70px; }
+.bp-fee { flex-basis: 100%; font-size: 14px; }
+@media (max-width: 600px) { .bp-order { grid-template-columns: 1fr; gap: 2px; } }

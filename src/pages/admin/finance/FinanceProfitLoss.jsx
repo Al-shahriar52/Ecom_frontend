@@ -49,8 +49,8 @@ const FinanceProfitLoss = () => {
                                         ? { background: 'var(--fin-brand-dark)', color: '#fff' }
                                         : r.highlight === 1 ? { background: 'var(--fin-card-2)' } : undefined;
                                     return (
-                                        <tr key={r.label} style={rowStyle}>
-                                            <td style={{ fontWeight: r.bold ? 600 : 400, paddingLeft: r.bold ? undefined : 24, color: r.bold ? undefined : (r.highlight === 2 ? undefined : 'var(--fin-tx2)') }}>{r.label}</td>
+                                        <tr key={r.label} style={r.label.trim().startsWith('memo:') ? { fontStyle: 'italic', opacity: 0.75 } : rowStyle}>
+                                            <td style={{ fontWeight: r.bold ? 600 : 400, paddingLeft: r.bold ? undefined : 24, color: r.bold ? undefined : (r.highlight === 2 ? undefined : 'var(--fin-tx2)') }}>{r.label.trim()}</td>
                                             <td className="r" style={{ fontWeight: r.bold ? 600 : 500 }}>{signedMoney(r.current)}</td>
                                             <td className="r" style={{ color: r.highlight === 2 ? '#E3C9D8' : 'var(--fin-tx2)' }}>{signedMoney(r.previous)}</td>
                                             <td className="r" style={{ color: r.highlight === 2 ? '#fff' : (good ? 'var(--fin-pos)' : 'var(--fin-neg)'), fontWeight: 500 }}>
