@@ -37,6 +37,7 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
                 area: o.area || '',
                 shippingAddress: o.shippingAddress || o.address || '',
                 orderNote: o.orderNote || '',
+                cod: o.totalAmount != null ? String(o.totalAmount) : '',
             };
         });
         setEdits(init);
@@ -77,6 +78,10 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
             if (!e) return;
             const inv = o.invoice || `#${o.id}`;
             const addr = [e.city, e.area, e.shippingAddress].filter((x) => (x || '').trim()).join(', ');
+            if (o.paymentMethod === 'COD') {
+                const c = Number(e.cod);
+                if (e.cod === '' || Number.isNaN(c) || c < 0 || c > 1000000) out.push(`${inv}: COD amount must be between 0 and 1,000,000`);
+            }
             if (!validPhone(e.phone)) out.push(`${inv}: phone must be 11 digits starting with 01`);
             if (!(e.shippingAddress || '').trim()) out.push(`${inv}: street address is missing`);
             if (courier === 'pathao') {
@@ -124,8 +129,14 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
                     await axiosInstance.patch(`/api/v1/admin/orders/${o.id}/status`, changed);
                 }
             }
-            // 2) then book
-            await bookParcels(list.map((o) => o.id), courier);
+            // 2) then book (a changed COD amount applies to the courier only; the invoice is untouched)
+            const codOverrides = {};
+            list.forEach((o) => {
+                if (o.paymentMethod !== 'COD') return;
+                const v = Number(edits[o.id]?.cod);
+                if (!Number.isNaN(v) && v !== Number(o.totalAmount)) codOverrides[o.id] = v;
+            });
+            await bookParcels(list.map((o) => o.id), courier, codOverrides);
             toast.success(list.length === 1
                 ? `Parcel booked with ${selected?.displayName || courier}`
                 : `${list.length} parcels sent to ${selected?.displayName || courier}`);
@@ -181,7 +192,7 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
                                         <div className="bp-order" key={o.id}>
                                             <div className="bp-order-top">
                                                 <div><strong>{o.invoice || `#${o.id}`}</strong></div>
-                                                <div className="bp-cod">{cod ? `Collect ৳${o.totalAmount}` : 'Prepaid, collect ৳0'}</div>
+                                                <div className="bp-cod">{cod ? `Collect ৳${edits[o.id]?.cod ?? o.totalAmount}` : 'Prepaid, collect ৳0'}</div>
                                             </div>
                                             {edits[o.id] && (
                                                 <div className="bp-edit">
@@ -190,6 +201,14 @@ const PickupModal = ({ order, orders, onClose, onSuccess }) => {
                                                     <label>City<input value={edits[o.id].city} onChange={(ev) => setField(o.id, 'city', ev.target.value)} /></label>
                                                     <label>Area<input value={edits[o.id].area} onChange={(ev) => setField(o.id, 'area', ev.target.value)} /></label>
                                                     <label className="wide">Street address<textarea rows={2} value={edits[o.id].shippingAddress} onChange={(ev) => setField(o.id, 'shippingAddress', ev.target.value)} /></label>
+                                                    {o.paymentMethod === 'COD' ? (
+                                                        <label className="wide">Amount the rider collects (৳)
+                                                            <input type="number" min="0" step="1" value={edits[o.id].cod} onChange={(ev) => setField(o.id, 'cod', ev.target.value)} />
+                                                            {Number(edits[o.id].cod) !== Number(o.totalAmount) && <span className="bp-hint">Order total is ৳{o.totalAmount}. Only the courier's amount changes; your invoice stays as is.</span>}
+                                                        </label>
+                                                    ) : (
+                                                        <div className="wide bp-hint">Prepaid: the rider collects ৳0.</div>
+                                                    )}
                                                     <label className="wide">Note for the rider<input value={edits[o.id].orderNote} placeholder="e.g. Call before 3 PM" onChange={(ev) => setField(o.id, 'orderNote', ev.target.value)} /></label>
                                                 </div>
                                             )}

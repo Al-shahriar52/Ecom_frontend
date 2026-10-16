@@ -1,0 +1,62 @@
+.ot { --ot-brand: #e91e63; --ot-ok: #0b7a55; --ot-bad: #b42318; --ot-line: #e2e8f0; --ot-tx: #0f172a; --ot-tx2: #64748b; font-size: 14px; color: var(--ot-tx); }
+.ot-muted { color: var(--ot-tx2); font-size: 12.5px; }
+.ot-error { color: var(--ot-bad); }
+.ot-link { background: none; border: none; color: var(--ot-brand); cursor: pointer; font: inherit; text-decoration: underline; }
+
+.ot-hero { border-radius: 14px; padding: 16px 18px; background: #fdf2f6; border: 1px solid #f9d3e1; }
+.ot-hero.ot-success { background: #e8f6ef; border-color: #bfe5d1; }
+.ot-hero.ot-danger { background: #fdeaea; border-color: #f5c6c2; }
+.ot-hero.ot-neutral { background: #f1f5f9; border-color: var(--ot-line); }
+.ot-hero-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.ot-eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--ot-tx2); font-weight: 600; }
+.ot-headline { font-size: 22px; font-weight: 700; margin: 2px 0; }
+.ot-sub { font-size: 13px; color: var(--ot-tx2); }
+.ot-bar { height: 6px; background: rgba(15,23,42,.08); border-radius: 99px; margin-top: 14px; overflow: hidden; }
+.ot-bar span { display: block; height: 100%; background: var(--ot-brand); border-radius: 99px; transition: width .4s; }
+.ot-success .ot-bar span { background: var(--ot-ok); }
+.ot-danger .ot-bar span { background: var(--ot-bad); }
+
+.ot-icon-btn { border: 1px solid var(--ot-line); background: #fff; border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ot-tx2); flex: none; }
+.ot-icon-btn.sm { width: 22px; height: 22px; border-radius: 6px; vertical-align: middle; }
+.ot-icon-btn:hover { color: var(--ot-brand); border-color: var(--ot-brand); }
+.ot-spin { animation: ot-rot 1s linear infinite; }
+@keyframes ot-rot { to { transform: rotate(360deg); } }
+
+.ot-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+.ot-chip { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--ot-line); border-radius: 10px; padding: 10px 12px; background: #fff; color: var(--ot-tx2); min-width: 0; }
+.ot-k { font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--ot-tx2); }
+.ot-v { font-weight: 600; color: var(--ot-tx); word-break: break-all; }
+
+.ot-rider { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #bfe5d1; background: #f2fbf6; border-radius: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.ot-rider-ic { width: 38px; height: 38px; border-radius: 50%; background: #d6f1e2; color: var(--ot-ok); display: flex; align-items: center; justify-content: center; flex: none; }
+.ot-rider-info { flex: 1; min-width: 0; }
+.ot-call { display: inline-flex; align-items: center; gap: 6px; background: var(--ot-ok); color: #fff; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; }
+.ot-dest { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px dashed var(--ot-line); border-radius: 10px; margin-bottom: 16px; color: var(--ot-tx2); }
+
+.ot-steps { list-style: none; margin: 0; padding: 0; }
+.ot-step { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; position: relative; padding-bottom: 18px; }
+.ot-step:not(:last-child)::before { content: ''; position: absolute; left: 13px; top: 28px; bottom: 0; width: 2px; background: var(--ot-line); }
+.ot-step.ot-done:not(:last-child)::before { background: var(--ot-ok); }
+.ot-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ot-line); background: #fff; display: flex; align-items: center; justify-content: center; z-index: 1; color: #fff; }
+.ot-done .ot-dot { background: var(--ot-ok); border-color: var(--ot-ok); }
+.ot-current .ot-dot { border-color: var(--ot-brand); box-shadow: 0 0 0 4px rgba(233,30,99,.15); }
+.ot-current .ot-dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ot-brand); }
+.ot-failed .ot-dot { background: var(--ot-bad); border-color: var(--ot-bad); }
+.ot-step-title { font-weight: 600; }
+.ot-upcoming .ot-step-title, .ot-upcoming .ot-muted { color: #94a3b8; }
+.ot-time { text-align: right; font-size: 12.5px; white-space: nowrap; }
+
+.ot-section { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--ot-tx2); font-weight: 600; margin: 4px 0 8px; }
+.ot-events { border-top: 1px solid var(--ot-line); padding-top: 12px; margin-top: 4px; }
+.ot-events ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ot-events li { display: grid; grid-template-columns: 170px 1fr; gap: 10px; font-size: 13px; }
+.ot-ev-time { color: var(--ot-tx2); }
+.ot-admin { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; padding: 9px 12px; background: #f8fafc; border-radius: 8px; font-size: 12.5px; color: var(--ot-tx2); }
+
+@media (max-width: 640px) {
+    .ot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ot-step { grid-template-columns: 28px 1fr; }
+    .ot-time { grid-column: 2; text-align: left; margin-top: -10px; }
+    .ot-events li { grid-template-columns: 1fr; gap: 0; }
+    .ot-headline { font-size: 19px; }
+}

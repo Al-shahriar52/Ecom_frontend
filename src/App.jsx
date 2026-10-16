@@ -41,6 +41,7 @@ import Orders from './pages/dashboard/Orders';
 import OrderDetail from './pages/dashboard/OrderDetail';
 import Address from './pages/dashboard/Address';
 import AccountDetails from './pages/dashboard/AccountDetails';
+import ChangePassword from './pages/dashboard/ChangePassword';
 
 // --- Admin Dashboard Pages ---
 import AdminDashboardLayout from './pages/admin/AdminDashboardLayout';
@@ -207,6 +208,7 @@ function App() {
                                                 <Route path="orders/:orderId" element={<OrderDetail />} />
                                                 <Route path="address" element={<Address />} />
                                                 <Route path="account-details" element={<AccountDetails />} />
+                                                <Route path="change-password" element={<ChangePassword />} />
                                             </Route>
                                         </Route>
 

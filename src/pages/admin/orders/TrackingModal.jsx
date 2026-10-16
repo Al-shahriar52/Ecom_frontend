@@ -1,27 +1,23 @@
 import React from 'react';
-import TrackingStepper from '../../../components/order/TrackingStepper';
-import '../../../components/order/TrackingTimeline.css'; // Add CSS provided below
+import ReactDOM from 'react-dom';
+import OrderTrackingPanel from '../../../components/order/OrderTrackingPanel';
+import '../../../components/order/TrackingTimeline.css';
 
-const TrackingModal = ({ order, onClose }) => {
-    return (
-        <div className="modal-overlay">
-            <div className="modal-content tracking-card">
+/** Order journey popup. Used by the admin order list and the customer dashboard (admin=false there). */
+const TrackingModal = ({ order, onClose, admin = true }) => {
+    return ReactDOM.createPortal(
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content tracking-card" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h4>Order Journey (Live Tracking)</h4>
+                    <h4>Track order {order.invoice ? `· ${order.invoice}` : `#${order.id}`}</h4>
                     <button onClick={onClose} className="close-btn">✕</button>
                 </div>
-
-                <div className="modal-body">
-                    {/* General Summary Card */}
-                    <div className="tracking-summary">
-                        <p><strong>Invoice ID:</strong> {order.invoice}</p>
-                        <p><strong>Courier Tracking ID:</strong> {order.cid || 'Not Assigned Yet'}</p>
-                    </div>
-
-                    <TrackingStepper order={order} />
+                <div className="modal-body" style={{ overflowY: 'auto' }}>
+                    <OrderTrackingPanel orderId={order.id} admin={admin} />
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
