@@ -1,5 +1,6 @@
 .tracking-card {
-    max-width: 500px;
+    max-width: 680px;
+    width: 96vw;
     background: #fff;
     border-radius: 12px;
     padding: 20px;

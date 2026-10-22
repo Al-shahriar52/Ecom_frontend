@@ -32,8 +32,8 @@ export const fetchPathaoAreas = async (zoneId) => (await axiosInstance.get(`${BA
 export const quotePathao = async (payload) => (await axiosInstance.post(`${BASE}/pathao/quote`, payload)).data.data;
 
 // ---- Booking (any courier) ----
-export const bookParcels = async (orderIds, courier) =>
-    (await axiosInstance.post('/api/v1/admin/orders/pickup', { orderIds, courier: courier || null })).data;
+export const bookParcels = async (orderIds, courier, codOverrides) =>
+    (await axiosInstance.post('/api/v1/admin/orders/pickup', { orderIds, courier: courier || null, codOverrides: codOverrides && Object.keys(codOverrides).length ? codOverrides : null })).data;
 
 // ---- Status sync ----
 export const syncAllStatuses = async () => (await axiosInstance.post(`${BASE}/sync`)).data.data;

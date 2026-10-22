@@ -234,6 +234,7 @@ const OrderDetail = () => {
 
             {showTracking && (
                 <TrackingModal
+                    admin={false}
                     order={order}
                     onClose={() => setShowTracking(false)}
                 />

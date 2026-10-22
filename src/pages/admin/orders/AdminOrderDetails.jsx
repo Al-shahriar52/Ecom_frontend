@@ -3,12 +3,10 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, Pencil, Truck, XCircle, PackageSearch, RefreshCw } from 'lucide-react';
 import axiosInstance from '../../../api/AxiosInstance';
-import TrackingStepper from '../../../components/order/TrackingStepper';
+import OrderTrackingPanel from '../../../components/order/OrderTrackingPanel';
 import PickupModal from './PickupModal';
 import { syncOrderStatus } from '../courier/courierApi';
-import CourierBadge from '../courier/CourierBadge';
 import CustomerCheck from '../courier/CustomerCheck';
-import '../courier/CourierBadge.css';
 import OrderUpdateModal from './OrderUpdateModal';
 import './AdminOrders.css'; // reuse status-pill / delivery-pill / badge / status-dot classes
 import './AdminOrderDetails.css';
@@ -53,11 +51,13 @@ const AdminOrderDetails = () => {
         fetchOrder();
     }, [fetchOrder]);
 
+    const [trackingTick, setTrackingTick] = useState(0);
     const refreshCourierStatus = async () => {
         setSyncing(true);
         try {
             await syncOrderStatus(orderId);
             await fetchOrder();
+            setTrackingTick((n) => n + 1);
             toast.success('Courier status refreshed');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Could not refresh the courier status');
@@ -180,31 +180,21 @@ const AdminOrderDetails = () => {
                     {/* TRACKING - embedded directly on the page, not a modal */}
                     <div className="aod-card">
                         <h3 className="aod-card-title">Delivery Tracking</h3>
-                        {hasCourier ? (
-                            <>
-                                <div className="aod-tracking-summary">
-                                    <span>Courier: <CourierBadge name={order.courier} /> &nbsp; Tracking ID: <strong>{order.cid}</strong></span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
-                                        <span style={{ fontSize: 13, color: '#64748b' }}>
-                                            Courier says: <strong>{order.courierStatus || 'not checked yet'}</strong>
-                                            {order.lastSyncedAt && <> · checked {new Date(order.lastSyncedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</>}
-                                        </span>
-                                        <button type="button" className="aod-action-btn" onClick={refreshCourierStatus} disabled={syncing}>
-                                            <RefreshCw size={14} /> {syncing ? 'Checking…' : 'Refresh'}
-                                        </button>
-                                    </div>
-                                </div>
-                                <TrackingStepper order={order} />
-                            </>
-                        ) : (
-                            <div className="aod-no-tracking">
-                                <PackageSearch size={28} strokeWidth={1.5} />
-                                <p>This order hasn't been picked up by a courier yet.</p>
-                                {order.orderStatus !== 'CANCELLED' && (
-                                    <button className="aod-action-btn aod-action-primary" onClick={() => setShowPickupModal(true)}>
-                                        <Truck size={15} /> Book Parcel
-                                    </button>
-                                )}
+                        {hasCourier && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+                                <button type="button" className="aod-action-btn" onClick={refreshCourierStatus} disabled={syncing}>
+                                    <RefreshCw size={14} /> {syncing ? 'Checking…' : 'Ask courier for latest'}
+                                </button>
+                            </div>
+                        )}
+                        <OrderTrackingPanel key={`${order.orderStatus}-${order.deliveryStatus}-${order.lastSyncedAt}-${trackingTick}`} orderId={order.id} admin />
+                        {!hasCourier && order.orderStatus !== 'CANCELLED' && (
+                            <div className="aod-no-tracking" style={{ marginTop: 14 }}>
+                                <PackageSearch size={26} strokeWidth={1.5} />
+                                <p>No courier has this parcel yet.</p>
+                                <button className="aod-action-btn aod-action-primary" onClick={() => setShowPickupModal(true)}>
+                                    <Truck size={15} /> Book Parcel
+                                </button>
                             </div>
                         )}
                     </div>
