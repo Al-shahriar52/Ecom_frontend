@@ -13,7 +13,7 @@ const Sidebar = () => {
             <NavLink to="/dashboard/orders" className="sidebar-link"><span>🛒</span> Orders</NavLink>
             <NavLink to="/dashboard/address" className="sidebar-link"><span>🏠</span> Address</NavLink>
             <NavLink to="/dashboard/account-details" className="sidebar-link"><span>👤</span> Account Details</NavLink>
-            <NavLink to="/dashboard/change-password" className="sidebar-link"><span>🔒</span> Change Password</NavLink>
+            <NavLink to="/dashboard/change-password" className="sidebar-link"><span>🔒</span> Password</NavLink>
             {/* Add other links like Loyalty Program, etc. here */}
             <button onClick={logout} className="sidebar-link logout-btn"><span>↪️</span> Logout</button>
         </nav>

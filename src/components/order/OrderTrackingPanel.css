@@ -60,3 +60,9 @@
     .ot-events li { grid-template-columns: 1fr; gap: 0; }
     .ot-headline { font-size: 19px; }
 }
+
+/* Keep the refresh / copy icons visible even when page-level button or svg styles try to hide them */
+.ot .ot-icon-btn { padding: 0; color: #475569 !important; background: #fff !important; line-height: 0; }
+.ot .ot-icon-btn:hover { color: var(--ot-brand) !important; }
+.ot .ot-icon-btn svg { display: block !important; width: 15px; height: 15px; stroke: currentColor !important; fill: none !important; opacity: 1 !important; visibility: visible !important; }
+.ot .ot-icon-btn.sm svg { width: 12px; height: 12px; }

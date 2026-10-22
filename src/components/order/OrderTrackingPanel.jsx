@@ -4,17 +4,31 @@ import toast from 'react-hot-toast';
 import axiosInstance from '../../api/AxiosInstance';
 import './OrderTrackingPanel.css';
 
-const fmtDateTime = (iso) => {
-    if (!iso) return null;
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return String(iso);
+// Accepts an ISO string, a "2026,9,5,19,35,55,..." string or a [y,m,d,h,mi,s,ns] array (Java LocalDateTime) and returns a Date.
+const toDate = (v) => {
+    if (v == null || v === '') return null;
+    let d;
+    if (Array.isArray(v)) {
+        const [y, mo, da, h = 0, mi = 0, sec = 0] = v.map(Number);
+        d = new Date(y, mo - 1, da, h, mi, sec);
+    } else if (typeof v === 'string' && /^\d{4},\d{1,2},\d{1,2}/.test(v)) {
+        return toDate(v.split(','));
+    } else {
+        d = new Date(v);
+    }
+    return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const fmtDateTime = (v) => {
+    const d = toDate(v);
+    if (!d) return v ? String(v) : null;
     return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 };
 
-const ago = (iso) => {
-    if (!iso) return null;
-    const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-    if (Number.isNaN(mins)) return null;
+const ago = (v) => {
+    const d = toDate(v);
+    if (!d) return null;
+    const mins = Math.round((Date.now() - d.getTime()) / 60000);
     if (mins < 1) return 'just now';
     if (mins < 60) return `${mins} min ago`;
     const h = Math.round(mins / 60);
