@@ -650,3 +650,26 @@
     .order-details { width: 100%; }
     .pagination { justify-content: center; }
 }
+
+/* ---------- Sidebar icons: same look as the admin sidebar (grey line icons, pink on hover, white when active) ---------- */
+.sidebar-link .sidebar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.sidebar-link:hover .sidebar-icon {
+    color: #E91E63;
+}
+
+.sidebar-link.active .sidebar-icon {
+    color: #fff;
+    filter: none; /* the old emoji rule turned icons white with a filter; SVG icons just use the colour */
+}
+
+.sidebar-link.logout-btn .sidebar-icon,
+.sidebar-link.logout-btn:hover .sidebar-icon {
+    color: inherit; /* keep the logout icon red like its text */
+}
