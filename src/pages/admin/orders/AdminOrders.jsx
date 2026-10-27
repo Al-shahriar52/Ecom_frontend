@@ -253,6 +253,12 @@ const AdminOrders = () => {
                     </div>
                     <div style={{display:'flex', gap:'10px'}}>
                         <button className="btn-global-export" onClick={handleGlobalExport}>📥 Export All</button>
+                        <button
+                            onClick={() => navigate('/admin/orders/new')}
+                            style={{ background: '#e91e63', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        >
+                            + New order
+                        </button>
                         {isFilterActive && <button className="btn-clear-top" onClick={resetFilters}>✕ Clear Filters</button>}
                     </div>
                 </div>

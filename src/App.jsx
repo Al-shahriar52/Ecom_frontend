@@ -70,6 +70,7 @@ import EditProductPage from './pages/admin/EditProductPage';
 import Wishlist from './pages/Wishlist';
 import OrderSuccess from './pages/OrderSuccess';
 import RoleManagement from './components/admin/user/RolesPanel';
+import CreateOrder from "./pages/admin/orders/CreateOrder";
 
 // --- Helper Component to Handle Meta Pixel Tracking ---
 const PixelTracker = () => {
@@ -226,6 +227,7 @@ function App() {
                                             <Route path="products" element={<ProductManagement />} />
                                             <Route path="users" element={<UserManagement />} />
                                             <Route path="orders" element={<AdminOrders />} />
+                                            <Route path="orders/new" element={<CreateOrder />} />
                                             <Route path="orders/:orderId" element={<AdminOrderDetails />} />
                                             <Route path="products/add" element={<AddProduct />} />
                                             <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
