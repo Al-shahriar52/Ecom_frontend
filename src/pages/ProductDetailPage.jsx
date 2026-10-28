@@ -18,17 +18,9 @@ const ProductDetailPage = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // Set only when a legacy numeric /product/:id URL resolves to a real
-    // product - triggers a redirect to the canonical slug URL instead of
-    // rendering the page at the old URL.
     const [redirectSlug, setRedirectSlug] = useState(null);
     const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
 
-    // True for old pre-migration URLs like /product/12. These still get
-    // crawled/visited (old links, bookmarks, anything Google indexed before
-    // the slug migration), so instead of dead-ending them we look the
-    // product up by id and send the visitor - and Google - to the real
-    // slug URL.
     const isLegacyNumericId = /^\d+$/.test(slug);
 
     // 1. Fetch Product Details
@@ -43,21 +35,25 @@ const ProductDetailPage = () => {
                     const response = await axiosInstance.get(`/api/v1/product/detail/${slug}`);
                     const data = response.data.data;
                     if (data?.slug) {
-                        // Found it - send to the canonical slug URL rather
-                        // than rendering the page here.
                         setRedirectSlug(data.slug);
                         setProduct(data);
                     } else {
-                        // Legacy id doesn't resolve to a product anymore.
                         setProduct(null);
+                        setError('Product not found.');
                     }
                 } else {
                     const response = await axiosInstance.get(`/api/v1/product/detail/slug/${slug}`);
-                    setProduct(response.data.data);
+                    if (response.data?.data) {
+                        setProduct(response.data.data);
+                    } else {
+                        setProduct(null);
+                        setError('Product not found.');
+                    }
                 }
             } catch (err) {
-                setError('Failed to load product details.');
                 console.error(err);
+                setProduct(null);
+                setError('Failed to load product details.');
             } finally {
                 setLoading(false);
             }
@@ -67,7 +63,7 @@ const ProductDetailPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slug]);
 
-    // 2. --- META PIXEL: VIEW CONTENT EVENT ---
+    // 2. META PIXEL: VIEW CONTENT EVENT
     useEffect(() => {
         if (product && window.fbq) {
             window.fbq('track', 'ViewContent', {
@@ -75,18 +71,19 @@ const ProductDetailPage = () => {
                 content_name: product.name,
                 content_type: 'product',
                 value: product.discountedPrice || product.originalPrice || 0,
-                currency: 'BDT' // Change to 'USD' if necessary
+                currency: 'BDT'
             });
         }
     }, [product]);
-    // ------------------------------------------
 
     /* ================= SKELETON LOADER STATE ================= */
     if (loading) {
         return (
             <div className="pdp-container container pdp-skeleton-container">
+                <Helmet>
+                    <meta name="robots" content="index, follow" />
+                </Helmet>
                 <div className="pdp-main-content">
-                    {/* Left Side: Gallery Skeleton */}
                     <div className="pdp-skeleton-gallery">
                         <div className="pdp-skeleton-box pdp-skeleton-main-image"></div>
                         <div className="pdp-skeleton-thumbnails">
@@ -97,7 +94,6 @@ const ProductDetailPage = () => {
                         </div>
                     </div>
 
-                    {/* Right Side: Info Skeleton */}
                     <div className="pdp-skeleton-info">
                         <div className="pdp-skeleton-box pdp-skeleton-brand"></div>
                         <div className="pdp-skeleton-box pdp-skeleton-title"></div>
@@ -113,7 +109,6 @@ const ProductDetailPage = () => {
                     </div>
                 </div>
 
-                {/* Tabs & Full Details Skeleton */}
                 <div className="pdp-skeleton-extra">
                     <div className="pdp-skeleton-tabs-header">
                         <div className="pdp-skeleton-box pdp-skeleton-tab-btn"></div>
@@ -130,32 +125,30 @@ const ProductDetailPage = () => {
         );
     }
 
-    if (error) {
+    // Direct client redirect for legacy numeric URLs (with canonical hint for crawlers)
+    if (redirectSlug) {
         return (
-            <div className="pdp-error">
+            <>
                 <Helmet>
-                    <meta name="robots" content="noindex, follow" />
+                    <link rel="canonical" href={`https://beautyhaat.com/product/${redirectSlug}`} />
                 </Helmet>
-                {error}
-            </div>
+                <Navigate to={`/product/${redirectSlug}`} replace />
+            </>
         );
     }
 
-    // A legacy /product/:id URL resolved to a real product - send both the
-    // visitor and any crawler on to the canonical slug URL.
-    if (redirectSlug) {
-        return <Navigate to={`/product/${redirectSlug}`} replace />;
-    }
-
-    if (!product) {
+    // ONLY output noindex when fetching is complete AND product is genuinely missing
+    if (!loading && (!product || error)) {
         return (
-            <div className="pdp-error">
+            <div className="pdp-error container">
                 <Helmet>
-                    {/* Keeps stale/legacy URLs that no longer resolve out of
-                        Google's index instead of leaving them in limbo. */}
+                    <title>Product Not Found | BeautyHaat</title>
                     <meta name="robots" content="noindex, follow" />
                 </Helmet>
-                Product not found.
+                <div style={{ padding: '50px 0', textAlign: 'center' }}>
+                    <h2>Product Not Found</h2>
+                    <p>The requested product could not be found or has been removed.</p>
+                </div>
             </div>
         );
     }
@@ -164,7 +157,6 @@ const ProductDetailPage = () => {
 
     const handleWishlistToggle = () => {
         if (!product) return;
-
         if (isWishlisted) {
             removeFromWishlist(product.productId);
         } else {
@@ -172,7 +164,6 @@ const ProductDetailPage = () => {
         }
     };
 
-    // Prefer the slug returned by the API (guaranteed fresh/canonical); fall back to the URL param.
     const productSlug = product.slug || slug;
 
     const schemaData = {
@@ -181,7 +172,7 @@ const ProductDetailPage = () => {
         "name": product.name,
         "image": product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls : undefined,
         "description": product.description,
-        "sku": product.sku || product.productId,
+        "sku": product.sku || String(product.productId),
         "brand": {
             "@type": "Brand",
             "name": product.brandName || "BeautyHaat"
@@ -193,7 +184,6 @@ const ProductDetailPage = () => {
             "price": product.discountedPrice || product.originalPrice,
             "itemCondition": "https://schema.org/NewCondition",
             "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-
             "hasMerchantReturnPolicy": {
                 "@type": "MerchantReturnPolicy",
                 "applicableCountry": "BD",
@@ -202,7 +192,6 @@ const ProductDetailPage = () => {
                 "returnMethod": "https://schema.org/ReturnByMail",
                 "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility"
             },
-
             "shippingDetails": {
                 "@type": "OfferShippingDetails",
                 "shippingRate": {
@@ -272,13 +261,14 @@ const ProductDetailPage = () => {
         <div className="pdp-container container">
 
             <Helmet>
-                <title>{product.name ? `${product.name} | BeautyHaat` : 'Product | BeautyHaat'}</title>
+                <title>{`${product.name} | BeautyHaat`}</title>
                 <meta name="description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
+                <meta name="robots" content="index, follow, max-image-preview:large" />
                 <link rel="canonical" href={`https://beautyhaat.com/product/${productSlug}`} />
 
-                {/* Open Graph / Facebook & WhatsApp link previews */}
+                {/* Open Graph / Facebook */}
                 <meta property="og:type" content="product" />
-                <meta property="og:title" content={product.name ? `${product.name} | BeautyHaat` : 'BeautyHaat'} />
+                <meta property="og:title" content={`${product.name} | BeautyHaat`} />
                 <meta property="og:description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
                 <meta property="og:url" content={`https://beautyhaat.com/product/${productSlug}`} />
                 {product.imageUrls && product.imageUrls.length > 0 && (
@@ -289,11 +279,12 @@ const ProductDetailPage = () => {
 
                 {/* Twitter Card */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={product.name ? `${product.name} | BeautyHaat` : 'BeautyHaat'} />
+                <meta name="twitter:title" content={`${product.name} | BeautyHaat`} />
                 <meta name="twitter:description" content={product.description ? product.description.substring(0, 160) : 'Buy quality beauty products at BeautyHaat.'} />
                 {product.imageUrls && product.imageUrls.length > 0 && (
                     <meta name="twitter:image" content={product.imageUrls[0]} />
                 )}
+
                 <script type="application/ld+json">
                     {JSON.stringify(schemaData)}
                 </script>
