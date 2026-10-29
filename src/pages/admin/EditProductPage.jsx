@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import './Admin.css';
 import axiosInstance from '../../api/AxiosInstance';
 import UploadIcon from '../../components/UploadIcon';
+import SearchableSelect from '../../components/admin/SearchableSelect';
 
 const EditProductPage = () => {
     const navigate = useNavigate();
@@ -295,10 +296,7 @@ const EditProductPage = () => {
                                 <h3>Category, Brand & Tags</h3>
                                 <div className="form-group">
                                     <label>Brand</label>
-                                    <select name="brandId" value={productData.brandId} onChange={handleChange} required>
-                                        <option value="">Select a brand</option>
-                                        {brands.map(b => (<option key={b.id} value={b.id}>{b.name}</option>))}
-                                    </select>
+                                    <SearchableSelect name="brandId" value={productData.brandId} onChange={handleChange} options={brands} placeholder="Select a brand" searchPlaceholder="Search brands…" required />
                                 </div>
                                 <div className="form-group">
                                     <label>Product Category</label>
@@ -310,10 +308,7 @@ const EditProductPage = () => {
                                 {productData.categoryId && subCategories.length > 0 && (
                                     <div className="form-group">
                                         <label>Sub-Category</label>
-                                        <select name="subCategoryId" value={productData.subCategoryId} onChange={handleChange} required>
-                                            <option value="">Select a sub-category</option>
-                                            {subCategories.map(sc => (<option key={sc.id} value={sc.id}>{sc.name}</option>))}
-                                        </select>
+                                        <SearchableSelect name="subCategoryId" value={productData.subCategoryId} onChange={handleChange} options={subCategories} placeholder="Select a sub-category" searchPlaceholder="Search sub-categories…" required />
                                     </div>
                                 )}
                                 <div className="form-group">
