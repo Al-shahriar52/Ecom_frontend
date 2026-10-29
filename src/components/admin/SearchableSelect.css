@@ -1,0 +1,30 @@
+.ss { position: relative; width: 100%; }
+.ss-trigger { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 15px; cursor: pointer; text-align: left; font-family: inherit; color: #1e293b; }
+.ss-trigger:hover { border-color: #94a3b8; }
+.ss.is-open .ss-trigger, .ss-trigger:focus-visible { border-color: #2c3e50; box-shadow: 0 0 0 3px rgba(44,62,80,.12); outline: none; }
+.ss.is-disabled .ss-trigger { background: #f1f5f9; cursor: not-allowed; color: #94a3b8; }
+.ss-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-ph { color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-icons { display: inline-flex; align-items: center; gap: 6px; color: #64748b; flex: none; }
+.ss-chev { transition: transform .15s; }
+.ss.is-open .ss-chev { transform: rotate(180deg); }
+.ss-clear { display: inline-flex; padding: 3px; border-radius: 50%; cursor: pointer; }
+.ss-clear:hover { background: #fee2e2; color: #b42318; }
+.ss-native { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; opacity: 0; pointer-events: none; border: 0; padding: 0; }
+
+.ss-pop { position: absolute; z-index: 60; left: 0; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,.18); overflow: hidden; }
+.ss-search { display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 1px solid #eef1f6; color: #64748b; }
+.ss-search input { flex: 1; min-width: 0; height: 42px; border: none !important; outline: none; background: transparent; font-size: 14px; padding: 0 !important; box-shadow: none !important; width: auto !important; }
+.ss-x { border: none; background: none; cursor: pointer; color: #94a3b8; display: inline-flex; padding: 3px; border-radius: 50%; }
+.ss-x:hover { color: #334155; background: #f1f5f9; }
+.ss-pop ul { list-style: none; margin: 0; padding: 4px; max-height: 260px; overflow-y: auto; }
+.ss-pop li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; border-radius: 7px; font-size: 14px; cursor: pointer; color: #1e293b; }
+.ss-pop li.on { background: #f1f5f9; }
+.ss-pop li.sel { font-weight: 600; color: #2c3e50; }
+.ss-pop li mark { background: #fff1b8; color: inherit; border-radius: 2px; padding: 0 1px; }
+.ss-pop li.ss-empty { color: #94a3b8; cursor: default; justify-content: center; padding: 16px; }
+.ss-foot { padding: 6px 12px; font-size: 11.5px; color: #94a3b8; border-top: 1px solid #eef1f6; background: #fafbfd; }
+
+/* the admin theme restyles svg/buttons globally; keep our icons visible */
+.ss svg { display: inline-block !important; stroke: currentColor !important; fill: none !important; opacity: 1 !important; visibility: visible !important; flex: none; }
+.ss-trigger, .ss-x { line-height: 1; }

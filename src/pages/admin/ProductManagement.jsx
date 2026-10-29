@@ -5,12 +5,14 @@ import { toast } from 'react-hot-toast';
 import './Admin.css';
 import StarRating from '../../components/StarRating';
 import axiosInstance from '../../api/AxiosInstance';
+import ProductDrawer from './ProductDrawer';
 
 const ProductManagement = () => {
     // State for data fetched from the API
     const [products, setProducts] = useState([]);
     const [pagination, setPagination] = useState({ pageNo: 0, pageSize: 10, totalPages: 1 });
     const [categories, setCategories] = useState([]);
+    const [openProduct, setOpenProduct] = useState(null); // row shown in the details panel
     // State for API query parameters
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
@@ -191,7 +193,14 @@ const ProductManagement = () => {
                         {displayProducts.map(product => {
                             const status = getProductStatus(product.quantity);
                             return (
-                                <tr key={product.productId}>
+                                <tr
+                                    key={product.productId}
+                                    className={`clickable-row ${openProduct?.productId === product.productId ? 'row-selected' : ''}`}
+                                    onClick={() => setOpenProduct(product)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') setOpenProduct(product); }}
+                                    tabIndex={0}
+                                    title="Click to view details"
+                                >
                                     {/* Table data cells */}
                                     <td><img src={product.imageUrl || "https://via.placeholder.com/40"} alt={product.name} className="product-image" /></td>
                                     <td className="td-product-name" title={product.name}>{product.name}</td>
@@ -204,7 +213,7 @@ const ProductManagement = () => {
                                     </td>
                                     <td><StarRating rating={product.rating} /></td>
                                     <td>
-                                        <div className="action-icons">
+                                        <div className="action-icons" onClick={(e) => e.stopPropagation()}>
                                             <Link
                                                 to={`/admin/products/edit/${product.productId}`}
                                                 state={{ product: product }}
@@ -246,6 +255,17 @@ const ProductManagement = () => {
                     </button>
                 </div>
             </div>
+
+            {openProduct && (
+                <ProductDrawer
+                    summary={openProduct}
+                    onClose={() => setOpenProduct(null)}
+                    onDeleted={(id) => {
+                        setProducts(prev => prev.filter(p => p.productId !== id));
+                        setOpenProduct(null);
+                    }}
+                />
+            )}
         </div>
     );
 };
