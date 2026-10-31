@@ -1,87 +1,64 @@
-.floating-cart-button {
-    position: fixed; /* This makes it stick to the screen */
-    top: 50%; /* Position it in the vertical middle */
-    right: 0; /* Stick it to the right edge */
-    transform: translateY(-50%); /* Adjust to be perfectly centered */
-    z-index: 999; /* Ensure it's above other content */
-
+/* Floating bag: a round dark button that expands into a pill with the total. */
+.fcb {
+    position: fixed;
+    right: 14px;
+    top: 50%;
+    z-index: 999;
     display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-    overflow: hidden; /* Ensures the inner content respects the border-radius */
-    box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.15);
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.floating-cart-button:hover {
-    transform: translateY(-50%) translateX(-5px); /* Slight pop-out effect on hover */
-}
-
-.cart-item-section {
-    display: flex;
-    flex-direction: column;
+    flex-direction: row-reverse;      /* handle stays on the right, body grows to the left */
     align-items: center;
-    gap: 5px;
-    background-color: #2c3e50; /* Dark Blue/Charcoal */
-    color: white;
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 600;
+    height: 50px;
+    transform: translateY(-50%);
+    border-radius: 25px;
+    background: linear-gradient(135deg, #2b3445, #161b26);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .28), 0 0 0 1px rgba(255, 255, 255, .06) inset;
+    transition: box-shadow .25s;
+}
+.fcb.open { box-shadow: 0 10px 28px rgba(15, 23, 42, .36), 0 0 0 1px rgba(255, 255, 255, .08) inset; }
+
+.fcb-handle {
+    position: relative; flex: 0 0 50px; width: 50px; height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; outline: none; border-radius: 50%; color: #fff;
+}
+.fcb-handle:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #E91E63; }
+.fcb svg { display: block; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 1; visibility: visible; }
+.fcb-count {
+    position: absolute; top: -3px; right: -3px;
+    min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box;
+    border-radius: 10px; background: #E91E63; color: #fff; border: 2px solid #fff;
+    font-style: normal; font-size: 10.5px; font-weight: 700; line-height: 16px; text-align: center;
 }
 
-.cart-price-section {
-    background-color: #E91E63; /* Bright Pink */
-    color: white;
-    padding: 12px 20px;
-    text-align: center;
-    font-size: 16px;
-    font-weight: 700;
+.fcb-body {
+    display: flex; align-items: center; gap: 12px; height: 100%;
+    max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+    padding-left: 0; text-decoration: none; color: #fff;
+    transition: max-width .3s ease, opacity .2s ease, padding .3s ease;
 }
-
-.jiggle-animation {
-    animation: jiggle 0.5s ease-in-out;
+.fcb.open .fcb-body { max-width: 240px; opacity: 1; padding-left: 18px; }
+.fcb-txt { display: flex; flex-direction: column; line-height: 1.15; }
+.fcb-txt small { font-size: 11px; color: rgba(255, 255, 255, .7); font-weight: 500; }
+.fcb-txt b { font-size: 15px; font-weight: 700; letter-spacing: .01em; }
+.fcb-go {
+    display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px;
+    border-radius: 16px; background: #E91E63; color: #fff; font-size: 12px; font-weight: 600;
+    transition: background .2s;
 }
+.fcb-body:hover .fcb-go { background: #f0307a; }
+.fcb-go svg { width: 14px; height: 14px; stroke-width: 2.4; transition: transform .2s; }
+.fcb-body:hover .fcb-go svg { transform: translateX(2px); }
 
-@keyframes jiggle {
-    0% { transform: translateY(-50%) rotate(0deg); }
-    25% { transform: translateY(-50%) rotate(-3deg); }
-    50% { transform: translateY(-50%) rotate(3deg); }
-    75% { transform: translateY(-50%) rotate(-3deg); }
-    100% { transform: translateY(-50%) rotate(0deg); }
-}
+.fcb.bump .fcb-handle svg { animation: fcb-pop .6s ease; }
+@keyframes fcb-pop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
 
-/* ---------- Mobile: compact cart button, moved above the WhatsApp button ---------- */
 @media (max-width: 768px) {
-    .floating-cart-button {
-        top: auto;
-        bottom: 136px;             /* sits just above the WhatsApp button (72px + 52px + gap) */
-        transform: translateZ(0);  /* own GPU layer: stops fixed buttons vanishing until scrolling ends */
-        will-change: transform;
-        border-top-left-radius: 6px;
-        border-bottom-left-radius: 6px;
-        box-shadow: -1px 2px 8px rgba(0, 0, 0, 0.18);
-    }
-
-    .floating-cart-button:hover {
-        transform: translateZ(0);
-    }
-
-    .cart-item-section {
-        gap: 2px;
-        padding: 5px 9px;
-        font-size: 10px;
-    }
-
-    .cart-item-section svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .cart-price-section {
-        padding: 5px 9px;
-        font-size: 12px;
-    }
+    .fcb { top: auto; bottom: 130px; right: 12px; transform: translateZ(0); will-change: transform; height: 44px; border-radius: 22px; }
+    .fcb-handle { flex-basis: 44px; width: 44px; height: 44px; }
+    .fcb-handle svg:first-of-type { width: 20px; height: 20px; }
+    .fcb.open .fcb-body { padding-left: 14px; gap: 10px; }
+    .fcb-txt small { font-size: 10px; }
+    .fcb-txt b { font-size: 14px; }
+    .fcb-go { height: 28px; padding: 0 10px; font-size: 11px; }
 }
+@media (prefers-reduced-motion: reduce) { .fcb-body { transition: none; } .fcb.bump .fcb-handle svg { animation: none; } }
