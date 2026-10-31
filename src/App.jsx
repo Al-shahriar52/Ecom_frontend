@@ -73,6 +73,7 @@ import OrderSuccess from './pages/OrderSuccess';
 import RoleManagement from './components/admin/user/RolesPanel';
 import CreateOrder from "./pages/admin/orders/CreateOrder";
 import HomepageManager from './pages/admin/homepage/HomepageManager';
+import CatalogManager from './pages/admin/catalog/CatalogManager';
 
 // --- Helper Component to Handle Meta Pixel Tracking ---
 const PixelTracker = () => {
@@ -259,6 +260,7 @@ function App() {
                                                     <Route path="gateways" element={<FinanceGateways />} />
                                                 </Route>
                                                 <Route path="homepage" element={<HomepageManager />} />
+                                                <Route path="catalog" element={<CatalogManager />} />
                                             </Route>
 
                                         </Route>
