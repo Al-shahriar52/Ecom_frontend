@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import PermissionRoute from './components/admin/PermissionRoute';
 import ShopPage from './pages/ShopPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import FbtManagementPage from './pages/admin/FbtManagementPage';
@@ -226,40 +227,68 @@ function App() {
                                     <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN', 'MANAGER', 'ROLE_MANAGER', 'STAFF', 'ROLE_STAFF']} />}>
                                         <Route path="/admin" element={<AdminDashboardLayout />}>
 
-                                            {/* === Pages Admin, Manager & Staff can access based on matrix permissions === */}
+                                            {/* === Every page below is guarded by the Roles & Permissions matrix (Admin always passes) === */}
                                             <Route index element={<AdminHome />} />
-                                            <Route path="products" element={<ProductManagement />} />
-                                            <Route path="users" element={<UserManagement />} />
-                                            <Route path="orders" element={<AdminOrders />} />
-                                            <Route path="orders/new" element={<CreateOrder />} />
-                                            <Route path="orders/:orderId" element={<AdminOrderDetails />} />
-                                            <Route path="products/add" element={<AddProduct />} />
-                                            <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
-                                            <Route path="frequently-bought-together" element={<FbtManagementPage />} />
 
-                                            {/* === Pages ONLY Admin can see === */}
-                                            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN']} />}>
+                                            <Route element={<PermissionRoute perm={11} />}>
+                                                <Route path="products" element={<ProductManagement />} />
+                                                <Route path="products/add" element={<AddProduct />} />
+                                                <Route path="/admin/products/edit/:id" element={<EditProductPage />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute any={[1, 2]} />}>
+                                                <Route path="users" element={<UserManagement />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={4} />}>
+                                                <Route path="orders" element={<AdminOrders />} />
+                                                <Route path="orders/:orderId" element={<AdminOrderDetails />} />
+                                            </Route>
+                                            <Route element={<PermissionRoute perm={14} />}>
+                                                <Route path="orders/new" element={<CreateOrder />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={10} />}>
+                                                <Route path="frequently-bought-together" element={<FbtManagementPage />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={3} />}>
                                                 <Route path="roles" element={<RoleManagement />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={8} />}>
                                                 <Route path="coupons" element={<CouponManagement />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={15} />}>
                                                 <Route path="courier" element={<Navigate to="/admin/courier/providers" replace />} />
                                                 <Route path="courier/providers" element={<CourierProviders />} />
                                                 <Route path="courier/pathao-stores" element={<PathaoStores />} />
                                                 <Route path="courier/pickups" element={<CourierPickups />} />
-                                                <Route path="accounting" element={<FinanceLayout />}>
-                                                    <Route index element={<FinanceOverview />} />
-                                                    <Route path="report" element={<FinanceReport />} />
-                                                    <Route path="transactions" element={<FinanceTransactions />} />
-                                                    <Route path="settlements" element={<FinanceSettlements />} />
-                                                    <Route path="cod" element={<FinanceCOD />} />
-                                                    <Route path="refunds" element={<FinancePlaceholder title="Refunds" sub="Track and process customer refunds" body="Wire this up to a real refunds table once you're ready — it needs its own backend workflow separate from order cancellation." />} />
-                                                    <Route path="expenses/new" element={<FinanceExpenseForm />} />
-                                                    <Route path="expenses" element={<FinanceExpenseList />} />
-                                                    <Route path="payroll" element={<FinancePlaceholder title="Payroll" sub="Staff salaries and disbursements" body="Payroll needs its own employee records and disbursement history before this can be real — a bigger module than the others." />} />
-                                                    <Route path="profit-loss" element={<FinanceProfitLoss />} />
-                                                    <Route path="vat-ait" element={<FinancePlaceholder title="VAT & AIT" sub="Tax withheld across all your expenses" body="The numbers already exist on every expense you record — this view just needs to be built to aggregate and export them." />} />
-                                                    <Route path="gateways" element={<FinanceGateways />} />
-                                                </Route>
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={9} />}>
+                                            <Route path="accounting" element={<FinanceLayout />}>
+                                                <Route index element={<FinanceOverview />} />
+                                                <Route path="report" element={<FinanceReport />} />
+                                                <Route path="transactions" element={<FinanceTransactions />} />
+                                                <Route path="settlements" element={<FinanceSettlements />} />
+                                                <Route path="cod" element={<FinanceCOD />} />
+                                                <Route path="refunds" element={<FinancePlaceholder title="Refunds" sub="Track and process customer refunds" body="Wire this up to a real refunds table once you're ready — it needs its own backend workflow separate from order cancellation." />} />
+                                                <Route path="expenses/new" element={<FinanceExpenseForm />} />
+                                                <Route path="expenses" element={<FinanceExpenseList />} />
+                                                <Route path="payroll" element={<FinancePlaceholder title="Payroll" sub="Staff salaries and disbursements" body="Payroll needs its own employee records and disbursement history before this can be real — a bigger module than the others." />} />
+                                                <Route path="profit-loss" element={<FinanceProfitLoss />} />
+                                                <Route path="vat-ait" element={<FinancePlaceholder title="VAT & AIT" sub="Tax withheld across all your expenses" body="The numbers already exist on every expense you record — this view just needs to be built to aggregate and export them." />} />
+                                                <Route path="gateways" element={<FinanceGateways />} />
+                                            </Route>
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={12} />}>
                                                 <Route path="homepage" element={<HomepageManager />} />
+                                            </Route>
+
+                                            <Route element={<PermissionRoute perm={13} />}>
                                                 <Route path="catalog" element={<CatalogManager />} />
                                             </Route>
 

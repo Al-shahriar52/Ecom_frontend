@@ -6,7 +6,8 @@ import { usePermissions } from "../../../context/PermissionContext";
 import AddRoleModal from "./AddRoleModal";
 
 export default function RolesPanel({ currentRole = "admin" }) {
-    const { matrix, roleMeta, togglePermission, hasPermission, addNewRole } = usePermissions();
+    const { matrix, roleMeta, permissions, togglePermission, hasPermission, addNewRole } = usePermissions();
+    const permissionList = permissions && permissions.length ? permissions : PERMISSIONS;
     const [showAddRole, setShowAddRole] = useState(false);
 
     // Check if current user can edit permissions
@@ -63,16 +64,17 @@ export default function RolesPanel({ currentRole = "admin" }) {
                         </tr>
                         </thead>
                         <tbody>
-                        {PERMISSIONS.map((p, i) => (
+                        {permissionList.map((p, i) => (
                             <tr key={p} className="um-roles-row">
                                 <td className="um-roles-td um-text-text">{p}</td>
                                 {dynamicRoles.map(roleKey => {
-                                    const granted = matrix[roleKey][i] === 1;
+                                    const granted = roleKey === 'admin' ? true : matrix[roleKey][i] === 1;
                                     return (
                                         <td key={roleKey} className="um-roles-td-center">
                                             <div className="um-center">
                                                 <button
-                                                    disabled={!canEdit}
+                                                    disabled={!canEdit || roleKey === 'admin'}
+                                                    title={roleKey === 'admin' ? 'Administrator always has every permission' : undefined}
                                                     onClick={() => togglePermission(roleKey, i)}
                                                     className={`um-toggle ${granted ? "is-on" : ""}`}
                                                 >

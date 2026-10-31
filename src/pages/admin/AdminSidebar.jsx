@@ -16,7 +16,6 @@ const AdminSidebar = () => {
     const [isCourierMenuOpen, setIsCourierMenuOpen] = useState(false);
 
     const userRoles = user?.roles ? (Array.isArray(user.roles) ? user.roles : Array.from(user.roles)) : (user?.role ? [user.role] : []);
-    const isAdmin = userRoles.some(r => String(r).replace(/^ROLE_/, '').toUpperCase() === 'ADMIN');
     const primaryRoleDisplay = userRoles.length > 0 ? String(userRoles[0]).replace(/^ROLE_/, '') : 'USER';
 
     // Permission matrix index mapping (11-permission schema):
@@ -31,12 +30,21 @@ const AdminSidebar = () => {
     // 8 = Manage Coupons
     // 9 = Manage Accounting
     // 10 = Manage FBT
+    // 11 = Manage products
+    // 12 = Manage homepage
+    // 13 = Manage catalog (brands, categories, cities, areas)
+    // 14 = Create orders
+    // 15 = Manage courier
+    // Admin always has every permission (hasPermission returns true for admin).
     const canViewDashboard = !loading && hasPermission(user, 0);
     const canManageUsers = !loading && (hasPermission(user, 1) || hasPermission(user, 2));
     const canManageOrders = !loading && hasPermission(user, 4);
     const canManageCoupons = !loading && hasPermission(user, 8);
     const canManageAccounting = !loading && hasPermission(user, 9);
-    const canManageCourier = !loading && (hasPermission(user, 4) || isAdmin);
+    const canEditPermissions = !loading && hasPermission(user, 3);
+    const canManageCourier = !loading && hasPermission(user, 15);
+    const canManageHomepage = !loading && hasPermission(user, 12);
+    const canManageCatalog = !loading && hasPermission(user, 13);
     const canManageFbt = !loading && hasPermission(user, 10);
     const canManageProducts = !loading && hasPermission(user, 11);
 
@@ -49,6 +57,8 @@ const AdminSidebar = () => {
         Coupons: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>,
         Orders: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
         Accounting: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="18" x2="12" y2="22"></line><line x1="12" y1="2" x2="12" y2="6"></line></svg>,
+        Homepage: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>,
+        Catalog: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>,
         Logout: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>,
         ChevronDown: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>,
         ChevronUp: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>,
@@ -132,7 +142,7 @@ const AdminSidebar = () => {
                                         Users
                                     </NavLink>
                                 </li>
-                                {isAdmin && (
+                                {canEditPermissions && (
                                     <li>
                                         <NavLink to="/admin/roles" className="tree-link">
                                             <span className="tree-icon"><Icons.Shield /></span>
@@ -166,16 +176,16 @@ const AdminSidebar = () => {
                     </NavLink>
                 )}
 
-                {isAdmin && (
+                {canManageHomepage && (
                     <NavLink to="/admin/homepage" className="sidebar-link" data-tooltip="Homepage">
-                        <span className="icon">🏠</span>
+                        <span className="icon"><Icons.Homepage /></span>
                         <span className="text">Homepage</span>
                     </NavLink>
                 )}
 
-                {isAdmin && (
+                {canManageCatalog && (
                     <NavLink to="/admin/catalog" className="sidebar-link" data-tooltip="Catalog">
-                        <span className="icon">🗂️</span>
+                        <span className="icon"><Icons.Catalog /></span>
                         <span className="text">Catalog</span>
                     </NavLink>
                 )}
