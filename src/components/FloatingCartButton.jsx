@@ -8,7 +8,7 @@ import './FloatingCartButton.css';
  * slides out on hover / tap / keyboard focus and when something is added, then tucks away again.
  */
 const FloatingCartButton = () => {
-    const { cart } = useContext(CartContext);
+    const { cart, isLoadingCart } = useContext(CartContext);
     const [open, setOpen] = useState(false);
     const [bump, setBump] = useState(false);
     const timer = useRef(null);
@@ -21,7 +21,9 @@ const FloatingCartButton = () => {
     const closeLater = useCallback((ms) => { clear(); timer.current = setTimeout(() => setOpen(false), ms); }, []);
 
     // Item added: slide out for a moment so the customer sees it worked.
+    // (Ignore the first cart load, otherwise the bag slides open by itself on every page load.)
     useEffect(() => {
+        if (isLoadingCart) return undefined;
         if (prev.current !== null && totalItems > prev.current) {
             setOpen(true);
             setBump(true);
@@ -32,7 +34,7 @@ const FloatingCartButton = () => {
         }
         prev.current = totalItems;
         return undefined;
-    }, [totalItems, closeLater]);
+    }, [totalItems, isLoadingCart, closeLater]);
 
     useEffect(() => clear, []);
 
@@ -46,15 +48,33 @@ const FloatingCartButton = () => {
 
     if (totalItems === 0) return null;
 
-    const toggle = () => { clear(); setOpen((o) => { if (!o) closeLater(5000); return !o; }); };
+    const toggle = () => {
+        clear();
+        if (open) {
+            setOpen(false);
+        } else {
+            setOpen(true);
+            closeLater(5000);
+        }
+    };
+
+    // Keyboard users: open when tabbed to. A tap or click also focuses the handle, and that must NOT open it
+    // first, otherwise the click that follows would toggle it straight back shut (the cart never opened on phones).
+    const handleFocus = (e) => {
+        try {
+            if (e.target.matches(':focus-visible')) { clear(); setOpen(true); }
+        } catch (err) {
+            // browser without :focus-visible - skip
+        }
+    };
 
     const money = Math.round(totalPrice).toLocaleString('en-US');
 
     return (
         <div className={`fcb ${open ? 'open' : ''} ${bump ? 'bump' : ''}`}
-             onMouseEnter={(e) => { if (e.pointerType !== 'touch') { clear(); setOpen(true); } }}
-             onMouseLeave={() => closeLater(350)}
-             onFocus={() => { clear(); setOpen(true); }}
+             onPointerEnter={(e) => { if (e.pointerType === 'mouse') { clear(); setOpen(true); } }}
+             onPointerLeave={(e) => { if (e.pointerType === 'mouse') closeLater(350); }}
+             onFocus={handleFocus}
              onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) closeLater(300); }}>
             <div className="fcb-handle" role="button" tabIndex={0} aria-expanded={open}
                  aria-label={`Cart: ${totalItems} items. ${open ? 'Hide' : 'Show'} details`}
