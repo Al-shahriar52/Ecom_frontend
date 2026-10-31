@@ -166,6 +166,20 @@ const AdminSidebar = () => {
                     </NavLink>
                 )}
 
+                {isAdmin && (
+                    <NavLink to="/admin/homepage" className="sidebar-link" data-tooltip="Homepage">
+                        <span className="icon">🏠</span>
+                        <span className="text">Homepage</span>
+                    </NavLink>
+                )}
+
+                {isAdmin && (
+                    <NavLink to="/admin/catalog" className="sidebar-link" data-tooltip="Catalog">
+                        <span className="icon">🗂️</span>
+                        <span className="text">Catalog</span>
+                    </NavLink>
+                )}
+
                 {canManageOrders && (
                     <NavLink to="/admin/orders" className="sidebar-link" data-tooltip="Orders">
                         <span className="icon"><Icons.Orders /></span>

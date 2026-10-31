@@ -19,6 +19,7 @@ import Shop from './pages/ShopPage';
 import AboutUs from './pages/AboutUs';
 import Brands from './pages/Brands';
 import WhatsAppWidget from './components/WhatsAppWidget';
+import ConcernPage from './pages/ConcernPage';
 
 // --- Context Providers ---
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -71,6 +72,8 @@ import Wishlist from './pages/Wishlist';
 import OrderSuccess from './pages/OrderSuccess';
 import RoleManagement from './components/admin/user/RolesPanel';
 import CreateOrder from "./pages/admin/orders/CreateOrder";
+import HomepageManager from './pages/admin/homepage/HomepageManager';
+import CatalogManager from './pages/admin/catalog/CatalogManager';
 
 // --- Helper Component to Handle Meta Pixel Tracking ---
 const PixelTracker = () => {
@@ -190,6 +193,7 @@ function App() {
                                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                                         <Route path="/about" element={<AboutUs />} />
                                         <Route path="/brands" element={<Brands />} />
+                                        <Route path="/concern/:slug" element={<ConcernPage />} />
                                         <Route path="/cart" element={<Cart />} />
                                         <Route path="/login" element={<AuthPage />} />
                                         <Route path="/oauth2/callback" element={<OAuth2Callback />} />
@@ -255,6 +259,8 @@ function App() {
                                                     <Route path="vat-ait" element={<FinancePlaceholder title="VAT & AIT" sub="Tax withheld across all your expenses" body="The numbers already exist on every expense you record — this view just needs to be built to aggregate and export them." />} />
                                                     <Route path="gateways" element={<FinanceGateways />} />
                                                 </Route>
+                                                <Route path="homepage" element={<HomepageManager />} />
+                                                <Route path="catalog" element={<CatalogManager />} />
                                             </Route>
 
                                         </Route>

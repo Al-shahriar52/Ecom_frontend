@@ -55,6 +55,7 @@ const ProductCard = ({ product }) => {
             </Link>
 
             <div className="product-info">
+                {product.brandName && <div className="product-brand">{product.brandName}</div>}
                 <h3 className="product-name">
                     <Link to={`/product/${product.slug}`}>{product.name}</Link>
                 </h3>
