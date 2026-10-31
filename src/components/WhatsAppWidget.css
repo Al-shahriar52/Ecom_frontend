@@ -2,7 +2,7 @@
 .wa {
     position: fixed;
     right: 12px;
-    bottom: 28px;
+    bottom: 128px;                    /* same spot on desktop and mobile: right edge, thumb-friendly height */
     z-index: 998;
     display: flex;
     flex-direction: row-reverse;       /* icon stays on the right, label grows to the left */
@@ -59,19 +59,20 @@
 
 @media (max-width: 768px) {
     .wa {
-        right: 10px;
-        bottom: 72px;               /* lifted above phone / in-app browser bottom bars */
-        height: 48px;
-        border-radius: 24px;
+        right: 12px;
+        bottom: calc(128px + env(safe-area-inset-bottom, 0px));   /* higher = easier for the thumb and clear of browser bottom bars */
+        height: 58px;
+        border-radius: 29px;
         transform: translateZ(0);
         will-change: transform;
     }
-    .wa-icon { flex-basis: 48px; width: 48px; height: 48px; }
-    .wa-icon svg { width: 25px; height: 25px; }
-    .wa-label small { font-size: 10px; }
-    .wa-label b { font-size: 13px; }
+    .wa::after { content: ''; position: absolute; inset: -6px; border-radius: 35px; }   /* larger invisible tap area */
+    .wa-icon { flex-basis: 58px; width: 58px; height: 58px; }
+    .wa-icon svg { width: 30px; height: 30px; }
+    .wa-label small { font-size: 11px; }
+    .wa-label b { font-size: 14px; }
     .wa:hover .wa-label { max-width: 0; opacity: 0; padding-left: 0; }          /* no hover on touch */
-    .wa.hint .wa-label { max-width: 140px; opacity: 1; padding-left: 14px; }
+    .wa.hint .wa-label { max-width: 150px; opacity: 1; padding-left: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,14 +1,14 @@
 /* Floating bag: a round dark button that expands into a pill with the total. */
 .fcb {
     position: fixed;
-    right: 14px;
-    top: 50%;
+    right: 12px;
+    bottom: 196px;                    /* right above the WhatsApp button (128px + 54px + gap), same on desktop and mobile */
     z-index: 999;
     display: flex;
     flex-direction: row-reverse;      /* handle stays on the right, body grows to the left */
     align-items: center;
     height: 50px;
-    transform: translateY(-50%);
+    transform: translateZ(0);
     border-radius: 25px;
     background: linear-gradient(135deg, #2b3445, #161b26);
     box-shadow: 0 8px 22px rgba(15, 23, 42, .28), 0 0 0 1px rgba(255, 255, 255, .06) inset;
@@ -53,12 +53,14 @@
 @keyframes fcb-pop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
 
 @media (max-width: 768px) {
-    .fcb { top: auto; bottom: 130px; right: 12px; transform: translateZ(0); will-change: transform; height: 44px; border-radius: 22px; }
-    .fcb-handle { flex-basis: 44px; width: 44px; height: 44px; }
-    .fcb-handle svg:first-of-type { width: 20px; height: 20px; }
-    .fcb.open .fcb-body { padding-left: 14px; gap: 10px; }
-    .fcb-txt small { font-size: 10px; }
-    .fcb-txt b { font-size: 14px; }
-    .fcb-go { height: 28px; padding: 0 10px; font-size: 11px; }
+    /* sits right above the bigger mobile WhatsApp button (128px + 58px + gap), both in easy thumb reach */
+    .fcb { bottom: calc(200px + env(safe-area-inset-bottom, 0px)); will-change: transform; height: 54px; border-radius: 27px; }
+    .fcb-handle { flex-basis: 54px; width: 54px; height: 54px; }
+    .fcb-handle::after { content: ''; position: absolute; inset: -6px; border-radius: 33px; }   /* larger invisible tap area */
+    .fcb-handle svg:first-of-type { width: 24px; height: 24px; }
+    .fcb.open .fcb-body { padding-left: 16px; gap: 12px; }
+    .fcb-txt small { font-size: 11px; }
+    .fcb-txt b { font-size: 15px; }
+    .fcb-go { height: 36px; padding: 0 14px; font-size: 12.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .fcb-body { transition: none; } .fcb.bump .fcb-handle svg { animation: none; } }
