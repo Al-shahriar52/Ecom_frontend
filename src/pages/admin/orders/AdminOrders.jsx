@@ -1,9 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { MoreVertical, Eye, Pencil, Truck, MapPinned, XCircle } from 'lucide-react';
 import axiosInstance from '../../../api/AxiosInstance';
+import { usePermissions } from '../../../context/PermissionContext';
+import { AuthContext } from '../../../context/AuthContext';
 import OrderUpdateModal from './OrderUpdateModal';
 import PickupModal from './PickupModal';
 import CourierBadge from '../courier/CourierBadge';
@@ -14,6 +16,9 @@ import './AdminOrders.css';
 
 const AdminOrders = () => {
     const navigate = useNavigate();
+    const { user: authUser } = useContext(AuthContext);
+    const { hasPermission } = usePermissions();
+    const canCreateOrder = hasPermission(authUser, 14);
 
     const initialFilters = {
         method: 'All',
@@ -253,12 +258,12 @@ const AdminOrders = () => {
                     </div>
                     <div style={{display:'flex', gap:'10px'}}>
                         <button className="btn-global-export" onClick={handleGlobalExport}>📥 Export All</button>
-                        <button
+                        {canCreateOrder && <button
                             onClick={() => navigate('/admin/orders/new')}
                             style={{ background: '#e91e63', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                         >
                             + New order
-                        </button>
+                        </button>}
                         {isFilterActive && <button className="btn-clear-top" onClick={resetFilters}>✕ Clear Filters</button>}
                     </div>
                 </div>

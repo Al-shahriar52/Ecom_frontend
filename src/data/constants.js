@@ -39,7 +39,11 @@ export const PERMISSIONS = [
     "Manage Coupons",     // Index 8
     "Manage Accounting",  // Index 9
     "Manage FBT",          // Index 10
-    "Manage products"     // Index 11
+    "Manage products",    // Index 11
+    "Manage homepage",    // Index 12
+    "Manage catalog",     // Index 13 (brands, categories, cities, areas)
+    "Create orders",      // Index 14
+    "Manage courier"      // Index 15
 ];
 
 export const ROLE_META = {
@@ -50,8 +54,8 @@ export const ROLE_META = {
 };
 
 export const ROLE_PERMISSION_MATRIX = {
-    admin:   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    manager: [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0],
-    user:    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    guest:   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    admin:   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    manager: [1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0],
+    user:    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    guest:   [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 };
