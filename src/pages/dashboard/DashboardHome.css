@@ -1,0 +1,108 @@
+.dh { display: flex; flex-direction: column; gap: 18px; color: #1f2937; }
+.dh * { box-sizing: border-box; }
+.dh h2, .dh h3, .dh p, .dh ul, .dh ol { margin: 0; padding: 0; }
+.dh ul, .dh ol { list-style: none; }
+.dh svg.dh-ico { display: inline-block !important; fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 1 !important; visibility: visible !important; flex-shrink: 0; }
+.dh a { text-decoration: none; }
+
+.dh-sk { border-radius: 16px; background: linear-gradient(90deg, #f3e8ea, #fbf3f4, #f3e8ea); background-size: 200% 100%; animation: dh-sh 1.3s infinite; }
+@keyframes dh-sh { to { background-position: -200% 0; } }
+
+.dh-note { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 10px 14px; border-radius: 10px; font-size: 13px; }
+
+/* welcome */
+.dh-hero { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 22px 24px; border-radius: 18px; background: linear-gradient(120deg, #fde8ee, #fff6f0 70%); border: 1px solid #f6d5de; }
+.dh-hero h2 { font-size: 24px; font-weight: 700; }
+.dh-hero p { margin-top: 4px; color: #6b5b60; font-size: 14px; }
+.dh-hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.dh .dh-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 999px; border: 1.5px solid #2c3e50; color: #2c3e50; font-size: 14px; font-weight: 600; background: #fff; transition: all .15s; }
+.dh .dh-btn:hover { background: #2c3e50; color: #fff; }
+.dh .dh-btn.primary { background: #e91e63; border-color: #e91e63; color: #fff; }
+.dh .dh-btn.primary:hover { background: #d81b60; border-color: #d81b60; }
+
+/* stats */
+.dh-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.dh-stat { display: flex; align-items: center; gap: 14px; padding: 16px; background: #fff; border: 1px solid #eee3e6; border-radius: 16px; }
+.dh-stat b { display: block; font-size: 22px; font-weight: 700; line-height: 1.15; }
+.dh-stat small { color: #8b8087; font-size: 12.5px; }
+.dh .ic { width: 42px; height: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dh .ic.a { background: #fdf2f8; color: #db2777; } .dh .ic.b { background: #eef2ff; color: #4f46e5; }
+.dh .ic.c { background: #fffbeb; color: #d97706; } .dh .ic.d { background: #ecfdf5; color: #059669; }
+
+/* cards */
+.dh-card { background: #fff; border: 1px solid #eee3e6; border-radius: 18px; padding: 20px; }
+.dh-card > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.dh-card h3 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dh-eyebrow { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #b08a93; font-weight: 600; margin-bottom: 3px; }
+.dh .dh-link { display: inline-flex; align-items: center; gap: 5px; color: #e91e63; font-weight: 600; font-size: 14px; }
+.dh .dh-link:hover { text-decoration: underline; }
+.dh-pill { display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f3f4f6; color: #4b5563; white-space: nowrap; }
+.dh-pill.pending { background: #fffbeb; color: #b45309; } .dh-pill.info { background: #eff6ff; color: #1d4ed8; }
+.dh-pill.ship { background: #ecfeff; color: #0e7490; } .dh-pill.done { background: #ecfdf5; color: #047857; } .dh-pill.bad { background: #fef2f2; color: #b91c1c; }
+
+/* live order tracker */
+.dh-track { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; margin: 6px 0 22px; }
+.dh-track li { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; position: relative; color: #a8a0a4; }
+.dh-track li::before { content: ''; position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: #ece4e7; z-index: 0; }
+.dh-track li:first-child::before { display: none; }
+.dh-track li.done::before { background: #e91e63; }
+.dh-track .dot { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 2px solid #ece4e7; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.dh-track li.done .dot { background: #e91e63; border-color: #e91e63; color: #fff; }
+.dh-track li.now .dot { box-shadow: 0 0 0 5px rgba(233, 30, 99, .16); }
+.dh-track b { font-size: 13px; color: inherit; }
+.dh-track li.done b { color: #1f2937; }
+.dh-track small { font-size: 11px; color: #9a8f95; min-height: 14px; }
+.dh-live-foot { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding-top: 16px; border-top: 1px dashed #eadde1; }
+.dh-live-items { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 14px; font-weight: 600; }
+.dh-live-items span small { display: block; font-weight: 400; color: #8b8087; font-size: 12.5px; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dh-live-meta { display: flex; gap: 22px; flex-wrap: wrap; }
+.dh-live-meta small { display: block; font-size: 11.5px; color: #9a8f95; }
+.dh-live-meta b { font-size: 14px; }
+
+/* thumbs */
+.dh-thumbs { display: inline-flex; }
+.dh-thumb { width: 44px; height: 44px; border-radius: 12px; border: 2px solid #fff; background: #f6eff1; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; color: #b9a9af; box-shadow: 0 1px 3px rgba(0, 0, 0, .1); flex-shrink: 0; }
+.dh-thumbs .dh-thumb + .dh-thumb { margin-left: -12px; }
+.dh-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* orders list */
+.dh-orders { display: flex; flex-direction: column; }
+.dh .dh-order { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 13px 8px; border-top: 1px solid #f3ecee; color: inherit; border-radius: 10px; }
+.dh-orders li:first-child .dh-order { border-top: none; }
+.dh .dh-order:hover { background: #fdf7f9; }
+.dh-order .mid b { display: block; font-size: 14px; }
+.dh-order .mid small { color: #8b8087; font-size: 12.5px; }
+.dh-order .amt { font-size: 15px; min-width: 70px; text-align: right; }
+
+/* shortcuts */
+.dh-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.dh .dh-lk { display: flex; flex-direction: column; gap: 3px; padding: 16px; background: #fff; border: 1px solid #eee3e6; border-radius: 16px; color: inherit; transition: all .15s; }
+.dh .dh-lk:hover { border-color: #f3b7c9; box-shadow: 0 6px 18px rgba(233, 30, 99, .08); transform: translateY(-2px); }
+.dh-lk .ic { background: #fdf2f5; color: #e91e63; margin-bottom: 8px; }
+.dh-lk b { font-size: 14.5px; } .dh-lk small { color: #8b8087; font-size: 12.5px; }
+
+/* empty */
+.dh-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px 10px; text-align: center; color: #8b8087; }
+.dh-empty svg { color: #e0c3cc; } .dh-empty b { color: #1f2937; font-size: 16px; } .dh-empty .dh-btn { margin-top: 8px; }
+
+/* recommendations */
+.dh-picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+
+@media (max-width: 1100px) { .dh-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 860px) {
+    .dh-stats, .dh-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dh-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+@media (max-width: 560px) {
+    .dh-hero { padding: 18px; } .dh-hero h2 { font-size: 21px; }
+    .dh-hero-btns { width: 100%; } .dh .dh-hero-btns .dh-btn { flex: 1; }
+    .dh-stat { padding: 12px; gap: 10px; } .dh-stat b { font-size: 18px; } .dh .ic { width: 36px; height: 36px; }
+    .dh-card { padding: 16px; }
+    .dh-track small { display: none; } .dh-track b { font-size: 11.5px; }
+    .dh .dh-order { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 6px; }
+    .dh-order .amt { grid-column: 3; grid-row: 2; }
+    .dh-order .dh-pill { grid-column: 3; grid-row: 1; }
+    .dh-order .mid { grid-column: 2; grid-row: 1 / span 2; }
+    .dh-live-meta { gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .dh-sk { animation: none; } }
