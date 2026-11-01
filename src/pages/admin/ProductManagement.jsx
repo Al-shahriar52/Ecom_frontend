@@ -1,20 +1,30 @@
 
-import React, {useState, useEffect, useMemo} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import './Admin.css';
 import StarRating from '../../components/StarRating';
 import axiosInstance from '../../api/AxiosInstance';
 import ProductDrawer from './ProductDrawer';
+import Pagination from '../../components/admin/Pagination';
+
+// Status dropdown -> backend stock filter (done on the server so paging stays correct)
+const STOCK_PARAM = { 'In Stock': 'IN', 'Limited': 'LIMITED', 'Out of Stock': 'OUT' };
 
 const ProductManagement = () => {
     // State for data fetched from the API
     const [products, setProducts] = useState([]);
-    const [pagination, setPagination] = useState({ pageNo: 0, pageSize: 10, totalPages: 1 });
+    const [page, setPage] = useState(0);                 // 0-based
+    const [pageSize, setPageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalElements, setTotalElements] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [reload, setReload] = useState(0);
     const [categories, setCategories] = useState([]);
     const [openProduct, setOpenProduct] = useState(null); // row shown in the details panel
     // State for API query parameters
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState('');   // what is typed
+    const [searchTerm, setSearchTerm] = useState('');     // what is sent (after a short pause)
     const [statusFilter, setStatusFilter] = useState('All');
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
@@ -33,35 +43,55 @@ const ProductManagement = () => {
         fetchCategories();
     }, []); // Empty array ensures this runs only once on mount
 
-    // This useEffect hook is the core of the integration.
-    // It re-fetches data from the API whenever a filter, sort, or page changes.
+    // Wait a moment after typing before searching, and always go back to page 1 for a new search.
     useEffect(() => {
+        const t = setTimeout(() => {
+            setSearchTerm(searchInput.trim());
+            setPage(0);
+        }, 350);
+        return () => clearTimeout(t);
+    }, [searchInput]);
+
+    // Re-fetch whenever the page, page size, sort or any filter changes.
+    useEffect(() => {
+        let cancelled = false;   // ignore answers that arrive after a newer request
         const fetchProducts = async () => {
+            setLoading(true);
             try {
-                // Construct query parameters from the current state
                 const params = {
-                    pageNo: pagination.pageNo,
-                    pageSize: pagination.pageSize,
+                    pageNo: page,
+                    pageSize,
                     sortBy: sortConfig.key,
                     sortDir: sortConfig.direction,
                     query: searchTerm,
                     categoryId: categoryFilter === 'All' ? '' : categoryFilter,
+                    stock: STOCK_PARAM[statusFilter] || '',
                 };
-
                 const response = await axiosInstance.get('/api/v1/product/search', { params });
-                const { content, pageNo, pageSize, totalPages } = response.data.data;
+                if (cancelled) return;
+                const { content, totalPages: tp, totalElements: te } = response.data.data;
+                const pages = Math.max(tp || 0, 1);
 
+                // The page no longer exists (e.g. the last item on it was deleted): go to the last real page.
+                if ((content || []).length === 0 && page > 0 && page > pages - 1) {
+                    setPage(pages - 1);
+                    return;
+                }
                 setProducts(content || []);
-                setPagination({ pageNo, pageSize, totalPages });
-
+                setTotalPages(pages);
+                setTotalElements(te || 0);
             } catch (error) {
+                if (cancelled) return;
                 console.error("Error fetching products:", error);
                 toast.error("Could not fetch product list.");
+            } finally {
+                if (!cancelled) setLoading(false);
             }
         };
 
         fetchProducts();
-    }, [pagination.pageNo, pagination.pageSize, sortConfig, searchTerm, categoryFilter]);// Dependencies array
+        return () => { cancelled = true; };
+    }, [page, pageSize, sortConfig, searchTerm, categoryFilter, statusFilter, reload]);
 
     // Updates the sort configuration, which triggers the useEffect to re-fetch
     const requestSort = (key) => {
@@ -70,6 +100,7 @@ const ProductManagement = () => {
             direction = 'desc';
         }
         setSortConfig({ key, direction });
+        setPage(0);
     };
 
     // Helper function to determine status based on quantity from the API response
@@ -79,16 +110,6 @@ const ProductManagement = () => {
         return { text: 'In Stock', className: 'status-in-stock' };
     };
 
-    const displayProducts = useMemo(() => {
-        if (statusFilter === 'All') {
-            return products;
-        }
-        return products.filter(product => {
-            const statusText = getProductStatus(product.quantity).text;
-            return statusText === statusFilter;
-        });
-    }, [products, statusFilter]);
-
     const getSortArrow = (key) => {
         if (sortConfig.key !== key) return '↑↓';
         return sortConfig.direction === 'asc' ? '↑' : '↓';
@@ -97,18 +118,24 @@ const ProductManagement = () => {
     const handleSortChange = (e) => {
         const [key, direction] = e.target.value.split('-');
         setSortConfig({ key, direction });
+        setPage(0);
     };
 
     const handlePageChange = (newPageNo) => {
-        setPagination(prev => ({ ...prev, pageNo: newPageNo }));
+        setPage(Math.max(0, Math.min(newPageNo, totalPages - 1)));
+        const el = document.querySelector('.admin-page-content .product-list-wrapper');
+        if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
+
+    const handlePageSize = (n) => { setPageSize(n); setPage(0); };
+    const resetPage = useCallback(() => setPage(0), []);
 
     const handleDeleteClick = async (productId) => {
         if (!window.confirm("Are you sure you want to delete this product?")) return;
         try {
             await axiosInstance.delete(`/api/v1/product/delete/${productId}`);
             toast.success("Product deleted successfully!");
-            setProducts(prevProducts => prevProducts.filter(p => p.productId !== productId));
+            setReload((n) => n + 1);   // reload the page so counts and paging stay right
         } catch (error) {
             toast.error("Failed to delete product.");
         }
@@ -127,20 +154,20 @@ const ProductManagement = () => {
                             type="text"
                             placeholder="Search..."
                             className="search-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
                         />
                         <select
                             className="filter-select"
                             value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
+                            onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}
                         >
                             <option value="All">All Status</option>
                             <option value="In Stock">In Stock</option>
                             <option value="Limited">Limited</option>
                             <option value="Out of Stock">Out of Stock</option>
                         </select>
-                        <select className="filter-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+                        <select className="filter-select" value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); resetPage(); }}>
                             <option value="All">All Categories</option>
                             {categories.map(cat => (
                                 <option key={cat.id} value={cat.id}>
@@ -190,7 +217,7 @@ const ProductManagement = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {displayProducts.map(product => {
+                        {products.map(product => {
                             const status = getProductStatus(product.quantity);
                             return (
                                 <tr
@@ -241,19 +268,12 @@ const ProductManagement = () => {
                     </table>
                 </div>
 
-                <div className="pagination">
-                    <button onClick={() => handlePageChange(pagination.pageNo - 1)} disabled={pagination.pageNo === 0}>
-                        Previous
-                    </button>
-                    {[...Array(pagination.totalPages).keys()].map(number => (
-                        <span key={number} className={pagination.pageNo === number ? 'active' : ''} onClick={() => handlePageChange(number)}>
-                            {number + 1}
-                        </span>
-                    ))}
-                    <button onClick={() => handlePageChange(pagination.pageNo + 1)} disabled={pagination.pageNo >= pagination.totalPages - 1}>
-                        Next
-                    </button>
-                </div>
+                {!loading && products.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '36px 10px', color: '#6b7280' }}>No products match these filters.</div>
+                )}
+
+                <Pagination page={page} totalPages={totalPages} totalElements={totalElements} pageSize={pageSize}
+                            onPage={handlePageChange} onPageSize={handlePageSize} />
             </div>
 
             {openProduct && (
@@ -261,8 +281,8 @@ const ProductManagement = () => {
                     summary={openProduct}
                     onClose={() => setOpenProduct(null)}
                     onDeleted={(id) => {
-                        setProducts(prev => prev.filter(p => p.productId !== id));
                         setOpenProduct(null);
+                        setReload((n) => n + 1);
                     }}
                 />
             )}
