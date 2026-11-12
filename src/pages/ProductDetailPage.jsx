@@ -18,6 +18,7 @@ const ProductDetailPage = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [notFound, setNotFound] = useState(false);
     const [redirectSlug, setRedirectSlug] = useState(null);
     const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
 
@@ -29,6 +30,7 @@ const ProductDetailPage = () => {
             try {
                 setLoading(true);
                 setError(null);
+                setNotFound(false);
                 setRedirectSlug(null);
 
                 if (isLegacyNumericId) {
@@ -39,7 +41,7 @@ const ProductDetailPage = () => {
                         setProduct(data);
                     } else {
                         setProduct(null);
-                        setError('Product not found.');
+                        setNotFound(true);          // really missing
                     }
                 } else {
                     const response = await axiosInstance.get(`/api/v1/product/detail/slug/${slug}`);
@@ -47,13 +49,17 @@ const ProductDetailPage = () => {
                         setProduct(response.data.data);
                     } else {
                         setProduct(null);
-                        setError('Product not found.');
+                        setNotFound(true);          // really missing
                     }
                 }
             } catch (err) {
                 console.error(err);
                 setProduct(null);
-                setError('Failed to load product details.');
+                if (err.response?.status === 404) {
+                    setNotFound(true);              // confirmed 404 only
+                } else {
+                    setError('Failed to load product details.');   // temporary failure
+                }
             } finally {
                 setLoading(false);
             }
@@ -138,7 +144,8 @@ const ProductDetailPage = () => {
     }
 
     // ONLY output noindex when fetching is complete AND product is genuinely missing
-    if (!loading && (!product || error)) {
+// Confirmed missing → noindex
+    if (!loading && notFound) {
         return (
             <div className="pdp-error container">
                 <Helmet>
@@ -148,6 +155,19 @@ const ProductDetailPage = () => {
                 <div style={{ padding: '50px 0', textAlign: 'center' }}>
                     <h2>Product Not Found</h2>
                     <p>The requested product could not be found or has been removed.</p>
+                </div>
+            </div>
+        );
+    }
+
+// Temporary failure (network, 5xx, 401/403) → NO noindex
+    if (!loading && (!product || error)) {
+        return (
+            <div className="pdp-error container">
+                <Helmet><title>BeautyHaat</title></Helmet>
+                <div style={{ padding: '50px 0', textAlign: 'center' }}>
+                    <h2>Couldn't load this product</h2>
+                    <button onClick={() => window.location.reload()}>Try again</button>
                 </div>
             </div>
         );
