@@ -15,4 +15,4 @@ Disallow: /api/
 Disallow: /*?*
 
 # Sitemap location
-Sitemap: https://api.beautyhaat.com/sitemap.xml
+Sitemap: https://beautyhaat.com/sitemap.xml
