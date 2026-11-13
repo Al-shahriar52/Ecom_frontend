@@ -48,6 +48,7 @@ export default function ConcernPage() {
             <Helmet>
                 <title>{`${title} solutions | BeautyHaat`}</title>
                 <meta name="description" content={`Shop products for ${title.toLowerCase()} at BeautyHaat. Genuine products, delivered across Bangladesh.`} />
+                <link rel="canonical" href={`https://beautyhaat.com/concern/${slug}`} />
             </Helmet>
             <div className="hp-cp-head" style={{ background: `linear-gradient(120deg, ${bg}, #fff)`, color: ink }}>
                 <div className="hp-cp-in">

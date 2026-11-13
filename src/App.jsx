@@ -21,6 +21,8 @@ import AboutUs from './pages/AboutUs';
 import Brands from './pages/Brands';
 import WhatsAppWidget from './components/WhatsAppWidget';
 import ConcernPage from './pages/ConcernPage';
+import NotFoundPage from './pages/NotFoundPage';
+import RouteSeo from './components/RouteSeo';
 
 // --- Context Providers ---
 import { AuthProvider, AuthContext } from './context/AuthContext';
@@ -173,6 +175,7 @@ function App() {
                 <PixelTracker />
                 <GaTracker />
                 <ScrollToTop />
+                <RouteSeo />
                 <AuthProvider>
                     <PermissionProvider>
                         <CartProvider>
@@ -188,6 +191,8 @@ function App() {
                                         {/* --- Public Routes --- */}
                                         <Route path="/" element={<Home />} />
                                         <Route path="/shop" element={<Shop />} />
+                                        {/* Google had indexed/guessed /products; send it to the real listing page */}
+                                        <Route path="/products" element={<Navigate to="/shop" replace />} />
                                         <Route path="/contact" element={<Contact />} />
                                         <Route path="/shipping-delivery" element={<Shipping />} />
                                         <Route path="/refund-policy" element={<RefundPolicy />} />
@@ -217,6 +222,9 @@ function App() {
                                                 <Route path="change-password" element={<ChangePassword />} />
                                             </Route>
                                         </Route>
+
+                                        {/* --- 404: any unknown URL (must stay LAST inside PublicLayout) --- */}
+                                        <Route path="*" element={<NotFoundPage />} />
 
                                     </Route> {/* End of PublicLayout */}
 
