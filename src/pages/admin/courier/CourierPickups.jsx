@@ -6,6 +6,7 @@ import {
     fetchPickupLocations, fetchAwaitingPickup, fetchPickupHistory, createPickupRequest, syncAllStatuses,
 } from './courierApi';
 import PickupLocationsModal from './PickupLocationsModal';
+import { fmtDateTime } from './courierDate';
 import './CourierPickups.css';
 
 const STATUS = {
@@ -15,7 +16,7 @@ const STATUS = {
 };
 
 const fmtMoney = (n) => `৳${Number(n || 0).toLocaleString('en-BD', { maximumFractionDigits: 0 })}`;
-const fmtDate = (d) => (d ? new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—');
+const fmtDate = fmtDateTime;
 
 const CourierPickups = () => {
     const [locations, setLocations] = useState([]);

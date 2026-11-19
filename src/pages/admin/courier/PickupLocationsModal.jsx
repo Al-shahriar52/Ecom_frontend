@@ -3,6 +3,24 @@ import { X, MapPin, Star, Pencil, Trash2, Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { fetchPoliceStations, savePickupLocation, deletePickupLocation } from './courierApi';
 
+// Steadfast can send stations grouped by district ([{ name: 'Dhaka', police_stations: [...] }]) or as a flat list.
+// Turn either shape into one flat list of stations that each know their district.
+const STATION_LISTS = ['police_stations', 'policeStations', 'stations', 'thanas'];
+const normalizeStations = (data) => {
+    const out = [];
+    (Array.isArray(data) ? data : []).forEach((item) => {
+        const children = STATION_LISTS.map((k) => item[k]).find(Array.isArray);
+        if (children) {
+            const district = item.name || item.district || item.title || '';
+            children.forEach((s) => out.push({ ...s, districtName: s.district_name || district }));
+        } else {
+            const d = item.district_name || (typeof item.district === 'string' ? item.district : item.district?.name) || '';
+            out.push({ ...item, districtName: d });
+        }
+    });
+    return out;
+};
+
 const EMPTY = { label: '', steadfastAddressId: '', policeStationId: '', policeStationName: '', address: '', contactNumber: '', primaryLocation: false };
 
 const PickupLocationsModal = ({ locations, onClose, onChanged }) => {
@@ -13,15 +31,26 @@ const PickupLocationsModal = ({ locations, onClose, onChanged }) => {
 
     useEffect(() => {
         fetchPoliceStations()
-            .then((d) => setStations(Array.isArray(d) ? d : []))
+            .then((d) => setStations(normalizeStations(d)))
             .catch(() => toast.error('Could not load police stations'));
     }, []);
 
     const stationName = (s) => s.name || s.police_station_name || s.title || `#${s.id}`;
     const filtered = useMemo(() => {
         const q = stationQuery.trim().toLowerCase();
-        return stations.filter((s) => !q || stationName(s).toLowerCase().includes(q)).slice(0, 60);
+        return stations.filter((s) => !q || `${stationName(s)} ${s.districtName || ''}`.toLowerCase().includes(q));
     }, [stations, stationQuery]);
+
+    // Group by district so hundreds of stations stay easy to scan
+    const grouped = useMemo(() => {
+        const m = new Map();
+        filtered.forEach((s) => {
+            const k = s.districtName || '';
+            if (!m.has(k)) m.set(k, []);
+            m.get(k).push(s);
+        });
+        return Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
+    }, [filtered]);
 
     const set = (k, v) => setEditing((e) => ({ ...e, [k]: v }));
 
@@ -96,15 +125,20 @@ const PickupLocationsModal = ({ locations, onClose, onChanged }) => {
                             <input value={stationQuery} onChange={(e) => setStationQuery(e.target.value)} placeholder="Search…" />
                             <select
                                 required
-                                size={5}
+                                size={8}
                                 value={editing.policeStationId}
                                 onChange={(e) => {
                                     const s = stations.find((x) => String(x.id) === e.target.value);
-                                    setEditing((cur) => ({ ...cur, policeStationId: e.target.value, policeStationName: s ? stationName(s) : '' }));
+                                    setEditing((cur) => ({ ...cur, policeStationId: e.target.value, policeStationName: s ? `${stationName(s)}${s.districtName ? ', ' + s.districtName : ''}` : '' }));
                                 }}
                             >
-                                {filtered.map((s) => <option key={s.id} value={s.id}>{stationName(s)}</option>)}
+                                {grouped.map(([district, items]) => (district ? (
+                                    <optgroup key={district} label={district}>
+                                        {items.map((s) => <option key={s.id} value={s.id}>{stationName(s)}</option>)}
+                                    </optgroup>
+                                ) : items.map((s) => <option key={s.id} value={s.id}>{stationName(s)}</option>)))}
                             </select>
+                            <span className="cp-hint">{filtered.length} of {stations.length} stations</span>
                             {editing.policeStationName && <span className="cp-hint">Selected: {editing.policeStationName}</span>}
                         </label>
                         <label>Address

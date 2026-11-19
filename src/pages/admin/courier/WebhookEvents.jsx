@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchWebhookEvents } from './courierApi';
+import { fmtDateTime } from './courierDate';
 
 /** What Steadfast has pushed to us lately. Handy for checking the webhook really works. */
 const WebhookEvents = () => {
@@ -28,7 +29,7 @@ const WebhookEvents = () => {
                         {rows.map((r) => (
                             <React.Fragment key={r.id}>
                                 <tr style={{ borderTop: '1px solid #f1f5f9' }}>
-                                    <td style={{ whiteSpace: 'nowrap' }}>{r.receivedAt ? new Date(r.receivedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                                    <td style={{ whiteSpace: 'nowrap' }}>{fmtDateTime(r.receivedAt)}</td>
                                     <td>{r.eventType || '—'}</td>
                                     <td>{r.consignmentId || '—'}</td>
                                     <td>{r.outcome}</td>
